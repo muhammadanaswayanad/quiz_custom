@@ -358,3 +358,48 @@ class QuizController(http.Controller):
                 'quiz_session_count': session_count,
             })
         return response
+    
+    @http.route('/quiz/<string:slug>/session/<int:session_id>/question/<int:question_index>', type='http', auth='public', website=True)
+    def show_question(self, slug, session_id, question_index=0, **kw):
+        """Show a single quiz question."""
+        quiz = request.env['quiz.quiz'].sudo().search([('slug', '=', slug)], limit=1)
+        session = request.env['quiz.session'].sudo().browse(session_id)
+        
+        if not quiz or not session or session.state != 'in_progress':
+            return request.render('website.404')
+        
+        # Ensure question_index is an integer
+        try:
+            question_index = int(question_index)
+        except ValueError:
+            question_index = 0
+        
+        # Get all quiz questions
+        questions = quiz.question_ids
+        if quiz.shuffle_questions:
+            # If questions should be randomized, get the randomized order from the session
+            if session.question_order:
+                try:
+                    question_order = json.loads(session.question_order)
+                    questions = request.env['quiz.question'].sudo().browse(question_order)
+                except Exception as e:
+                    _logger.error("Error loading question order: %s", str(e))
+    
+        # Validate question index
+        if question_index < 0 or question_index >= len(questions):
+            return request.render('website.404')
+        
+        question = questions[question_index]
+        question_data = self._prepare_question_data(question)
+        
+        values = {
+            'quiz': quiz,
+            'session': session,
+            'question': question,
+            'question_index': question_index,
+            'total_questions': len(questions),
+            'question_data': question_data,
+            'page_name': '%s - Question %s' % (quiz.name, question_index + 1),
+        }
+        
+        return request.render('quiz_custom.quiz_question_template', values)
