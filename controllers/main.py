@@ -349,7 +349,7 @@ class QuizController(http.Controller):
     @http.route(['/my/home'], type='http', auth="user", website=True)
     def portal_home_inherit_quiz(self, **kw):
         """Add quiz attempts to portal home page"""
-        response = super(QuizController, self)._home_portal_redirect(**kw)
+        response = super(QuizController, self).home_portal(**kw)
         if hasattr(response, 'qcontext'):
             session_count = request.env['quiz.session'].sudo().search_count([
                 ('user_id', '=', request.env.user.id)
