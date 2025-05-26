@@ -26,8 +26,8 @@
             <field name="arch" type="xml">
                 <form string="Quiz Attempt">
                     <header>
-                        <button name="mark_completed" string="Mark as Completed" type="object" attrs="{'invisible': [('state', '!=', 'in_progress')]}"/>
-                        <button name="action_evaluate" string="Evaluate" type="object" class="btn-primary" attrs="{'invisible': [('state', '!=', 'in_progress')]}"/>
+                        <button name="mark_completed" string="Mark as Completed" type="object" invisible="state != 'in_progress'"/>
+                        <button name="action_evaluate" string="Evaluate" type="object" class="btn-primary" invisible="state != 'in_progress'"/>
                         <field name="state" widget="statusbar" statusbar_visible="in_progress,completed,expired"/>
                     </header>
                     <sheet>
@@ -40,8 +40,8 @@
                             <group>
                                 <field name="quiz_id"/>
                                 <field name="user_id"/>
-                                <field name="user_name" attrs="{'invisible': [('user_id', '!=', False)]}"/>
-                                <field name="user_email" attrs="{'invisible': [('user_id', '!=', False)]}"/>
+                                <field name="user_name" invisible="user_id != False"/>
+                                <field name="user_email" invisible="user_id != False"/>
                             </group>
                             <group>
                                 <field name="start_time"/>
