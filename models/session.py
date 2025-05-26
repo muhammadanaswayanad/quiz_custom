@@ -66,3 +66,20 @@ class QuizSession(models.Model):
         for response in self.response_ids:
             response.evaluate_answer()
         return self.mark_completed()
+
+class QuizResponse(models.Model):
+    _name = 'quiz.response'
+    _description = 'Quiz Question Response'
+    _order = 'id'
+    
+    session_id = fields.Many2one('quiz.session', string='Session', required=True, ondelete='cascade')
+    question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
+    response_data = fields.Text(string='Response Data', help='JSON data containing the user response')
+    score = fields.Float(string='Score', default=0)
+    max_score = fields.Float(string='Max Score', compute='_compute_max_score', store=True)
+    is_correct = fields.Boolean(string='Is Correct', default=False)
+    
+    @api.depends('question_id')
+    def _compute_max_score(self):
+        for response in self:
+            response.max_score = response.question_id.points
