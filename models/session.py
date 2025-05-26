@@ -1,5 +1,9 @@
 from odoo import api, fields, models
 import uuid
+import json
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class QuizSession(models.Model):
@@ -83,3 +87,116 @@ class QuizResponse(models.Model):
     def _compute_max_score(self):
         for response in self:
             response.max_score = response.question_id.points
+    
+    def evaluate_response(self):
+        """Evaluate the response and assign a score based on question type"""
+        for response in self:
+            if not response.response_data:
+                continue
+                
+            try:
+                data = json.loads(response.response_data)
+                question = response.question_id
+                score = 0.0
+                is_correct = False
+                
+                if question.question_type == 'mcq':
+                    # For multiple choice questions
+                    selected_options = data.get('selected_options', [])
+                    
+                    if isinstance(selected_options, str):
+                        selected_options = [selected_options]
+                        
+                    selected_options = [int(opt_id) for opt_id in selected_options if opt_id]
+                    
+                    if selected_options:
+                        # Get all options for this question
+                        all_options = self.env['quiz.answer.option'].sudo().search([
+                            ('question_id', '=', question.id)
+                        ])
+                        
+                        correct_options = all_options.filtered(lambda o: o.is_correct)
+                        selected_correct = len(set(selected_options).intersection(set(correct_options.ids)))
+                        selected_incorrect = len(selected_options) - selected_correct
+                        
+                        # Calculate score
+                        if question.partial_scoring:
+                            # Partial scoring: correct answers add points, incorrect ones subtract
+                            score = (selected_correct / len(correct_options)) * question.points
+                            if question.negative_marks > 0 and selected_incorrect:
+                                score -= selected_incorrect * question.negative_marks
+                            score = max(0, score)  # Don't allow negative scores
+                        else:
+                            # All or nothing
+                            if selected_correct == len(correct_options) and selected_incorrect == 0:
+                                score = question.points
+                                
+                        # Mark as correct if all correct options are selected and no incorrect ones
+                        is_correct = selected_correct == len(correct_options) and selected_incorrect == 0
+                    
+                elif question.question_type == 'fill_blank':
+                    # For fill in the blanks
+                    blanks = data.get('blanks', {})
+                    if blanks:
+                        total_blanks = len(question.blank_expected_ids)
+                        correct_blanks = 0
+                        
+                        for blank in question.blank_expected_ids:
+                            user_answer = blanks.get(str(blank.id), '').strip()
+                            correct_answer = blank.correct_answer.strip()
+                            
+                            if question.case_sensitive:
+                                if user_answer == correct_answer:
+                                    correct_blanks += 1
+                            else:
+                                if user_answer.lower() == correct_answer.lower():
+                                    correct_blanks += 1
+                        
+                        # Calculate score based on proportion of correct blanks
+                        score = (correct_blanks / total_blanks) * question.points
+                        is_correct = correct_blanks == total_blanks
+                
+                elif question.question_type == 'match':
+                    # For matching questions
+                    matches = data.get('matches', {})
+                    if matches:
+                        total_pairs = len(question.match_pair_ids)
+                        correct_matches = 0
+                        
+                        for pair in question.match_pair_ids:
+                            user_match = matches.get(str(pair.id), '')
+                            if user_match == pair.right_item:
+                                correct_matches += 1
+                        
+                        # Calculate score based on proportion of correct matches
+                        score = (correct_matches / total_pairs) * question.points
+                        is_correct = correct_matches == total_pairs
+                
+                elif question.question_type == 'drag':
+                    # For drag and drop questions
+                    positions = data.get('positions', {})
+                    if positions:
+                        total_options = len(question.answer_option_ids)
+                        correct_positions = 0
+                        
+                        for option in question.answer_option_ids:
+                            user_position = positions.get(str(option.id), '')
+                            if str(user_position) == str(option.sequence):
+                                correct_positions += 1
+                        
+                        # Calculate score based on proportion of correct positions
+                        score = (correct_positions / total_options) * question.points
+                        is_correct = correct_positions == total_options
+                
+                # Update response with evaluation
+                response.write({
+                    'score': score,
+                    'is_correct': is_correct
+                })
+                
+            except Exception as e:
+                _logger.error("Error evaluating response: %s", str(e))
+                continue
+                
+        # Return the updated records
+        return True
