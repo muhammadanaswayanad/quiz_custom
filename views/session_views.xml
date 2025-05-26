@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Session Tree View -->
+        <record id="view_session_tree" model="ir.ui.view">
+            <field name="name">quiz.session.tree</field>
+            <field name="model">quiz.session</field>
+            <field name="arch" type="xml">
+                <tree string="Quiz Attempts" decoration-danger="state == 'expired'" decoration-success="state == 'completed'">
+                    <field name="name"/>
+                    <field name="quiz_id"/>
+                    <field name="user_id"/>
+                    <field name="start_time"/>
+                    <field name="score"/>
+                    <field name="max_score"/>
+                    <field name="percentage"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Session Form View -->
+        <record id="view_session_form" model="ir.ui.view">
+            <field name="name">quiz.session.form</field>
+            <field name="model">quiz.session</field>
+            <field name="arch" type="xml">
+                <form string="Quiz Attempt">
+                    <header>
+                        <button name="mark_completed" string="Mark as Completed" type="object" attrs="{'invisible': [('state', '!=', 'in_progress')]}"/>
+                        <button name="action_evaluate" string="Evaluate" type="object" class="btn-primary" attrs="{'invisible': [('state', '!=', 'in_progress')]}"/>
+                        <field name="state" widget="statusbar" statusbar_visible="in_progress,completed,expired"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="quiz_id"/>
+                                <field name="user_id"/>
+                                <field name="user_name" attrs="{'invisible': [('user_id', '!=', False)]}"/>
+                                <field name="user_email" attrs="{'invisible': [('user_id', '!=', False)]}"/>
+                            </group>
+                            <group>
+                                <field name="start_time"/>
+                                <field name="end_time"/>
+                                <field name="time_spent" widget="float_time"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group>
+                                <field name="score"/>
+                                <field name="max_score"/>
+                                <field name="percentage" widget="percentage"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Responses">
+                                <field name="response_ids">
+                                    <tree>
+                                        <field name="question_id"/>
+                                        <field name="score"/>
+                                        <field name="max_score"/>
+                                        <field name="is_correct"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Session Search View -->
+        <record id="view_session_search" model="ir.ui.view">
+            <field name="name">quiz.session.search</field>
+            <field name="model">quiz.session</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="quiz_id"/>
+                    <field name="user_id"/>
+                    <filter string="In Progress" name="in_progress" domain="[('state', '=', 'in_progress')]"/>
+                    <filter string="Completed" name="completed" domain="[('state', '=', 'completed')]"/>
+                    <filter string="Expired" name="expired" domain="[('state', '=', 'expired')]"/>
+                    <filter string="My Attempts" name="my_attempts" domain="[('user_id', '=', uid)]"/>
+                    <group expand="0" string="Group By">
+                        <filter name="group_by_quiz" string="Quiz" context="{'group_by':'quiz_id'}"/>
+                        <filter name="group_by_user" string="User" context="{'group_by':'user_id'}"/>
+                        <filter name="group_by_state" string="State" context="{'group_by':'state'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Session Action -->
+        <record id="action_session" model="ir.actions.act_window">
+            <field name="name">Quiz Attempts</field>
+            <field name="res_model">quiz.session</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+    </data>
+</odoo>

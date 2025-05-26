@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Quiz Tree View -->
+        <record id="view_quiz_tree" model="ir.ui.view">
+            <field name="name">quiz.quiz.tree</field>
+            <field name="model">quiz.quiz</field>
+            <field name="arch" type="xml">
+                <tree string="Quizzes">
+                    <field name="name"/>
+                    <field name="is_published"/>
+                    <field name="question_count"/>
+                    <field name="total_marks"/>
+                    <field name="session_count"/>
+                    <field name="create_date"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Quiz Form View -->
+        <record id="view_quiz_form" model="ir.ui.view">
+            <field name="name">quiz.quiz.form</field>
+            <field name="model">quiz.quiz</field>
+            <field name="arch" type="xml">
+                <form string="Quiz">
+                    <header>
+                        <button name="action_view_questions" string="Manage Questions" type="object" class="btn-primary"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_questions" type="object" class="oe_stat_button" icon="fa-question-circle">
+                                <field name="question_count" widget="statinfo" string="Questions"/>
+                            </button>
+                            <button name="action_view_sessions" type="object" class="oe_stat_button" icon="fa-pencil-square-o">
+                                <field name="session_count" widget="statinfo" string="Attempts"/>
+                            </button>
+                            <field name="is_published" widget="website_redirect_button" options='{"url": "/quiz/%(slug)s"}'/>
+                        </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="Quiz Title"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="slug" placeholder="quiz-url-slug"/>
+                                <field name="total_marks"/>
+                                <field name="time_limit"/>
+                            </group>
+                            <group>
+                                <field name="shuffle_questions"/>
+                                <field name="one_question_per_page"/>
+                                <field name="require_login"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Description">
+                                <field name="description" placeholder="Quiz description or instructions..."/>
+                            </page>
+                            <page string="Questions" invisible="1">
+                                <field name="question_ids">
+                                    <tree>
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="content"/>
+                                        <field name="question_type"/>
+                                        <field name="points"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Quiz Action -->
+        <record id="action_quiz" model="ir.actions.act_window">
+            <field name="name">Quizzes</field>
+            <field name="res_model">quiz.quiz</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first quiz
+                </p>
+                <p>
+                    Create different quizzes with multiple question types.
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

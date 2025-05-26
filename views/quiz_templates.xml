@@ -1,0 +1,571 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Quiz Start Template -->
+        <template id="quiz_start_template" name="Quiz Start">
+            <t t-call="website.layout">
+                <div class="container py-5">
+                    <div class="row">
+                        <div class="col-lg-8 offset-lg-2">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h3 class="mb-0"><t t-esc="quiz.name"/></h3>
+                                </div>
+                                <div class="card-body">
+                                    <div t-if="quiz.description" class="quiz-description mb-4">
+                                        <t t-raw="quiz.description"/>
+                                    </div>
+                                    
+                                    <div class="quiz-info mb-4">
+                                        <p><strong>Total Questions:</strong> <t t-esc="len(quiz.question_ids)"/></p>
+                                        <p><strong>Total Marks:</strong> <t t-esc="quiz.total_marks"/></p>
+                                        <p t-if="quiz.time_limit">
+                                            <strong>Time Limit:</strong> <t t-esc="quiz.time_limit"/> minutes
+                                        </p>
+                                    </div>
+                                    
+                                    <form t-att-action="'/quiz/%s/session/new' % quiz.slug" method="post" class="js_quiz_form">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        
+                                        <div t-if="request.env.user._is_public() and not quiz.require_login" class="guest-info mb-4">
+                                            <h5>Guest Information</h5>
+                                            <div class="form-group">
+                                                <label for="name">Name</label>
+                                                <input type="text" class="form-control" name="name" id="name" required="required"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="email">Email</label>
+                                                <input type="email" class="form-control" name="email" id="email"/>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="text-center">
+                                            <button type="submit" class="btn btn-primary btn-lg">
+                                                Start Quiz
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+        
+        <!-- Single Question Template -->
+        <template id="quiz_question_template" name="Quiz Question">
+            <t t-call="website.layout">
+                <div class="container py-5">
+                    <div class="row">
+                        <div class="col-lg-10 offset-lg-1">
+                            <div class="quiz-header mb-3 d-flex justify-content-between align-items-center">
+                                <h3><t t-esc="quiz.name"/></h3>
+                                <div t-if="quiz.time_limit" class="quiz-timer" t-att-data-time-limit="quiz.time_limit * 60"></div>
+                            </div>
+                            
+                            <div class="quiz-progress mb-4">
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" 
+                                         t-att-style="'width: %s%%' % ((question_index + 1) / total_questions * 100)" 
+                                         t-att-aria-valuenow="question_index + 1" 
+                                         aria-valuemin="0" 
+                                         t-att-aria-valuemax="total_questions">
+                                        Question <t t-esc="question_index + 1"/>/<t t-esc="total_questions"/>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <form t-att-action="'/quiz/%s/session/%s/submit' % (quiz.slug, session.id)" method="post" class="js_question_form">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <input type="hidden" name="question_id" t-att-value="question.id"/>
+                                <input type="hidden" name="question_index" t-att-value="question_index"/>
+                                <input type="hidden" name="total_questions" t-att-value="total_questions"/>
+                                
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">Question <t t-esc="question_index + 1"/></h5>
+                                            <span class="badge badge-info">
+                                                <t t-esc="question.points"/> point<t t-if="question.points > 1">s</t>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="question-content mb-4">
+                                            <t t-raw="question.content"/>
+                                        </div>
+                                        
+                                        <!-- Multiple Choice Question -->
+                                        <div t-if="question.question_type == 'mcq'" class="mcq-options">
+                                            <div t-foreach="question_data['options']" t-as="option" class="form-check mb-2">
+                                                <input t-if="sum([1 for o in question_data['options'] if o.is_correct]) == 1"
+                                                       type="radio" 
+                                                       t-att-id="'option_%s' % option.id" 
+                                                       t-att-name="'question_%s_option' % question.id"
+                                                       t-att-value="option.id"
+                                                       class="form-check-input"/>
+                                                <input t-else=""
+                                                       type="checkbox" 
+                                                       t-att-id="'option_%s' % option.id" 
+                                                       t-att-name="'question_%s_option' % question.id"
+                                                       t-att-value="option.id"
+                                                       class="form-check-input"/>
+                                                <label class="form-check-label" t-att-for="'option_%s' % option.id">
+                                                    <t t-esc="option.label"/>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Fill in the Blanks -->
+                                        <div t-if="question.question_type == 'fill_blank'" class="fill-blank-container">
+                                            <div t-foreach="question_data['blanks']" t-as="blank" class="mb-2">
+                                                <label t-att-for="'blank_%s_%s' % (question.id, blank.id)">
+                                                    <t t-esc="blank.placeholder_label"/>:
+                                                </label>
+                                                <input type="text" 
+                                                       t-att-id="'blank_%s_%s' % (question.id, blank.id)"
+                                                       t-att-name="'blank_%s_%s' % (question.id, blank.id)"
+                                                       class="form-control"
+                                                       required="required"/>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Match the Following -->
+                                        <div t-if="question.question_type == 'match'" class="match-container">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h6 class="mb-3">Items</h6>
+                                                    <div t-foreach="question_data['pairs']" t-as="pair" class="mb-3">
+                                                        <div class="match-item-left">
+                                                            <span t-esc="pair.left_item"/>
+                                                        </div>
+                                                        <select t-att-name="'match_%s_%s' % (question.id, pair.id)" class="form-control" required="required">
+                                                            <option value="">-- Select Match --</option>
+                                                            <option t-foreach="question_data['pairs']" t-as="right_item" 
+                                                                    t-att-value="right_item.right_item">
+                                                                <t t-esc="right_item.right_item"/>
+                                                            </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h6 class="mb-3">Matches</h6>
+                                                    <div t-foreach="question_data['pairs']" t-as="pair" class="mb-3">
+                                                        <div class="match-item-right">
+                                                            <span t-esc="pair.right_item"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Drag and Drop -->
+                                        <div t-if="question.question_type == 'drag'" class="drag-container">
+                                            <div class="drag-items-container mb-4">
+                                                <h6>Drag these items to their correct positions:</h6>
+                                                <div class="drag-items d-flex flex-wrap">
+                                                    <div t-foreach="question_data['options']" t-as="option"
+                                                         t-att-class="'drag-item'" 
+                                                         t-att-data-id="option.id">
+                                                        <t t-esc="option.label"/>
+                                                        <input type="hidden" 
+                                                               t-att-name="'drag_%s_%s' % (question.id, option.id)"
+                                                               t-att-id="'drag_%s_%s' % (question.id, option.id)"
+                                                               value="0"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="drop-zones-container">
+                                                <div t-foreach="question_data['options']" t-as="option" 
+                                                     t-att-class="'drop-zone'" 
+                                                     t-att-data-position="option.sequence">
+                                                    <span class="position-label"><t t-esc="option.sequence"/></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary">
+                                        <t t-if="question_index + 1 == total_questions">
+                                            Finish Quiz
+                                        </t>
+                                        <t t-else="">
+                                            Next Question
+                                        </t>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+        
+        <!-- All Questions Template -->
+        <template id="quiz_all_questions_template" name="Quiz All Questions">
+            <t t-call="website.layout">
+                <div class="container py-5">
+                    <div class="row">
+                        <div class="col-lg-10 offset-lg-1">
+                            <div class="quiz-header mb-3 d-flex justify-content-between align-items-center">
+                                <h3><t t-esc="quiz.name"/></h3>
+                                <div t-if="quiz.time_limit" class="quiz-timer" t-att-data-time-limit="quiz.time_limit * 60"></div>
+                            </div>
+                            
+                            <form t-att-action="'/quiz/%s/session/%s/submit' % (quiz.slug, session.id)" method="post" class="js_all_questions_form">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                
+                                <div t-foreach="all_questions_data" t-as="qdata" class="card mb-4">
+                                    <input type="hidden" name="question_ids" t-att-value="qdata['question'].id"/>
+                                    
+                                    <div class="card-header">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">Question <t t-esc="qdata_index + 1"/></h5>
+                                            <span class="badge badge-info">
+                                                <t t-esc="qdata['question'].points"/> point<t t-if="qdata['question'].points > 1">s</t>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="question-content mb-4">
+                                            <t t-raw="qdata['question'].content"/>
+                                        </div>
+                                        
+                                        <!-- Include question type specific templates -->
+                                        <t t-if="qdata['question'].question_type == 'mcq'">
+                                            <div class="mcq-options">
+                                                <div t-foreach="qdata['data']['options']" t-as="option" class="form-check mb-2">
+                                                    <input t-if="sum([1 for o in qdata['data']['options'] if o.is_correct]) == 1"
+                                                           type="radio" 
+                                                           t-att-id="'option_%s' % option.id" 
+                                                           t-att-name="'question_%s_option' % qdata['question'].id"
+                                                           t-att-value="option.id"
+                                                           class="form-check-input"/>
+                                                    <input t-else=""
+                                                           type="checkbox" 
+                                                           t-att-id="'option_%s' % option.id" 
+                                                           t-att-name="'question_%s_option' % qdata['question'].id"
+                                                           t-att-value="option.id"
+                                                           class="form-check-input"/>
+                                                    <label class="form-check-label" t-att-for="'option_%s' % option.id">
+                                                        <t t-esc="option.label"/>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </t>
+                                        
+                                        <t t-if="qdata['question'].question_type == 'fill_blank'">
+                                            <div class="fill-blank-container">
+                                                <div t-foreach="qdata['data']['blanks']" t-as="blank" class="mb-2">
+                                                    <label t-att-for="'blank_%s_%s' % (qdata['question'].id, blank.id)">
+                                                        <t t-esc="blank.placeholder_label"/>:
+                                                    </label>
+                                                    <input type="text" 
+                                                           t-att-id="'blank_%s_%s' % (qdata['question'].id, blank.id)"
+                                                           t-att-name="'blank_%s_%s' % (qdata['question'].id, blank.id)"
+                                                           class="form-control"
+                                                           required="required"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                        
+                                        <t t-if="qdata['question'].question_type == 'match'">
+                                            <div class="match-container">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6 class="mb-3">Items</h6>
+                                                        <div t-foreach="qdata['data']['pairs']" t-as="pair" class="mb-3">
+                                                            <div class="match-item-left">
+                                                                <span t-esc="pair.left_item"/>
+                                                            </div>
+                                                            <select t-att-name="'match_%s_%s' % (qdata['question'].id, pair.id)" class="form-control" required="required">
+                                                                <option value="">-- Select Match --</option>
+                                                                <option t-foreach="qdata['data']['pairs']" t-as="right_item" 
+                                                                        t-att-value="right_item.right_item">
+                                                                    <t t-esc="right_item.right_item"/>
+                                                                </option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6 class="mb-3">Matches</h6>
+                                                        <div t-foreach="qdata['data']['pairs']" t-as="pair" class="mb-3">
+                                                            <div class="match-item-right">
+                                                                <span t-esc="pair.right_item"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                        
+                                        <t t-if="qdata['question'].question_type == 'drag'">
+                                            <div class="drag-container" t-att-data-question-id="qdata['question'].id">
+                                                <div class="drag-items-container mb-4">
+                                                    <h6>Drag these items to their correct positions:</h6>
+                                                    <div class="drag-items d-flex flex-wrap">
+                                                        <div t-foreach="qdata['data']['options']" t-as="option"
+                                                             t-att-class="'drag-item'" 
+                                                             t-att-data-id="option.id"
+                                                             t-att-data-question="qdata['question'].id">
+                                                            <t t-esc="option.label"/>
+                                                            <input type="hidden" 
+                                                                   t-att-name="'drag_%s_%s' % (qdata['question'].id, option.id)"
+                                                                   t-att-id="'drag_%s_%s' % (qdata['question'].id, option.id)"
+                                                                   value="0"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="drop-zones-container">
+                                                    <div t-foreach="qdata['data']['options']" t-as="option" 
+                                                         t-att-class="'drop-zone'" 
+                                                         t-att-data-position="option.sequence"
+                                                         t-att-data-question="qdata['question'].id">
+                                                        <span class="position-label"><t t-esc="option.sequence"/></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        Submit Quiz
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+        
+        <!-- Quiz Result Template -->
+        <template id="quiz_result_template" name="Quiz Result">
+            <t t-call="website.layout">
+                <div class="container py-5">
+                    <div class="row">
+                        <div class="col-lg-10 offset-lg-1">
+                            <div class="result-header text-center mb-5">
+                                <h2><t t-esc="quiz.name"/> - Results</h2>
+                                <div class="result-summary mt-4">
+                                    <h3 class="mb-3">
+                                        <t t-esc="session.score"/> / <t t-esc="session.max_score"/> Points 
+                                        (<t t-esc="round(session.percentage, 1)"/>%)
+                                    </h3>
+                                    
+                                    <div class="progress" style="height: 30px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             t-att-class="'bg-%s' % ('success' if session.percentage >= 70 else 'warning' if session.percentage >= 40 else 'danger')"
+                                             t-att-style="'width: %s%%' % session.percentage" 
+                                             t-att-aria-valuenow="session.percentage" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            <t t-esc="round(session.percentage, 1)"/>%
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <p>Time spent: <t t-esc="round(session.time_spent, 1)"/> minutes</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="result-details">
+                                <h4 class="mb-3">Question Review</h4>
+                                
+                                <div t-foreach="response_details" t-as="detail" class="card mb-4">
+                                    <div t-att-class="'card-header %s' % ('bg-success text-white' if detail['is_correct'] else 'bg-danger text-white')">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">Question <t t-esc="detail_index + 1"/></h5>
+                                            <span class="result-score">
+                                                <t t-esc="detail['score']"/> / <t t-esc="detail['max_score']"/> Points
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="question-content mb-4">
+                                            <t t-raw="detail['question'].content"/>
+                                        </div>
+                                        
+                                        <!-- MCQ Response -->
+                                        <t t-if="detail['question'].question_type == 'mcq' and detail.get('selected_options')">
+                                            <div class="response-details">
+                                                <h6>Your Answer:</h6>
+                                                <ul class="list-group">
+                                                    <t t-foreach="detail.get('selected_options', [])" t-as="option">
+                                                        <li t-att-class="'list-group-item %s' % ('list-group-item-success' if option.is_correct else 'list-group-item-danger')">
+                                                            <t t-esc="option.label"/>
+                                                            <span t-if="option.is_correct" class="ml-2 text-success">✓</span>
+                                                            <span t-else="" class="ml-2 text-danger">✗</span>
+                                                        </li>
+                                                    </t>
+                                                </ul>
+                                                
+                                                <div t-if="not detail['is_correct']" class="correct-answer mt-3">
+                                                    <h6>Correct Answer:</h6>
+                                                    <ul class="list-group">
+                                                        <t t-foreach="detail.get('correct_options', [])" t-as="option">
+                                                            <li class="list-group-item list-group-item-success">
+                                                                <t t-esc="option.label"/>
+                                                            </li>
+                                                        </t>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </t>
+                                        
+                                        <!-- Fill in the Blanks Response -->
+                                        <t t-if="detail['question'].question_type == 'fill_blank' and detail.get('blanks')">
+                                            <div class="response-details">
+                                                <h6>Your Answers:</h6>
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Blank</th>
+                                                            <th>Your Answer</th>
+                                                            <th>Correct Answer</th>
+                                                            <th>Result</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="detail['question'].blank_expected_ids" t-as="blank">
+                                                            <tr>
+                                                                <td><t t-esc="blank.placeholder_label"/></td>
+                                                                <td><t t-esc="detail['blanks'].get(str(blank.id), '')"/></td>
+                                                                <td><t t-esc="blank.correct_answer"/></td>
+                                                                <td>
+                                                                    <span t-if="detail['blanks'].get(str(blank.id), '').lower() == blank.correct_answer.lower()" 
+                                                                          class="text-success">✓</span>
+                                                                    <span t-else="" class="text-danger">✗</span>
+                                                                </td>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </t>
+                                        
+                                        <!-- Match the Following Response -->
+                                        <t t-if="detail['question'].question_type == 'match' and detail.get('matches')">
+                                            <div class="response-details">
+                                                <h6>Your Matches:</h6>
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Item</th>
+                                                            <th>Your Match</th>
+                                                            <th>Correct Match</th>
+                                                            <th>Result</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="detail['question'].match_pair_ids" t-as="pair">
+                                                            <tr>
+                                                                <td><t t-esc="pair.left_item"/></td>
+                                                                <td><t t-esc="detail['matches'].get(str(pair.id), '')"/></td>
+                                                                <td><t t-esc="pair.right_item"/></td>
+                                                                <td>
+                                                                    <span t-if="detail['matches'].get(str(pair.id), '') == pair.right_item" 
+                                                                          class="text-success">✓</span>
+                                                                    <span t-else="" class="text-danger">✗</span>
+                                                                </td>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </t>
+                                        
+                                        <!-- Drag and Drop Response -->
+                                        <t t-if="detail['question'].question_type == 'drag' and detail.get('positions')">
+                                            <div class="response-details">
+                                                <h6>Your Placements:</h6>
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Item</th>
+                                                            <th>Your Position</th>
+                                                            <th>Correct Position</th>
+                                                            <th>Result</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="detail['question'].answer_option_ids" t-as="option">
+                                                            <tr>
+                                                                <td><t t-esc="option.label"/></td>
+                                                                <td><t t-esc="detail['positions'].get(str(option.id), '')"/></td>
+                                                                <td><t t-esc="option.sequence"/></td>
+                                                                <td>
+                                                                    <span t-if="str(detail['positions'].get(str(option.id), '')) == str(option.sequence)" 
+                                                                          class="text-success">✓</span>
+                                                                    <span t-else="" class="text-danger">✗</span>
+                                                                </td>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <a t-att-href="'/quiz/%s' % quiz.slug" class="btn btn-primary">Try Again</a>
+                                <a href="/my/quizzes" class="btn btn-secondary ml-2">My Quizzes</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+        
+        <!-- My Quiz Sessions Template for Portal -->
+        <template id="portal_my_quizzes" name="My Quizzes">
+            <t t-call="portal.portal_layout">
+                <div class="container py-5">
+                    <h3>My Quiz Attempts</h3>
+                    <t t-if="sessions">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Quiz</th>
+                                    <th>Date</th>
+                                    <th>Score</th>
+                                    <th>Status</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="sessions" t-as="session">
+                                    <td><t t-esc="session.quiz_id.name"/></td>
+                                    <td><t t-esc="session.create_date" t-options="{'widget': 'date'}"/></td>
+                                    <td><t t-esc="session.score"/> / <t t-esc="session.max_score"/></td>
+                                    <td>
+                                        <span t-if="session.state == 'completed'" class="badge badge-success">Completed</span>
+                                        <span t-elif="session.state == 'in_progress'" class="badge badge-info">In Progress</span>
+                                        <span t-else="" class="badge badge-danger">Expired</span>
+                                    </td>
+                                    <td>
+                                        <a t-if="session.state == 'in_progress'" t-att-href="'/quiz/%s/session/%s' % (session.quiz_id.slug, session.id)" class="btn btn-sm btn-primary">Continue</a>
+                                        <a t-else="" t-att-href="'/quiz/%s/session/%s/result' % (session.quiz_id.slug, session.id)" class="btn btn-sm btn-info">View Results</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+                    <div t-else="" class="alert alert-info">
+                        You haven't attempted any quizzes yet.
+                    </div>
+                </div>
+            </t>
+        </template>
+    </data>
+</odoo>

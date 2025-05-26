@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Main Quiz Menu -->
+        <menuitem id="menu_quiz_root"
+                  name="Quiz Engine"
+                  web_icon="quiz_custom,static/description/icon.png"
+                  sequence="50"/>
+
+        <!-- Quiz Submenu -->
+        <menuitem id="menu_quiz_main"
+                  name="Quizzes"
+                  parent="menu_quiz_root"
+                  sequence="10"/>
+
+        <menuitem id="menu_quiz_list"
+                  name="Quizzes"
+                  parent="menu_quiz_main"
+                  action="action_quiz"
+                  sequence="10"/>
+
+        <menuitem id="menu_quiz_question"
+                  name="Questions"
+                  parent="menu_quiz_main"
+                  action="action_question"
+                  sequence="20"/>
+
+        <!-- Quiz Results Submenu -->
+        <menuitem id="menu_quiz_results"
+                  name="Results"
+                  parent="menu_quiz_root"
+                  sequence="20"/>
+
+        <menuitem id="menu_quiz_session"
+                  name="Quiz Attempts"
+                  parent="menu_quiz_results"
+                  action="action_session"
+                  sequence="10"/>
+    </data>
+</odoo>

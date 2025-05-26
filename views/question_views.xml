@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Question Tree View -->
+        <record id="view_question_tree" model="ir.ui.view">
+            <field name="name">quiz.question.tree</field>
+            <field name="model">quiz.question</field>
+            <field name="arch" type="xml">
+                <tree string="Questions">
+                    <field name="sequence" widget="handle"/>
+                    <field name="content" string="Question"/>
+                    <field name="question_type"/>
+                    <field name="points"/>
+                    <field name="quiz_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Question Form View -->
+        <record id="view_question_form" model="ir.ui.view">
+            <field name="name">quiz.question.form</field>
+            <field name="model">quiz.question</field>
+            <field name="arch" type="xml">
+                <form string="Question">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="quiz_id" options="{'no_create': True}"/>
+                                <field name="question_type"/>
+                                <field name="points"/>
+                            </group>
+                            <group>
+                                <field name="sequence"/>
+                                <field name="negative_marks" attrs="{'invisible': [('question_type', 'not in', ['mcq'])]}"/>
+                                <field name="case_sensitive" attrs="{'invisible': [('question_type', '!=', 'fill_blank')]}"/>
+                                <field name="partial_scoring" attrs="{'invisible': [('question_type', '!=', 'mcq')]}"/>
+                            </group>
+                        </group>
+                        <field name="content" placeholder="Write your question here..."/>
+                        
+                        <!-- Answer options for MCQ -->
+                        <field name="answer_option_ids" attrs="{'invisible': [('question_type', 'not in', ['mcq', 'drag'])]}">
+                            <tree editable="bottom">
+                                <field name="sequence" widget="handle"/>
+                                <field name="label"/>
+                                <field name="is_correct" attrs="{'column_invisible': [('parent.question_type', '=', 'drag')]}"/>
+                            </tree>
+                        </field>
+                        
+                        <!-- Match pairs for matching questions -->
+                        <field name="match_pair_ids" attrs="{'invisible': [('question_type', '!=', 'match')]}">
+                            <tree editable="bottom">
+                                <field name="left_item"/>
+                                <field name="right_item"/>
+                            </tree>
+                        </field>
+                        
+                        <!-- Expected answers for fill in the blanks -->
+                        <field name="blank_expected_ids" attrs="{'invisible': [('question_type', '!=', 'fill_blank')]}">
+                            <tree editable="bottom">
+                                <field name="placeholder_label"/>
+                                <field name="correct_answer"/>
+                            </tree>
+                        </field>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Question Search View -->
+        <record id="view_question_search" model="ir.ui.view">
+            <field name="name">quiz.question.search</field>
+            <field name="model">quiz.question</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="content"/>
+                    <field name="quiz_id"/>
+                    <filter string="Multiple Choice" name="mcq" domain="[('question_type', '=', 'mcq')]"/>
+                    <filter string="Fill in the Blanks" name="fill_blank" domain="[('question_type', '=', 'fill_blank')]"/>
+                    <filter string="Matching" name="match" domain="[('question_type', '=', 'match')]"/>
+                    <filter string="Drag and Drop" name="drag" domain="[('question_type', '=', 'drag')]"/>
+                    <group expand="0" string="Group By">
+                        <filter name="group_by_quiz" string="Quiz" context="{'group_by':'quiz_id'}"/>
+                        <filter name="group_by_type" string="Question Type" context="{'group_by':'question_type'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Question Action -->
+        <record id="action_question" model="ir.actions.act_window">
+            <field name="name">Questions</field>
+            <field name="res_model">quiz.question</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+    </data>
+</odoo>
