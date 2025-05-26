@@ -30,12 +30,20 @@ Quiz Engine Pro enables advanced quiz creation, management, and analytics in Odo
 ## Features
 
 - Create and manage quizzes with time limits, login requirements, and attempt tracking
-- Multiple question types: Multiple Choice (MCQ), Fill in the Blanks, Match the Following, Drag and Drop
-- Randomization of questions and answers
-- User attempt tracking and scoring
+- Multiple question types:
+  - Multiple Choice (MCQ)
+  - Fill in the Blanks
+  - Match the Following
+  - Drag and Drop
+  - Drag and Drop Into Text
+- Randomization of questions and answers with shuffle option
+- One question per page or all questions at once view options
+- User attempt tracking and scoring with negative marking support
 - Frontend quiz execution with website integration
 - Analytics and exportable reports
 - Role-based access control
+- Case sensitivity option for fill in the blanks questions
+- Partial scoring for MCQs with multiple correct answers
 
 ---
 
@@ -86,11 +94,12 @@ quiz_custom/
 
 ## Key Models
 
-- **quiz.quiz**: The quiz itself (title, description, settings, etc.)
-- **quiz.question**: A question belonging to a quiz (type, content, points, etc.)
-- **quiz.answer.option**: Answer options for MCQ/drag questions
-- **quiz.match.pair**: Pairs for matching questions
-- **quiz.blank.expected**: Expected answers for fill-in-the-blank
+- **quiz.quiz**: The quiz itself (title, description, settings, time limits, etc.)
+- **quiz.question**: A question belonging to a quiz (type, content, points, negative marks, etc.)
+- **quiz.answer.option**: Answer options for MCQ and drag questions
+- **quiz.match.pair**: Pairs for matching questions (left and right items)
+- **quiz.blank.expected**: Expected answers for fill-in-the-blank questions
+- **quiz.question.dragtoken**: Tokens for drag-into-text questions
 - **quiz.session**: A user's attempt at a quiz
 - **quiz.response**: A user's response to a question in a session
 
@@ -124,6 +133,14 @@ quiz_custom/
 4. Update the website templates to render the new type.
 5. Update JS if frontend interactivity is required.
 
+**Example:**
+The module already implements 5 question types:
+- Multiple Choice (mcq)
+- Fill in the Blanks (fill_blank)
+- Match the Following (match)
+- Drag and Drop Answer (drag)
+- Drag and Drop Into Text (drag_into_text)
+
 **To add analytics or reporting:**
 - Add computed fields or new models as needed.
 - Add new menu items and views in XML.
@@ -146,6 +163,7 @@ quiz_custom/
 - Ensure all dependencies are installed and up to date.
 - If a field is missing after upgrade, run the upgrade script in `upgrade/`.
 - For frontend issues, check browser console and network logs.
+- Validate questions using the `validate_question()` method to ensure they are properly configured.
 
 ---
 
@@ -155,6 +173,7 @@ quiz_custom/
 - Follow PEP8 and Odoo coding standards.
 - Add docstrings and comments for clarity.
 - Submit pull requests with a clear description of changes.
+- Increment version number in `__manifest__.py` when making significant changes.
 
 ---
 
