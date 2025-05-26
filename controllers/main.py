@@ -392,13 +392,16 @@ class QuizController(http.Controller):
         """Show a single quiz question."""
         quiz = request.env['quiz.quiz'].sudo().search([('slug', '=', slug)], limit=1)
         session = request.env['quiz.session'].sudo().browse(session_id)
+        
         if not quiz or not session or session.state != 'in_progress':
             return request.render('website.404')
+            
         # Ensure question_index is an integer.
         try:
             question_index = int(question_index)
         except ValueError:
             question_index = 0
+            
         # Get all quiz questions
         questions = quiz.question_ids
         if quiz.shuffle_questions:
@@ -409,11 +412,14 @@ class QuizController(http.Controller):
                     questions = request.env['quiz.question'].sudo().browse(question_order)
                 except Exception as e:
                     _logger.error("Error loading question order: %s", str(e))
+                    
         # Validate question index
         if question_index < 0 or question_index >= len(questions):
             return request.render('website.404')
+            
         question = questions[question_index]
         question_data = self._prepare_question_data(question)
+        
         values = {
             'quiz': quiz,
             'session': session,
@@ -423,14 +429,8 @@ class QuizController(http.Controller):
             'question_data': question_data,
             'page_name': '%s - Question %s' % (quiz.name, question_index + 1),
         }
+        
         return request.render('quiz_custom.quiz_question_template', values)
-            return request.render('website.404')
-        try:
-        question = questions[question_index]dex)
-        question_data = self._prepare_question_data(question)
-            question_index = 0
-        values = {
-            'quiz': quiz,estions
             'session': session,on_ids
             'question': question,:
             'question_index': question_index,ed, get the randomized order from the session
