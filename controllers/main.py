@@ -350,8 +350,6 @@ class QuizController(http.Controller):
         }
         
         return request.render('quiz_custom.quiz_result_template', values)
-<<<<<<< HEAD
-<<<<<<< HEAD
     
     @http.route('/my/quizzes', type='http', auth='user', website=True)
     def my_quizzes(self, **kw):
@@ -422,6 +420,8 @@ class QuizController(http.Controller):
             'question_data': question_data,
             'page_name': '%s - Question %s' % (quiz.name, question_index + 1),
         }
+        
+        return request.render('quiz_custom.quiz_question_template', values)
         
         return request.render('quiz_custom.quiz_question_template', values)
             'session': session,on_ids
