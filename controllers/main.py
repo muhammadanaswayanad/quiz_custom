@@ -152,6 +152,25 @@ class QuizController(http.Controller):
             data['pairs'] = question.match_pair_ids
             
         elif question.question_type == 'drag':
+            # Parse the question.content and replace [blank] with drop zones
+            import re
+            sentence = question.content or ''
+            blanks = question.blank_expected_ids or []
+            parts = []
+            blank_idx = 0
+            last_pos = 0
+            for m in re.finditer(r'\[blank\]', sentence):
+                if m.start() > last_pos:
+                    parts.append({'type': 'text', 'value': sentence[last_pos:m.start()]})
+                if blank_idx < len(blanks):
+                    parts.append({'type': 'blank', 'blank_id': blanks[blank_idx].id})
+                    blank_idx += 1
+                else:
+                    parts.append({'type': 'blank', 'blank_id': 0})
+                last_pos = m.end()
+            if last_pos < len(sentence):
+                parts.append({'type': 'text', 'value': sentence[last_pos:]})
+            data['sentence_parts'] = parts
             data['options'] = question.answer_option_ids
             
         elif question.question_type == 'fill_blank':
@@ -253,10 +272,10 @@ class QuizController(http.Controller):
             
         elif question.question_type == 'drag':
             positions = {}
-            for option in question.answer_option_ids:
-                position_key = 'drag_%s_%s' % (question.id, option.id)
+            for blank in question.blank_expected_ids:
+                position_key = 'drag_%s_%s' % (question.id, blank.id)
                 if position_key in post:
-                    positions[str(option.id)] = post.get(position_key, '0')
+                    positions[str(blank.id)] = post.get(position_key, '')
             answer_data['positions'] = positions
             
         return answer_data
@@ -330,6 +349,7 @@ class QuizController(http.Controller):
         }
         
         return request.render('quiz_custom.quiz_result_template', values)
+<<<<<<< HEAD
     
     @http.route('/my/quizzes', type='http', auth='user', website=True)
     def my_quizzes(self, **kw):
@@ -351,39 +371,62 @@ class QuizController(http.Controller):
         """Add quiz attempts to portal home page"""
         response = super(QuizController, self).home_portal(**kw)
         if hasattr(response, 'qcontext'):
+=======
+        response = super(QuizController, self)._home_portal_redirect(**kw)
+        if hasattr(response, 'qcontext'):', auth='user', website=True)
+>>>>>>> 9d49540 (feat: Enhance drag-and-drop functionality for quiz questions with dynamic sentence fill and improved scoring logic)
             session_count = request.env['quiz.session'].sudo().search_count([
                 ('user_id', '=', request.env.user.id)
-            ])
-            response.qcontext.update({
+            ])ns = request.env['quiz.session'].sudo().search([
+            response.qcontext.update({nv.user.id)
                 'quiz_session_count': session_count,
             })
         return response
-    
+            'sessions': sessions,
     @http.route('/quiz/<string:slug>/session/<int:session_id>/question/<int:question_index>', type='http', auth='public', website=True)
     def show_question(self, slug, session_id, question_index=0, **kw):
         """Show a single quiz question."""
         quiz = request.env['quiz.quiz'].sudo().search([('slug', '=', slug)], limit=1)
         session = request.env['quiz.session'].sudo().browse(session_id)
-        
+        d this method to portal controller
         if not quiz or not session or session.state != 'in_progress':
             return request.render('website.404')
-        
-        # Ensure question_index is an integer
-        try:
-            question_index = int(question_index)
-        except ValueError:
+        """Add quiz attempts to portal home page"""
+        # Ensure question_index is an integer)._home_portal_redirect(**kw)
+        try:asattr(response, 'qcontext'):
+            question_index = int(question_index)ssion'].sudo().search_count([
+        except ValueError:, '=', request.env.user.id)
             question_index = 0
-        
-        # Get all quiz questions
+            response.qcontext.update({
+        # Get all quiz questionsunt': session_count,
         questions = quiz.question_ids
         if quiz.shuffle_questions:
             # If questions should be randomized, get the randomized order from the session
-            if hasattr(session, 'question_order') and session.question_order:
-                try:
+            if hasattr(session, 'question_order') and session.question_order:uestion_index>', type='http', auth='public', website=True)
+                try:n(self, slug, session_id, question_index=0, **kw):
                     question_order = json.loads(session.question_order)
                     questions = request.env['quiz.question'].sudo().browse(question_order)
-                except Exception as e:
+                except Exception as e:ssion'].sudo().browse(session_id)
                     _logger.error("Error loading question order: %s", str(e))
+        if not quiz or not session or session.state != 'in_progress':
+        # Validate question index('website.404')
+        if question_index < 0 or question_index >= len(questions):
+            return request.render('website.404')
+        try:
+        question = questions[question_index]dex)
+        question_data = self._prepare_question_data(question)
+            question_index = 0
+        values = {
+            'quiz': quiz,estions
+            'session': session,on_ids
+            'question': question,:
+            'question_index': question_index,ed, get the randomized order from the session
+            'total_questions': len(questions),r') and session.question_order:
+            'question_data': question_data,
+            'page_name': '%s - Question %s' % (quiz.name, question_index + 1),
+        }           questions = request.env['quiz.question'].sudo().browse(question_order)
+                except Exception as e:
+        return request.render('quiz_custom.quiz_question_template', values)))
     
         # Validate question index
         if question_index < 0 or question_index >= len(questions):

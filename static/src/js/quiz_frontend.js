@@ -6,13 +6,13 @@ odoo.define('quiz_custom.frontend', function (require) {
     // Initialize drag and drop functionality using Sortable.js
     publicWidget.registry.QuizDragDrop = publicWidget.Widget.extend({
         selector: '.drag-container',
-        
+
         start: function () {
             var self = this;
             this._super.apply(this, arguments);
-            
+
+            // Use Sortable.js for drag-items and drop-zones
             if (!window.Sortable) {
-                // Load Sortable.js from CDN if not available
                 $.getScript('https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js', function () {
                     self._initDragDrop();
                 });
@@ -20,17 +20,17 @@ odoo.define('quiz_custom.frontend', function (require) {
                 this._initDragDrop();
             }
         },
-        
+
         _initDragDrop: function () {
             var self = this;
-            var questionId = this.$el.data('questionId');
-            
-            // Initialize draggable items
-            var dragItems = this.$el.find('.drag-items')[0];
-            if (dragItems) {
-                new Sortable(dragItems, {
+            var $dragItems = this.$el.find('.drag-items')[0];
+            var $dropZones = this.$el.find('.drop-zone');
+
+            // Make drag-items draggable (from pool)
+            if ($dragItems) {
+                new Sortable($dragItems, {
                     group: {
-                        name: 'quiz-items-' + questionId,
+                        name: 'quiz-drag-' + this.$el.data('questionId'),
                         pull: 'clone',
                         put: false
                     },
@@ -38,34 +38,35 @@ odoo.define('quiz_custom.frontend', function (require) {
                     animation: 150
                 });
             }
-            
-            // Initialize drop zones
-            var dropZones = this.$el.find('.drop-zone');
-            dropZones.each(function () {
+
+            // Each drop-zone accepts one item
+            $dropZones.each(function () {
                 var dropZone = this;
-                var position = $(dropZone).data('position');
-                
                 new Sortable(dropZone, {
                     group: {
-                        name: 'quiz-items-' + questionId,
-                        pull: false
+                        name: 'quiz-drag-' + self.$el.data('questionId'),
+                        pull: false,
+                        put: true
                     },
                     animation: 150,
+                    sort: false,
                     onAdd: function (evt) {
-                        // Keep only one item per drop zone
-                        if ($(evt.to).children('.drag-item').length > 1) {
-                            var previousItem = $(evt.to).children('.drag-item').not(evt.item);
-                            dragItems.appendChild(previousItem[0]);
-                        }
-                        
-                        // Update the hidden input with the position value
-                        var itemId = $(evt.item).data('id');
-                        $('#drag_' + questionId + '_' + itemId).val(position);
+                        // Only one item per drop zone
+                        var $zone = $(evt.to);
+                        $zone.find('.drag-item').not(evt.item).each(function () {
+                            // Move any previous item back to pool
+                            $dragItems.appendChild(this);
+                        });
+                        // Set hidden input value to the dropped answer id
+                        var blankId = $zone.data('blankId');
+                        var answerId = $(evt.item).data('id');
+                        $('#drag_' + self.$el.data('questionId') + '_' + blankId).val(answerId);
                     },
                     onRemove: function (evt) {
-                        // Reset position value when item is removed
-                        var itemId = $(evt.item).data('id');
-                        $('#drag_' + questionId + '_' + itemId).val(0);
+                        // Reset hidden input when item is removed
+                        var $zone = $(evt.from);
+                        var blankId = $zone.data('blankId');
+                        $('#drag_' + self.$el.data('questionId') + '_' + blankId).val('');
                     }
                 });
             });

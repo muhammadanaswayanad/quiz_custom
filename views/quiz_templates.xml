@@ -160,27 +160,36 @@
                                         </div>
                                         
                                         <!-- Drag and Drop -->
-                                        <div t-if="question.question_type == 'drag'" class="drag-container">
-                                            <div class="drag-items-container mb-4">
-                                                <h6>Drag these items to their correct positions:</h6>
+                                        <div t-if="question.question_type == 'drag'" class="drag-container" t-att-data-question-id="question.id">
+                                            <div class="sentence-drop-zone mb-4" style="min-height: 60px;">
+                                                <span>
+                                                    <t t-foreach="question_data['sentence_parts']" t-as="part">
+                                                        <t t-if="part['type'] == 'text'">
+                                                            <t t-esc="part['value']"/>
+                                                        </t>
+                                                        <t t-elif="part['type'] == 'blank'">
+                                                            <span class="drop-zone d-inline-block align-middle"
+                                                                  t-att-data-blank-id="part['blank_id']"
+                                                                  style="min-width: 80px; min-height: 36px; border: 2px dashed #2196f3; margin: 0 4px; vertical-align: middle;">
+                                                                <!-- If answer is dropped, show it here -->
+                                                                <span class="dropped-answer"></span>
+                                                                <input type="hidden"
+                                                                       t-att-name="'drag_%s_%s' % (question.id, part['blank_id'])"
+                                                                       t-att-id="'drag_%s_%s' % (question.id, part['blank_id'])"
+                                                                       value=""/>
+                                                            </span>
+                                                        </t>
+                                                    </t>
+                                                </span>
+                                            </div>
+                                            <div class="drag-items-container mb-2">
                                                 <div class="drag-items d-flex flex-wrap">
                                                     <div t-foreach="question_data['options']" t-as="option"
-                                                         t-att-class="'drag-item'" 
-                                                         t-att-data-id="option.id">
+                                                         class="drag-item btn btn-outline-primary m-1"
+                                                         t-att-data-id="option.id"
+                                                         style="cursor: grab;">
                                                         <t t-esc="option.label"/>
-                                                        <input type="hidden" 
-                                                               t-att-name="'drag_%s_%s' % (question.id, option.id)"
-                                                               t-att-id="'drag_%s_%s' % (question.id, option.id)"
-                                                               value="0"/>
                                                     </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="drop-zones-container">
-                                                <div t-foreach="question_data['options']" t-as="option" 
-                                                     t-att-class="'drop-zone'" 
-                                                     t-att-data-position="option.sequence">
-                                                    <span class="position-label"><t t-esc="option.sequence"/></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -304,28 +313,35 @@
                                         
                                         <t t-if="qdata['question'].question_type == 'drag'">
                                             <div class="drag-container" t-att-data-question-id="qdata['question'].id">
-                                                <div class="drag-items-container mb-4">
-                                                    <h6>Drag these items to their correct positions:</h6>
+                                                <div class="sentence-drop-zone mb-4" style="min-height: 60px;">
+                                                    <span>
+                                                        <t t-foreach="qdata['data']['sentence_parts']" t-as="part">
+                                                            <t t-if="part['type'] == 'text'">
+                                                                <t t-esc="part['value']"/>
+                                                            </t>
+                                                            <t t-elif="part['type'] == 'blank'">
+                                                                <span class="drop-zone d-inline-block align-middle"
+                                                                      t-att-data-blank-id="part['blank_id']"
+                                                                      style="min-width: 80px; min-height: 36px; border: 2px dashed #2196f3; margin: 0 4px; vertical-align: middle;">
+                                                                    <!-- If answer is dropped, show it here -->
+                                                                    <span class="dropped-answer"></span>
+                                                                    <input type="hidden"
+                                                                           t-att-name="'drag_%s_%s' % (qdata['question'].id, part['blank_id'])"
+                                                                           t-att-id="'drag_%s_%s' % (qdata['question'].id, part['blank_id'])"
+                                                                           value=""/>
+                                                                </span>
+                                                            </t>
+                                                        </t>
+                                                    </span>
+                                                </div>
+                                                <div class="drag-items-container mb-2">
                                                     <div class="drag-items d-flex flex-wrap">
                                                         <div t-foreach="qdata['data']['options']" t-as="option"
-                                                             t-att-class="'drag-item'" 
+                                                             class="drag-item btn btn-outline-primary m-1"
                                                              t-att-data-id="option.id"
-                                                             t-att-data-question="qdata['question'].id">
+                                                             style="cursor: grab;">
                                                             <t t-esc="option.label"/>
-                                                            <input type="hidden" 
-                                                                   t-att-name="'drag_%s_%s' % (qdata['question'].id, option.id)"
-                                                                   t-att-id="'drag_%s_%s' % (qdata['question'].id, option.id)"
-                                                                   value="0"/>
                                                         </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="drop-zones-container">
-                                                    <div t-foreach="qdata['data']['options']" t-as="option" 
-                                                         t-att-class="'drop-zone'" 
-                                                         t-att-data-position="option.sequence"
-                                                         t-att-data-question="qdata['question'].id">
-                                                        <span class="position-label"><t t-esc="option.sequence"/></span>
                                                     </div>
                                                 </div>
                                             </div>

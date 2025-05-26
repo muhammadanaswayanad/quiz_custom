@@ -120,18 +120,18 @@ class QuizResponse(models.Model):
     def _evaluate_drag_drop(self, answer_data):
         question = self.question_id
         submitted_positions = answer_data.get('positions', {})
-        
-        # For drag and drop, the correct positions should be defined in the answer options
-        # Each option should have an expected position/zone
-        correct_positions = {str(option.id): option.sequence for option in question.answer_option_ids}
-        
-        if not correct_positions:
+        # For sentence fill, positions = {blank_id: answer_option_id}
+        correct_answers = {str(blank.id): blank.correct_answer for blank in question.blank_expected_ids}
+        option_map = {str(opt.id): opt.label for opt in question.answer_option_ids}
+        if not correct_answers:
             self.score = 0
             return
-            
-        # Count correct placements
-        correct_count = sum(1 for option_id, position in submitted_positions.items() 
-                           if option_id in correct_positions and int(submitted_positions[option_id]) == correct_positions[option_id])
+        correct_count = 0
+        for blank_id, correct_label in correct_answers.items():
+            answer_id = submitted_positions.get(blank_id)
+            if answer_id and option_map.get(answer_id, '').strip().lower() == correct_label.strip().lower():
+                correct_count += 1
+        self.score = (correct_count / len(correct_answers)) * question.points
         
         # Calculate score based on proportion of correct placements
         self.score = (correct_count / len(correct_positions)) * question.points
