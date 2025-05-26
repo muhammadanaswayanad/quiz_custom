@@ -1,6 +1,6 @@
 {
     'name': 'Quiz Engine Pro',
-    'version': '1.0',
+    'version': '1.1',  # Increment version to trigger upgrade
     'category': 'Website',
     'summary': 'Advanced standalone quiz system',
     'description': """

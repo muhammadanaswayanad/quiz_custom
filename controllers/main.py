@@ -184,7 +184,16 @@ class QuizController(http.Controller):
             'question_id': question.id,
             'response_data': json.dumps(answer_data),
         }
-        request.env['quiz.response'].sudo().create(response_vals)
+        
+        # Check if field exists before creating
+        if 'response_data' in request.env['quiz.response']._fields:
+            request.env['quiz.response'].sudo().create(response_vals)
+        else:
+            # Fallback if field doesn't exist (for some reason)
+            del response_vals['response_data']
+            response = request.env['quiz.response'].sudo().create(response_vals)
+            # Log error
+            _logger.error("Field 'response_data' missing from quiz.response model")
         
         # Check if this is the last question or there's a "all questions" mode
         try:
