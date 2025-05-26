@@ -34,7 +34,7 @@
                             <button name="action_view_sessions" type="object" class="oe_stat_button" icon="fa-pencil-square-o">
                                 <field name="session_count" widget="statinfo" string="Attempts"/>
                             </button>
-                            <field name="is_published" widget="website_redirect_button" options='{"url": "/quiz/%(slug)s"}'/>
+                            <field name="is_published" widget="website_redirect_button" options='{"url": "/quiz/${slug}"}'/>
                         </div>
                         <div class="oe_title">
                             <h1>
