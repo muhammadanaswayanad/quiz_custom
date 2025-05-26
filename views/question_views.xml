@@ -31,24 +31,24 @@
                             </group>
                             <group>
                                 <field name="sequence"/>
-                                <field name="negative_marks" attrs="{'invisible': [('question_type', 'not in', ['mcq'])]}"/>
-                                <field name="case_sensitive" attrs="{'invisible': [('question_type', '!=', 'fill_blank')]}"/>
-                                <field name="partial_scoring" attrs="{'invisible': [('question_type', '!=', 'mcq')]}"/>
+                                <field name="negative_marks" invisible="question_type not in ['mcq']"/>
+                                <field name="case_sensitive" invisible="question_type != 'fill_blank'"/>
+                                <field name="partial_scoring" invisible="question_type != 'mcq'"/>
                             </group>
                         </group>
                         <field name="content" placeholder="Write your question here..."/>
                         
                         <!-- Answer options for MCQ -->
-                        <field name="answer_option_ids" attrs="{'invisible': [('question_type', 'not in', ['mcq', 'drag'])]}">
+                        <field name="answer_option_ids" invisible="question_type not in ['mcq', 'drag']">
                             <tree editable="bottom">
                                 <field name="sequence" widget="handle"/>
                                 <field name="label"/>
-                                <field name="is_correct" attrs="{'column_invisible': [('parent.question_type', '=', 'drag')]}"/>
+                                <field name="is_correct" column_invisible="parent.question_type == 'drag'"/>
                             </tree>
                         </field>
                         
                         <!-- Match pairs for matching questions -->
-                        <field name="match_pair_ids" attrs="{'invisible': [('question_type', '!=', 'match')]}">
+                        <field name="match_pair_ids" invisible="question_type != 'match'">
                             <tree editable="bottom">
                                 <field name="left_item"/>
                                 <field name="right_item"/>
@@ -56,7 +56,7 @@
                         </field>
                         
                         <!-- Expected answers for fill in the blanks -->
-                        <field name="blank_expected_ids" attrs="{'invisible': [('question_type', '!=', 'fill_blank')]}">
+                        <field name="blank_expected_ids" invisible="question_type != 'fill_blank'">
                             <tree editable="bottom">
                                 <field name="placeholder_label"/>
                                 <field name="correct_answer"/>
