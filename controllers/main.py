@@ -239,65 +239,45 @@ class QuizController(http.Controller):
             return request.redirect('/quiz/%s/session/%s/result' % (slug, session_id))
 
     def _process_answer_data(self, question, post):
-        """Process submitted answer data based on question type"""
-        answer_data = {}
+        """Process submitted answer data based on question type."""
+        answer_data = {
+            'question_id': question.id,
+            'answer_type': question.question_type,
+        }
         
         if question.question_type == 'mcq':
-            # Get selected options
-            selected_options = post.getlist('question_%s_option' % question.id)
-            try:
-                selected_options = [int(opt) for opt in selected_options]
-            except (ValueError, TypeError):
-                selected_options = []
+            # Handle checkbox/radio options which may have multiple values
+            selected_options = post.getlist('question_%s_option' % question.id) if hasattr(post, 'getlist') else post.get('question_%s_option' % question.id, [])
+            
+            # Convert to list if it's not already
+            if not isinstance(selected_options, list):
+                selected_options = [selected_options] if selected_options else []
                 
-            answer_data = {
-                'selected_options': selected_options
-            }
-                
-        elif question.question_type == 'match':
-            # Get matched pairs
-            matches = {}
-            for key, value in post.items():
-                if key.startswith('match_%s_' % question.id):
-                    try:
-                        pair_id = key.split('_')[2]
-                        matches[pair_id] = value
-                    except (IndexError, ValueError):
-                        continue
-                        
-            answer_data = {
-                'matches': matches
-            }
-                
-        elif question.question_type == 'drag':
-            # Get dragged positions
-            positions = {}
-            for key, value in post.items():
-                if key.startswith('drag_%s_' % question.id):
-                    try:
-                        option_id = key.split('_')[2]
-                        positions[option_id] = value
-                    except (IndexError, ValueError):
-                        continue
-                        
-            answer_data = {
-                'positions': positions
-            }
-                
+            answer_data['selected_options'] = selected_options
+            
         elif question.question_type == 'fill_blank':
-            # Get filled blanks
             blanks = {}
-            for key, value in post.items():
-                if key.startswith('blank_%s_' % question.id):
-                    try:
-                        blank_id = key.split('_')[2]
-                        blanks[blank_id] = value
-                    except (IndexError, ValueError):
-                        continue
-                        
-            answer_data = {
-                'blanks': blanks
-            }
+            for blank in question.blank_expected_ids:
+                blank_key = 'blank_%s_%s' % (question.id, blank.id)
+                if blank_key in post:
+                    blanks[str(blank.id)] = post.get(blank_key, '')
+            answer_data['blanks'] = blanks
+            
+        elif question.question_type == 'match':
+            matches = {}
+            for pair in question.match_pair_ids:
+                match_key = 'match_%s_%s' % (question.id, pair.id)
+                if match_key in post:
+                    matches[str(pair.id)] = post.get(match_key, '')
+            answer_data['matches'] = matches
+            
+        elif question.question_type == 'drag':
+            positions = {}
+            for option in question.answer_option_ids:
+                position_key = 'drag_%s_%s' % (question.id, option.id)
+                if position_key in post:
+                    positions[str(option.id)] = post.get(position_key, '0')
+            answer_data['positions'] = positions
             
         return answer_data
         
