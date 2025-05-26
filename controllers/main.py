@@ -350,6 +350,7 @@ class QuizController(http.Controller):
         
         return request.render('quiz_custom.quiz_result_template', values)
 <<<<<<< HEAD
+<<<<<<< HEAD
     
     @http.route('/my/quizzes', type='http', auth='user', website=True)
     def my_quizzes(self, **kw):
@@ -383,34 +384,46 @@ class QuizController(http.Controller):
             })
         return response
             'sessions': sessions,
+=======
+
+>>>>>>> 8b03020 (fix: Refactor question index validation and error handling in quiz session)
     @http.route('/quiz/<string:slug>/session/<int:session_id>/question/<int:question_index>', type='http', auth='public', website=True)
     def show_question(self, slug, session_id, question_index=0, **kw):
         """Show a single quiz question."""
         quiz = request.env['quiz.quiz'].sudo().search([('slug', '=', slug)], limit=1)
         session = request.env['quiz.session'].sudo().browse(session_id)
-        d this method to portal controller
         if not quiz or not session or session.state != 'in_progress':
             return request.render('website.404')
-        """Add quiz attempts to portal home page"""
-        # Ensure question_index is an integer)._home_portal_redirect(**kw)
-        try:asattr(response, 'qcontext'):
-            question_index = int(question_index)ssion'].sudo().search_count([
-        except ValueError:, '=', request.env.user.id)
+        # Ensure question_index is an integer.
+        try:
+            question_index = int(question_index)
+        except ValueError:
             question_index = 0
-            response.qcontext.update({
-        # Get all quiz questionsunt': session_count,
+        # Get all quiz questions
         questions = quiz.question_ids
         if quiz.shuffle_questions:
             # If questions should be randomized, get the randomized order from the session
-            if hasattr(session, 'question_order') and session.question_order:uestion_index>', type='http', auth='public', website=True)
-                try:n(self, slug, session_id, question_index=0, **kw):
+            if hasattr(session, 'question_order') and session.question_order:
+                try:
                     question_order = json.loads(session.question_order)
                     questions = request.env['quiz.question'].sudo().browse(question_order)
-                except Exception as e:ssion'].sudo().browse(session_id)
+                except Exception as e:
                     _logger.error("Error loading question order: %s", str(e))
-        if not quiz or not session or session.state != 'in_progress':
-        # Validate question index('website.404')
+        # Validate question index
         if question_index < 0 or question_index >= len(questions):
+            return request.render('website.404')
+        question = questions[question_index]
+        question_data = self._prepare_question_data(question)
+        values = {
+            'quiz': quiz,
+            'session': session,
+            'question': question,
+            'question_index': question_index,
+            'total_questions': len(questions),
+            'question_data': question_data,
+            'page_name': '%s - Question %s' % (quiz.name, question_index + 1),
+        }
+        return request.render('quiz_custom.quiz_question_template', values)
             return request.render('website.404')
         try:
         question = questions[question_index]dex)
