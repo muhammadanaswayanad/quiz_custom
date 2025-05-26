@@ -378,7 +378,7 @@ class QuizController(http.Controller):
         questions = quiz.question_ids
         if quiz.shuffle_questions:
             # If questions should be randomized, get the randomized order from the session
-            if session.question_order:
+            if hasattr(session, 'question_order') and session.question_order:
                 try:
                     question_order = json.loads(session.question_order)
                     questions = request.env['quiz.question'].sudo().browse(question_order)
