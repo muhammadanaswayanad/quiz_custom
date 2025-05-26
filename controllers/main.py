@@ -161,83 +161,54 @@ class QuizController(http.Controller):
         
     @http.route('/quiz/<string:slug>/session/<int:session_id>/submit', type='http', auth='public', website=True, methods=['POST'])
     def submit_answer(self, slug, session_id, **post):
+        """Submit answer for a question."""
         quiz = request.env['quiz.quiz'].sudo().search([('slug', '=', slug)], limit=1)
         session = request.env['quiz.session'].sudo().browse(session_id)
         
-        if not quiz or not session.exists() or session.state != 'in_progress':
-            return request.redirect('/quiz/%s' % slug)
+        if not quiz or not session or session.state != 'in_progress':
+            return request.render('website.404')
             
-        # Handle question submission
-        if quiz.one_question_per_page:
-            # Single question submission
-            question_id = int(post.get('question_id', 0))
-            question = request.env['quiz.question'].sudo().browse(question_id)
+        # Get question and answer data
+        question_id = int(post.get('question_id', 0))
+        question = request.env['quiz.question'].sudo().browse(question_id)
+        
+        if not question or question.quiz_id != quiz:
+            return request.render('website.404')
             
-            if not question.exists() or question.quiz_id != quiz:
-                return request.redirect('/quiz/%s/session/%s' % (slug, session_id))
-                
-            # Process answer based on question type
-            answer_data = self._process_answer_data(question, post)
+        # Process answer data
+        answer_data = self._process_answer_data(question, post)
+        
+        # Record response
+        response_vals = {
+            'session_id': session.id,
+            'question_id': question.id,
+            'response_data': json.dumps(answer_data),
+        }
+        request.env['quiz.response'].sudo().create(response_vals)
+        
+        # Check if this is the last question or there's a "all questions" mode
+        try:
+            question_index = int(post.get('question_index', '0') or '0')
+        except (ValueError, TypeError):
+            question_index = 0
             
-            # Create or update response
-            response = request.env['quiz.response'].sudo().search([
-                ('session_id', '=', session.id),
-                ('question_id', '=', question.id)
-            ], limit=1)
-            
-            if not response:
-                response = request.env['quiz.response'].sudo().create({
-                    'session_id': session.id,
-                    'question_id': question.id,
-                    'answer_json': json.dumps(answer_data),
-                })
-            else:
-                response.write({'answer_json': json.dumps(answer_data)})
-                
-            # Get next question index
-            next_index = int(post.get('question_index', 0)) + 1
-            
-            # If there are more questions, go to next question
-            if next_index < int(post.get('total_questions', 0)):
-                return request.redirect('/quiz/%s/session/%s?question=%s' % (slug, session_id, next_index))
-            else:
-                # Complete the quiz
-                session.action_evaluate()
-                return request.redirect('/quiz/%s/session/%s/result' % (slug, session_id))
-        else:
-            # All questions submitted at once
-            question_ids = post.getlist('question_ids')
-            
-            for qid in question_ids:
-                try:
-                    question_id = int(qid)
-                    question = request.env['quiz.question'].sudo().browse(question_id)
-                    
-                    if question.exists() and question.quiz_id == quiz:
-                        # Process answer for this question
-                        answer_data = self._process_answer_data(question, post)
-                        
-                        # Create or update response
-                        response = request.env['quiz.response'].sudo().search([
-                            ('session_id', '=', session.id),
-                            ('question_id', '=', question.id)
-                        ], limit=1)
-                        
-                        if not response:
-                            request.env['quiz.response'].sudo().create({
-                                'session_id': session.id,
-                                'question_id': question.id,
-                                'answer_json': json.dumps(answer_data),
-                            })
-                        else:
-                            response.write({'answer_json': json.dumps(answer_data)})
-                except (ValueError, TypeError):
-                    continue
-                    
-            # Complete the quiz
-            session.action_evaluate()
+        try:
+            total_questions = int(post.get('total_questions', '0') or '0')
+        except (ValueError, TypeError):
+            total_questions = len(quiz.question_ids)
+        
+        next_index = question_index + 1
+        
+        # If this is the last question or we're in "all questions" mode
+        if next_index >= total_questions or 'question_ids' in post:
+            # Auto-evaluate if it's the end
+            if quiz.auto_evaluate:
+                session.sudo().action_evaluate()
             return request.redirect('/quiz/%s/session/%s/result' % (slug, session_id))
-
+        
+        # Redirect to the next question
+        return request.redirect('/quiz/%s/session/%s/question/%s' % (slug, session_id, next_index))
+    
     def _process_answer_data(self, question, post):
         """Process submitted answer data based on question type."""
         answer_data = {
