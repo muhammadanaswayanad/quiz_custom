@@ -5,7 +5,7 @@ import uuid
 class Quiz(models.Model):
     _name = 'quiz.quiz'
     _description = 'Quiz'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _inherit = ['mail.thread', 'mail.activity.mixin', 'website.published.mixin']
     _order = 'create_date desc'
 
     name = fields.Char(string='Title', required=True, tracking=True)
@@ -67,4 +67,17 @@ class Quiz(models.Model):
             'view_mode': 'tree,form',
             'domain': [('quiz_id', '=', self.id)],
             'context': {'default_quiz_id': self.id},
+        }
+    
+    def open_website_url(self):
+        """Open the website URL for this quiz."""
+        self.ensure_one()
+        if not self.slug:
+            # Generate a slug if one doesn't exist
+            self.slug = self.env['ir.http']._slug(self)
+            
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/quiz/{self.slug}',
+            'target': 'self',
         }
