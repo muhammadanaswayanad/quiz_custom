@@ -2,6 +2,7 @@ from odoo import http, _
 from odoo.http import request
 import json
 import logging
+from odoo.addons.portal.controllers.portal import CustomerPortal
 
 _logger = logging.getLogger(__name__)
 
@@ -366,27 +367,19 @@ class QuizController(http.Controller):
         
         return request.render('quiz_custom.portal_my_quizzes', values)
     
-    # Add this method to portal controller
     @http.route(['/my/home'], type='http', auth="user", website=True)
     def portal_home_inherit_quiz(self, **kw):
         """Add quiz attempts to portal home page"""
-        response = super(QuizController, self).home_portal(**kw)
-        if hasattr(response, 'qcontext'):
-=======
-        response = super(QuizController, self)._home_portal_redirect(**kw)
-        if hasattr(response, 'qcontext'):', auth='user', website=True)
->>>>>>> 9d49540 (feat: Enhance drag-and-drop functionality for quiz questions with dynamic sentence fill and improved scoring logic)
-            session_count = request.env['quiz.session'].sudo().search_count([
-                ('user_id', '=', request.env.user.id)
-            ])ns = request.env['quiz.session'].sudo().search([
-            response.qcontext.update({nv.user.id)
-                'quiz_session_count': session_count,
-            })
-        return response
-            'sessions': sessions,
-=======
-
->>>>>>> 8b03020 (fix: Refactor question index validation and error handling in quiz session)
+        # The correct approach is to inherit from CustomerPortal
+        values = {}
+        session_count = request.env['quiz.session'].sudo().search_count([
+            ('user_id', '=', request.env.user.id)
+        ])
+        values.update({
+            'quiz_session_count': session_count,
+        })
+        return values
+    
     @http.route('/quiz/<string:slug>/session/<int:session_id>/question/<int:question_index>', type='http', auth='public', website=True)
     def show_question(self, slug, session_id, question_index=0, **kw):
         """Show a single quiz question."""
