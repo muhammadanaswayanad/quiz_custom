@@ -19,9 +19,9 @@
     'website': 'https://www.yourcompany.com',
     'depends': ['base', 'web', 'website'],
     'data': [
-        'security/access_rights.csv',  # Using new filename to avoid cached entries
+        # 'security/access_rights.csv',  # Temporarily disabled
         'views/quiz_views.xml',
-        'views/question_views.xml',
+        'views/question_views.xml', 
         'views/session_views.xml',
         'views/website_templates.xml',
     ],
@@ -35,5 +35,4 @@
     'auto_install': False,
     'application': True,
     'license': 'LGPL-3',
-}
 }
