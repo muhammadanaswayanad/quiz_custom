@@ -224,6 +224,21 @@ Field "token" does not exist in model "quiz.session"
 **Files Modified:**
 - `views/session_views.xml` - Removed non-existent field reference
 
+### Session 7: Menu Reference Errors (2024-01-XX)
+**Error Encountered:**
+```
+External ID not found in the system: quiz_engine_pro.menu_quiz_root
+```
+
+**Root Cause:** session_views.xml was attempting to create menu items referencing non-existent parent menus
+
+**Fix Applied:**
+- ✅ Removed menu references from session_views.xml
+- ✅ Menu structure is defined in quiz_views.xml only
+- ✅ Session views now contain only view definitions
+
+**Note:** All menu structure should be consolidated in quiz_views.xml to avoid duplicate/conflicting references
+
 ## Current Status - Odoo 17 Compatibility Fixed
 
 ### ✅ Recent Achievements
