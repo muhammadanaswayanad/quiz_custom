@@ -1,34 +1,31 @@
-from odoo import models, fields, api, _
+from odoo import models, fields, api
 import json
 
-
-class QuizQuestion(models.Model):
+class Question(models.Model):
     _name = 'quiz.question'
     _description = 'Quiz Question'
     _order = 'sequence, id'
 
     quiz_id = fields.Many2one('quiz.quiz', string='Quiz', required=True, ondelete='cascade')
-    sequence = fields.Integer(string='Sequence', default=10)
     type = fields.Selection([
         ('mcq_single', 'Multiple Choice (Single Answer)'),
         ('mcq_multi', 'Multiple Choice (Multiple Answers)'),
         ('fill_blank', 'Fill in the Blanks'),
         ('match', 'Match the Following'),
         ('drag_zone', 'Drag and Drop into Zones'),
-        ('drag_into_text', 'Drag and Drop Into Text'),
+        ('drag_into_text', 'Drag and Drop into Text'),
     ], string='Question Type', required=True, default='mcq_single')
     
     question_html = fields.Html(string='Question', required=True)
-    explanation = fields.Html(string='Explanation')
     points = fields.Float(string='Points', default=1.0)
+    sequence = fields.Integer(string='Sequence', default=10)
     
     # Relationships for different question types
     choice_ids = fields.One2many('quiz.choice', 'question_id', string='Choices')
-    blank_ids = fields.One2many('quiz.blank', 'question_id', string='Blanks')
     match_pair_ids = fields.One2many('quiz.match.pair', 'question_id', string='Match Pairs')
-    drag_zone_ids = fields.One2many('quiz.drag.zone', 'question_id', string='Drag Zones')
     drag_token_ids = fields.One2many('quiz.drag.token', 'question_id', string='Drag Tokens')
-    
+    fill_blank_answer_ids = fields.One2many('quiz.fill.blank.answer', 'question_id', string='Fill Blank Answers')
+
     def evaluate_answer(self, answer_data):
         """Evaluate answer based on question type"""
         if self.type == 'mcq_single':
@@ -92,38 +89,41 @@ class QuizQuestion(models.Model):
         return (correct / total_blanks) * self.points if total_blanks > 0 else 0.0
 
 
-class QuizChoice(models.Model):
+class Choice(models.Model):
     _name = 'quiz.choice'
     _description = 'Quiz Choice'
-    _order = 'sequence, id'
+    
+    question_id = fields.Many2one('quiz.question', required=True, ondelete='cascade')
+    text = fields.Char(string='Choice Text', required=True)
+    is_correct = fields.Boolean(string='Is Correct', default=False)
 
     question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
     sequence = fields.Integer(string='Sequence', default=10)
     text = fields.Html(string='Choice Text', required=True)
     is_correct = fields.Boolean(string='Is Correct')
-
-
-class QuizBlank(models.Model):
-    _name = 'quiz.blank'
+    
+    question_id = fields.Many2one('quiz.question', required=True, ondelete='cascade')
+class QuizBlank(models.Model):ring='Left Text', required=True)
+    _name = 'quiz.blank'Char(string='Right Text', required=True)
     _description = 'Quiz Fill in the Blank'
 
     question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
     blank_number = fields.Integer(string='Blank Number', required=True)
     correct_answers = fields.Char(string='Correct Answers', required=True, 
                                   help='Comma-separated list of correct answers')
-
-
-class QuizMatchPair(models.Model):
+    question_id = fields.Many2one('quiz.question', required=True, ondelete='cascade')
+    text = fields.Char(string='Token Text', required=True)
+class QuizMatchPair(models.Model):eger(string='Correct for Blank Number')
     _name = 'quiz.match.pair'
     _description = 'Quiz Match Pair'
-
+# Add missing model for fill blank answers
     question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
     left_text = fields.Char(string='Left Item', required=True)
     right_text = fields.Char(string='Right Item', required=True)
     left_id = fields.Integer(string='Left ID')
-    right_id = fields.Integer(string='Right ID')
-
-
+    right_id = fields.Integer(string='Right ID')', required=True, ondelete='cascade')
+    blank_number = fields.Integer(string='Blank Number', required=True)
+    correct_answer = fields.Char(string='Correct Answer', required=True)
 class QuizDragZone(models.Model):
     _name = 'quiz.drag.zone'
     _description = 'Quiz Drag Zone'

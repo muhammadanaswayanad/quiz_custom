@@ -80,7 +80,7 @@
                                 <strong>Instructions:</strong> Add the correct answers for fill-in-the-blank questions.
                                 You can add multiple acceptable answers for each blank.
                             </div>
-                            <field name="fill_blank_answers">
+                            <field name="fill_blank_answer_ids">
                                 <tree editable="bottom">
                                     <field name="blank_number" string="Blank #"/>
                                     <field name="correct_answer" string="Correct Answer"/>
