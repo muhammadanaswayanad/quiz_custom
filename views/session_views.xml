@@ -54,27 +54,3 @@
 
     <menuitem id="menu_sessions" name="Sessions" parent="menu_quiz_root" action="action_quiz_sessions" sequence="30"/>
 </odoo>
-                                <tree>
-                                    <field name="question_id"/>
-                                    <field name="score"/>
-                                    <field name="max_score"/>
-                                    <field name="answered_at"/>
-                                </tree>
-                            </field>
-                        </page>
-                    </notebook>
-                </sheet>
-            </form>
-        </field>
-    </record>
-
-    <!-- Session Action -->
-    <record id="action_quiz_sessions" model="ir.actions.act_window">
-        <field name="name">Quiz Sessions</field>
-        <field name="res_model">quiz.session</field>
-        <field name="view_mode">tree,form</field>
-        <field name="view_id" ref="view_session_tree"/>
-    </record>
-
-    <menuitem id="menu_sessions" name="Sessions" parent="menu_quiz_root" action="action_quiz_sessions" sequence="30"/>
-</odoo>
