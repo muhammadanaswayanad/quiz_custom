@@ -292,6 +292,18 @@ External ID not found in the system: quiz_engine_pro.menu_quiz_root
 **Files Created:**
 - `security/quiz_security.csv` - Fresh security file with unique naming
 
+### Session 8: Security File Cleanup (2024-01-XX)
+**Action:** Consolidated to single security file with minimal access rules
+
+**Files Removed:**
+- `security/access_rights.csv` 
+- `security/quiz_security.csv`
+
+**Files Kept:**
+- `security/ir.model.access.csv` - Standard filename with core models only
+
+**Strategy:** Start with minimal access for 3 core models, add others once stable
+
 ---
 *Last Updated: Session 8 - Security Re-enablement*
 *Status: ✅ MODULE READY FOR FUNCTIONAL TESTING WITH SECURITY CONTROLS*

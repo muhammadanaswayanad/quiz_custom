@@ -19,7 +19,7 @@
     'website': 'https://www.yourcompany.com',
     'depends': ['base', 'web', 'website'],
     'data': [
-        'security/quiz_security.csv',  # New filename with minimal access
+        'security/ir.model.access.csv',  # Standard filename with clean content
         'views/quiz_views.xml',
         'views/question_views.xml', 
         'views/session_views.xml',

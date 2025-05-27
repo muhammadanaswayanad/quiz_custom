@@ -1,7 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_quiz_quiz_new,quiz.quiz new,model_quiz_quiz,base.group_user,1,1,1,1
-access_quiz_question_new,quiz.question new,model_quiz_question,base.group_user,1,1,1,1
-access_quiz_session_new,quiz.session new,model_quiz_session,base.group_user,1,1,1,1
-access_quiz_quiz_public_new,quiz.quiz public new,model_quiz_quiz,base.group_public,1,0,0,0
-access_quiz_question_public_new,quiz.question public new,model_quiz_question,base.group_public,1,0,0,0
-access_quiz_session_public_new,quiz.session public new,model_quiz_session,base.group_public,1,1,1,0
