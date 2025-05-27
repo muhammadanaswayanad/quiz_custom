@@ -19,6 +19,7 @@
     'website': 'https://www.yourcompany.com',
     'depends': ['base', 'web', 'website'],
     'data': [
+        'data/cleanup.xml',  # Clean up residual data first
         'security/ir.model.access.csv',
         'views/quiz_views.xml',
         'views/question_views.xml',
