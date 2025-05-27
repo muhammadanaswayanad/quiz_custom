@@ -18,88 +18,88 @@ class QuizController(http.Controller):
         }
         return request.render('quiz_engine_pro.quiz_list_template', values)
 
-    @http.route('/quiz/<string:slug>', type='http', auth='public', website=True)
+    @http.route(['/quiz/<string:slug>/start'], type='http', auth='public', methods=['POST'], csrf=False)
     def quiz_start(self, slug, **kwargs):
-        """Start page for a specific quiz"""
-        quiz = request.env['quiz.quiz'].sudo().search([('slug', '=', slug), ('is_published', '=', True)], limit=1)
+        """Start a quiz session"""
+        quiz = request.env['quiz.quiz'].sudo().search([('slug', '=', slug), ('published', '=', True)], limit=1)
         if not quiz:
             return request.not_found()
         
-        return request.render('quiz_engine_pro.quiz_start', {
-            'quiz': quiz
-        })
-
-    @http.route('/quiz/<string:slug>/take', type='http', auth='public', website=True, methods=['POST'])
-    def quiz_take(self, slug, **kwargs):
-        """Start taking the quiz"""
-        quiz = request.env['quiz.quiz'].sudo().search([('slug', '=', slug), ('is_published', '=', True)], limit=1)
-        if not quiz:
-            return request.not_found()
+        participant_name = kwargs.get('participant_name', 'Anonymous')
+        participant_email = kwargs.get('participant_email', '')
         
         # Create session
-        session_token = str(uuid.uuid4())
         session = request.env['quiz.session'].sudo().create({
             'quiz_id': quiz.id,
-            'user_id': request.env.user.id if request.env.user.id != request.env.ref('base.public_user').id else False,
-            'session_token': session_token,
-            'participant_name': kwargs.get('participant_name'),
-            'participant_email': kwargs.get('participant_email'),
+            'participant_name': participant_name,
+            'participant_email': participant_email,
+            'state': 'in_progress',
+            'start_time': fields.Datetime.now(),
         })
-        session.start_session()
         
-        # Get questions
-        questions = quiz.question_ids
-        if quiz.randomize_questions:
-            questions = questions.sorted(lambda x: x.id)  # Simple randomization
-        
-        return request.render('quiz_engine_pro.quiz_take', {
-            'quiz': quiz,
-            'session': session,
-            'questions': questions,
-            'current_question': questions[0] if questions else None,
-            'question_index': 0,
-        })
+        return request.redirect(f'/quiz/{slug}/question/1?session={session.token}')
 
-    @http.route('/quiz/session/<string:token>/question/<int:question_id>', type='http', auth='public', website=True)
-    def quiz_question(self, token, question_id, **kwargs):
-        """Display a specific question"""
-        session = request.env['quiz.session'].sudo().search([('session_token', '=', token)], limit=1)
+    @http.route(['/quiz/<string:slug>/question/<int:question_num>'], type='http', auth='public', methods=['GET', 'POST'], csrf=False)
+    def quiz_question(self, slug, question_num, **kwargs):
+        """Display or process a quiz question"""
+        session_token = request.params.get('session')
+        session = request.env['quiz.session'].sudo().search([('token', '=', session_token)], limit=1)
+        
         if not session or session.state != 'in_progress':
             return request.redirect('/quiz')
         
-        question = request.env['quiz.question'].sudo().browse(question_id)
-        if not question or question.quiz_id != session.quiz_id:
-            return request.not_found()
+        quiz = session.quiz_id
+        question = quiz.question_ids[question_num - 1] if quiz.question_ids and len(quiz.question_ids) >= question_num else None
         
-        questions = session.quiz_id.question_ids
-        question_index = list(questions.ids).index(question_id)
+        if request.httprequest.method == 'POST' and question:
+            # Handle answer submission
+            answer_data = request.params.get('answer_data')
+            request.env['quiz.answer'].sudo().create({
+                'session_id': session.id,
+                'question_id': question.id,
+                'answer_data': json.dumps(answer_data),
+            })
+            
+            if len(quiz.question_ids) == question_num:
+                # Last question, complete the quiz
+                session.write({'state': 'completed', 'end_time': fields.Datetime.now()})
+                return request.redirect(f'/quiz/{slug}/results?session={session.token}')
+            else:
+                # Next question
+                return request.redirect(f'/quiz/{slug}/question/{question_num + 1}?session={session.token}')
         
         return request.render('quiz_engine_pro.quiz_question', {
-            'quiz': session.quiz_id,
+            'quiz': quiz,
             'session': session,
             'question': question,
-            'questions': questions,
-            'question_index': question_index,
+            'question_index': question_num - 1,
         })
 
-    @http.route('/quiz/session/<string:token>/answer', type='json', auth='public', methods=['POST'])
-    def submit_answer(self, token, **kwargs):
-        """Submit answer for a question"""
+    @http.route('/quiz/session/<string:token>/complete', type='http', auth='public', website=True, methods=['POST'])
+    def quiz_complete(self, token, **kwargs):
+        """Complete the quiz"""
         session = request.env['quiz.session'].sudo().search([('session_token', '=', token)], limit=1)
-        if not session or session.state != 'in_progress':
-            return {'error': 'Invalid session'}
+        if not session:
+            return request.redirect('/quiz')
         
-        question_id = kwargs.get('question_id')
-        answer_data = kwargs.get('answer_data', {})
+        session.complete_session()
         
-        # Check if answer already exists
-        existing_answer = request.env['quiz.answer'].sudo().search([
-            ('session_id', '=', session.id),
-            ('question_id', '=', question_id)
-        ], limit=1)
+        return request.render('quiz_engine_pro.quiz_results', {
+            'session': session,
+            'quiz': session.quiz_id,
+        })
+
+    @http.route('/quiz/session/<string:token>/results', type='http', auth='public', website=True)
+    def quiz_results(self, token, **kwargs):
+        """View quiz results"""
+        session = request.env['quiz.session'].sudo().search([('session_token', '=', token)], limit=1)
+        if not session or session.state != 'completed':
+            return request.redirect('/quiz')
         
-        if existing_answer:
-            existing_answer.write({
+        return request.render('quiz_engine_pro.quiz_results', {
+            'session': session,
+            'quiz': session.quiz_id,
+        })
                 'answer_data': json.dumps(answer_data),
                 'answered_at': request.env['ir.fields'].Datetime.now(),
             })
