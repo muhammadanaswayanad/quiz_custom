@@ -2,6 +2,27 @@
 
 A comprehensive, standalone quiz engine for Odoo 17 Community Edition that provides advanced question types and interactive features.
 
+## Current Status - v17.0.1.0.0
+
+✅ **COMPLETED FEATURES:**
+- Complete module structure and manifest
+- All core models (quiz, question, session, response)
+- Backend views and menu structure
+- Frontend controller routes
+- Drag-and-drop JavaScript functionality
+- CSS styling and responsive design
+- Security access controls
+
+🔧 **RECENT FIXES:**
+- Fixed missing `action_quiz_questions` definition
+- Separated menu actions to prevent `active_id` context errors
+- Added proper action references in quiz form view
+
+📋 **INSTALLATION VERIFIED:**
+- Module installs without errors
+- Menu structure working correctly
+- Backend forms accessible
+
 ## Features
 
 ### Question Types
@@ -26,6 +47,15 @@ A comprehensive, standalone quiz engine for Odoo 17 Community Edition that provi
 1. Copy the `quiz_engine_pro` folder to your Odoo addons directory
 2. Update the addons list in Odoo
 3. Install the "Quiz Engine Pro" module
+
+## Menu Structure
+
+```
+Quiz Engine/
+├── Quizzes (quiz.quiz list/form)
+├── Questions (quiz.question list/form) 
+└── Sessions (quiz.session list/form)
+```
 
 ## Module Structure
 
@@ -89,6 +119,18 @@ Tracks individual quiz attempts and scoring.
 - Score calculation
 - Anonymous user support
 
+## Known Issues & Troubleshooting
+
+### Common Errors Fixed:
+1. **Missing action reference**: Fixed `action_quiz_questions` not found error
+2. **Context evaluation**: Separated menu actions to prevent `active_id` errors
+3. **Menu structure**: Proper parent-child relationships established
+
+### Current Limitations:
+- Frontend templates need testing with real quiz data
+- Drag-and-drop functionality needs browser testing
+- Session management needs stress testing
+
 ## Usage Guide
 
 ### Creating a Quiz
@@ -127,6 +169,12 @@ Example: `/quiz/javascript-basics`
 
 ## Technical Details
 
+### Action Definitions
+- `action_quiz_list` - Main quiz listing
+- `action_quiz_questions` - Questions filtered by quiz (context-dependent)
+- `action_questions` - All questions (standalone menu)
+- `action_quiz_sessions` - Session management
+
 ### Drag and Drop Implementation
 
 The drag-into-text feature uses native HTML5 drag and drop:
@@ -161,6 +209,31 @@ The drag-into-text feature uses native HTML5 drag and drop:
 - `POST /quiz/session/<token>/complete` - Complete quiz
 - `GET /quiz/session/<token>/results` - View results
 
+## Testing Checklist
+
+### Backend Testing
+- [x] Module installation
+- [x] Menu navigation
+- [x] Quiz creation
+- [ ] Question creation for each type
+- [ ] Session tracking
+- [ ] Answer evaluation
+
+### Frontend Testing
+- [ ] Quiz listing page
+- [ ] Quiz taking interface
+- [ ] Drag-and-drop functionality
+- [ ] Mobile responsiveness
+- [ ] Session completion flow
+
+## Next Steps
+
+1. **Test Quiz Creation**: Create sample quizzes with different question types
+2. **Frontend Testing**: Test the public quiz interface
+3. **Question Type Testing**: Verify each question type works correctly
+4. **Session Flow**: Test complete quiz session workflow
+5. **Performance**: Test with multiple concurrent sessions
+
 ## Customization
 
 ### Adding New Question Types
@@ -192,24 +265,16 @@ Modify `/static/src/css/quiz_styles.css` for visual customization:
 - Base modules: `base`, `web`, `website`
 - No external dependencies
 
-## Roadmap
+## Version History
 
-### Planned Features
-- [ ] Advanced analytics dashboard
-- [ ] Question banks and categories
-- [ ] Bulk question import/export
-- [ ] Certificate generation
-- [ ] Integration with LMS systems
-- [ ] Mobile app support
-- [ ] Advanced reporting
-- [ ] Question difficulty ratings
-- [ ] Adaptive testing
-
-### Performance Optimizations
-- [ ] Question preloading
-- [ ] Answer caching
-- [ ] Database indexing
-- [ ] CDN asset delivery
+### v17.0.1.0.0 - Initial Release
+- ✅ Complete module structure
+- ✅ All question types implemented
+- ✅ Backend management interface
+- ✅ Frontend quiz interface
+- ✅ Session tracking system
+- ✅ Fixed installation errors
+- ✅ Working menu structure
 
 ## Contributing
 
@@ -230,12 +295,3 @@ For issues and questions:
 - Create new issue with detailed description
 - Include Odoo version and error logs
 - Provide steps to reproduce
-
-## Changelog
-
-### Version 17.0.1.0.0
-- Initial release
-- All core question types implemented
-- Frontend quiz interface
-- Session tracking and scoring
-- Basic analytics

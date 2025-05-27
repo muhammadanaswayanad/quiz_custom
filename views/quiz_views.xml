@@ -100,6 +100,22 @@
         <field name="view_id" ref="view_quiz_tree"/>
     </record>
 
+    <!-- Quiz List Action -->
+    <record id="action_quiz_list" model="ir.actions.act_window">
+        <field name="name">Quizzes</field>
+        <field name="res_model">quiz.quiz</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Sessions Action -->
+    <record id="action_quiz_sessions" model="ir.actions.act_window">
+        <field name="name">Quiz Sessions</field>
+        <field name="res_model">quiz.session</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+    </record>
+
     <!-- Menu Items -->
     <menuitem id="menu_quiz_engine_root" name="Quiz Engine" sequence="10"/>
     
