@@ -6,12 +6,12 @@ access_quiz_match_pair,quiz.match.pair,model_quiz_match_pair,base.group_user,1,1
 access_quiz_drag_token,quiz.drag.token,model_quiz_drag_token,base.group_user,1,1,1,1
 access_quiz_fill_blank_answer,quiz.fill.blank.answer,model_quiz_fill_blank_answer,base.group_user,1,1,1,1
 access_quiz_session,quiz.session,model_quiz_session,base.group_user,1,1,1,1
+access_quiz_response,quiz.response,model_quiz_response,base.group_user,1,1,1,1
 access_quiz_quiz_public,quiz.quiz.public,model_quiz_quiz,base.group_public,1,0,0,0
 access_quiz_question_public,quiz.question.public,model_quiz_question,base.group_public,1,0,0,0
 access_quiz_choice_public,quiz.choice.public,model_quiz_choice,base.group_public,1,0,0,0
 access_quiz_session_public,quiz.session.public,model_quiz_session,base.group_public,1,1,1,0
-access_quiz_choice,quiz.choice,model_quiz_choice,base.group_user,1,1,1,1
-access_quiz_match_pair,quiz.match.pair,model_quiz_match_pair,base.group_user,1,1,1,1
+access_quiz_response_public,quiz.response.public,model_quiz_response,base.group_public,1,1,1,0
 access_quiz_drag_token,quiz.drag.token,model_quiz_drag_token,base.group_user,1,1,1,1
 access_quiz_fill_blank_answer,quiz.fill.blank.answer,model_quiz_fill_blank_answer,base.group_user,1,1,1,1
 access_quiz_session,quiz.session,model_quiz_session,base.group_user,1,1,1,1
