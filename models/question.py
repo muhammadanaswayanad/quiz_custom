@@ -20,7 +20,7 @@ class Question(models.Model):
     points = fields.Float(string='Points', default=1.0)
     sequence = fields.Integer(string='Sequence', default=10)
     
-    # Relationships for different question types
+    # Relations
     choice_ids = fields.One2many('quiz.choice', 'question_id', string='Choices')
     match_pair_ids = fields.One2many('quiz.match.pair', 'question_id', string='Match Pairs')
     drag_token_ids = fields.One2many('quiz.drag.token', 'question_id', string='Drag Tokens')
@@ -97,29 +97,29 @@ class Choice(models.Model):
     text = fields.Char(string='Choice Text', required=True)
     is_correct = fields.Boolean(string='Is Correct', default=False)
 
-    question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
-    sequence = fields.Integer(string='Sequence', default=10)
-    text = fields.Html(string='Choice Text', required=True)
-    is_correct = fields.Boolean(string='Is Correct')
+class MatchPair(models.Model):
+    _name = 'quiz.match.pair'
+    _description = 'Match Pair'
     
     question_id = fields.Many2one('quiz.question', required=True, ondelete='cascade')
-class QuizBlank(models.Model):ring='Left Text', required=True)
-    _name = 'quiz.blank'Char(string='Right Text', required=True)
-    _description = 'Quiz Fill in the Blank'
+    left_text = fields.Char(string='Left Text', required=True)
+    right_text = fields.Char(string='Right Text', required=True)
 
-    question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
-    blank_number = fields.Integer(string='Blank Number', required=True)
-    correct_answers = fields.Char(string='Correct Answers', required=True, 
-                                  help='Comma-separated list of correct answers')
+class DragToken(models.Model):
+    _name = 'quiz.drag.token'
+    _description = 'Drag Token'
+    
     question_id = fields.Many2one('quiz.question', required=True, ondelete='cascade')
     text = fields.Char(string='Token Text', required=True)
-class QuizMatchPair(models.Model):eger(string='Correct for Blank Number')
-    _name = 'quiz.match.pair'
-    _description = 'Quiz Match Pair'
-# Add missing model for fill blank answers
-    question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
-    left_text = fields.Char(string='Left Item', required=True)
-    right_text = fields.Char(string='Right Item', required=True)
+    correct_for_blank = fields.Integer(string='Correct for Blank Number')
+
+class FillBlankAnswer(models.Model):
+    _name = 'quiz.fill.blank.answer'
+    _description = 'Fill Blank Answer'
+    
+    question_id = fields.Many2one('quiz.question', required=True, ondelete='cascade')
+    blank_number = fields.Integer(string='Blank Number', required=True)
+    correct_answer = fields.Char(string='Correct Answer', required=True)
     left_id = fields.Integer(string='Left ID')
     right_id = fields.Integer(string='Right ID')', required=True, ondelete='cascade')
     blank_number = fields.Integer(string='Blank Number', required=True)
