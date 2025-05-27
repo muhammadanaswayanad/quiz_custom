@@ -136,9 +136,9 @@ class QuizDragZone(models.Model):
 
 class QuizDragToken(models.Model):
     _name = 'quiz.drag.token'
-    _description = 'Quiz Drag Token'
-
+    _description = 'Drag Token for Questions'
+    _rec_name = 'text'
+    
     question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
-    label = fields.Char(string='Token Label', required=True, help='The text shown on the draggable token')
-    blank_number = fields.Integer(string='Blank Number', required=True, help='Which blank this token belongs to')
-    is_correct = fields.Boolean(string='Is Correct', help='Whether this token is the correct answer for the blank')
+    text = fields.Char(string='Token Text', required=True)
+    correct_for_blank = fields.Integer(string='Correct for Blank Number', help="Which blank number (1, 2, 3...) this token is correct for")
