@@ -28,7 +28,6 @@
                         <group>
                             <field name="participant_name"/>
                             <field name="quiz_id"/>
-                            <field name="token"/>
                             <field name="state"/>
                         </group>
                         <group>
