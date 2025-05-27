@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Quiz Tree View -->
-    <record id="view_quiz_tree" model="ir.ui.view">
-        <field name="name">quiz.quiz.tree</field>
-        <field name="model">quiz.quiz</field>
-        <field name="arch" type="xml">
-            <tree>
-                <field name="name"/>
-                <field name="slug"/>
-                <field name="is_published"/>
-                <field name="total_questions"/>
-                <field name="total_points"/>
-                <field name="create_date"/>
-            </tree>
-        </field>
+    <!-- Quiz List Action -->
+    <record id="action_quiz_list" model="ir.actions.act_window">
+        <field name="name">Quizzes</field>
+        <field name="res_model">quiz.quiz</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Sessions Action -->
+    <record id="action_quiz_sessions" model="ir.actions.act_window">
+        <field name="name">Quiz Sessions</field>
+        <field name="res_model">quiz.session</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
     </record>
 
     <!-- Action for managing questions from quiz form -->
@@ -34,6 +34,23 @@
         <field name="context">{}</field>
     </record>
 
+    <!-- Quiz Tree View -->
+    <record id="view_quiz_tree" model="ir.ui.view">
+        <field name="name">quiz.quiz.tree</field>
+        <field name="model">quiz.quiz</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="slug"/>
+                <field name="is_published"/>
+                <field name="total_questions"/>
+                <field name="total_points"/>
+                <field name="time_limit"/>
+                <button name="action_view_public_url" type="object" string="View Public URL" icon="fa-external-link"/>
+            </tree>
+        </field>
+    </record>
+
     <!-- Quiz Form View -->
     <record id="view_quiz_form" model="ir.ui.view">
         <field name="name">quiz.quiz.form</field>
@@ -42,12 +59,20 @@
             <form>
                 <header>
                     <button name="%(action_quiz_questions)d" type="action" string="Manage Questions" class="btn-primary"/>
+                    <button name="action_view_public_url" type="object" string="View Public URL" class="btn-secondary"/>
                     <field name="is_published" widget="boolean_toggle"/>
                 </header>
                 <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Quiz Title"/>
+                        </h1>
+                        <div class="text-muted">
+                            Public URL: <span class="text-primary">/quiz/<field name="slug" readonly="1"/></span>
+                        </div>
+                    </div>
                     <group>
                         <group>
-                            <field name="name"/>
                             <field name="slug"/>
                             <field name="time_limit"/>
                             <field name="max_attempts"/>
@@ -92,32 +117,11 @@
         </field>
     </record>
 
-    <!-- Quiz Action -->
-    <record id="action_quiz" model="ir.actions.act_window">
-        <field name="name">Quizzes</field>
-        <field name="res_model">quiz.quiz</field>
-        <field name="view_mode">tree,form</field>
-        <field name="view_id" ref="view_quiz_tree"/>
-    </record>
-
-    <!-- Quiz List Action -->
-    <record id="action_quiz_list" model="ir.actions.act_window">
-        <field name="name">Quizzes</field>
-        <field name="res_model">quiz.quiz</field>
-        <field name="view_mode">tree,form</field>
-        <field name="context">{}</field>
-    </record>
-
-    <!-- Sessions Action -->
-    <record id="action_quiz_sessions" model="ir.actions.act_window">
-        <field name="name">Quiz Sessions</field>
-        <field name="res_model">quiz.session</field>
-        <field name="view_mode">tree,form</field>
-        <field name="context">{}</field>
-    </record>
-
-    <!-- Menu Items -->
-    <menuitem id="menu_quiz_engine_root" name="Quiz Engine" sequence="10"/>
+    <!-- SINGLE Main Menu Structure -->
+    <menuitem id="menu_quiz_engine_root" 
+              name="Quiz Engine" 
+              web_icon="quiz_engine_pro,static/description/icon.png"
+              sequence="10"/>
     
     <menuitem id="menu_quiz_main" 
               name="Quizzes" 
@@ -126,14 +130,15 @@
               sequence="10"/>
               
     <menuitem id="menu_questions" 
-              name="Questions" 
+              name="All Questions" 
               parent="menu_quiz_engine_root" 
               action="action_questions" 
               sequence="20"/>
               
     <menuitem id="menu_sessions" 
-              name="Sessions" 
+              name="Quiz Sessions" 
               parent="menu_quiz_engine_root" 
               action="action_quiz_sessions" 
               sequence="30"/>
+
 </odoo>

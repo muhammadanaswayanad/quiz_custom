@@ -5,14 +5,18 @@ import uuid
 
 
 class QuizController(http.Controller):
-
+    
     @http.route('/quiz', type='http', auth='public', website=True)
     def quiz_list(self, **kwargs):
         """List all published quizzes"""
-        quizzes = request.env['quiz.quiz'].sudo().search([('is_published', '=', True)])
-        return request.render('quiz_engine_pro.quiz_list', {
-            'quizzes': quizzes
-        })
+        quizzes = request.env['quiz.quiz'].sudo().search([
+            ('is_published', '=', True)
+        ])
+        
+        values = {
+            'quizzes': quizzes,
+        }
+        return request.render('quiz_engine_pro.quiz_list_template', values)
 
     @http.route('/quiz/<string:slug>', type='http', auth='public', website=True)
     def quiz_start(self, slug, **kwargs):

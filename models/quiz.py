@@ -52,3 +52,14 @@ class Quiz(models.Model):
         slug = re.sub(r'[^a-zA-Z0-9\s-]', '', name.lower())
         slug = re.sub(r'\s+', '-', slug.strip())
         return slug or 'quiz'
+
+    def action_view_public_url(self):
+        """Open the public quiz URL in a new tab"""
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        quiz_url = f"{base_url}/quiz/{self.slug}"
+        
+        return {
+            'type': 'ir.actions.act_url',
+            'url': quiz_url,
+            'target': 'new',
+        }

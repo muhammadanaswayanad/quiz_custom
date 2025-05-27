@@ -226,6 +226,51 @@ The drag-into-text feature uses native HTML5 drag and drop:
 - [ ] Mobile responsiveness
 - [ ] Session completion flow
 
+## Testing Issues - RESOLVED
+
+### ✅ Issue 1: Menu Structure Fixed
+- **Problem:** Multiple main menu items created
+- **Solution:** Consolidated into single "Quiz Engine" parent menu with sub-items
+- **Result:** Clean hierarchical menu structure
+
+### ✅ Issue 2: Match Questions Interface Improved  
+- **Problem:** Confusing ID fields for matching questions
+- **Solution:** Added clear instructions and better field labels
+- **Usage:** 
+  - Create left and right side items
+  - Use same "Match ID" number for items that should pair
+  - Example: "Paris" (Match ID: 1) pairs with "France" (Match ID: 1)
+
+### ✅ Issue 3: Public Quiz URLs Available
+- **Problem:** No way to access public quiz URLs
+- **Solution:** Added multiple access methods:
+  - "View Public URL" button in quiz form and tree view
+  - Public URL shown in quiz form: `/quiz/<slug>`
+  - Quiz listing page at `/quiz` shows all published quizzes
+
+## Quick Start Testing
+
+1. **Create a Quiz:**
+   - Go to Quiz Engine → Quizzes → Create
+   - Fill in name and slug
+   - Mark as "Published"
+
+2. **Add Questions:**
+   - Click "Manage Questions" button
+   - Select question type
+   - Follow the improved instructions for each type
+
+3. **Access Public Quiz:**
+   - Click "View Public URL" button, OR
+   - Visit `/quiz/<your-slug>` directly, OR  
+   - Browse all quizzes at `/quiz`
+
+## Public Access URLs
+
+- **Quiz List:** `http://your-domain/quiz`
+- **Specific Quiz:** `http://your-domain/quiz/<slug>`
+- **Example:** `http://your-domain/quiz/javascript-basics`
+
 ## Next Steps
 
 1. **Test Quiz Creation**: Create sample quizzes with different question types

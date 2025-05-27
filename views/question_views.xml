@@ -10,65 +10,95 @@
                     <group>
                         <group>
                             <field name="quiz_id"/>
-                            <field name="type"/>
-                            <field name="sequence"/>
+                            <field name="type" widget="radio"/>
                             <field name="points"/>
+                            <field name="sequence"/>
                         </group>
                     </group>
+                    
+                    <separator string="Question Content"/>
+                    <field name="question_html" widget="html"/>
+                    
                     <notebook>
-                        <page string="Question">
-                            <field name="question_html" widget="html"/>
-                        </page>
-                        <page string="Answer Options" invisible="type not in ['mcq_single', 'mcq_multi']">
+                        <!-- Multiple Choice Options -->
+                        <page string="Answer Options" 
+                              invisible="type not in ['mcq_single', 'mcq_multi']">
+                            <div class="alert alert-info">
+                                <strong>Instructions:</strong> Add answer options below. 
+                                Check "Is Correct" for the right answer(s).
+                            </div>
                             <field name="choice_ids">
                                 <tree editable="bottom">
-                                    <field name="sequence" widget="handle"/>
-                                    <field name="text" widget="html_simple"/>
+                                    <field name="choice_text"/>
                                     <field name="is_correct"/>
                                 </tree>
                             </field>
                         </page>
-                        <page string="Blanks" invisible="type != 'fill_blank'">
-                            <field name="blank_ids">
-                                <tree editable="bottom">
-                                    <field name="blank_number"/>
-                                    <field name="correct_answers"/>
-                                </tree>
-                            </field>
-                        </page>
-                        <page string="Match Pairs" invisible="type != 'match'">
-                            <field name="match_pair_ids">
-                                <tree editable="bottom">
-                                    <field name="left_text"/>
-                                    <field name="right_text"/>
-                                    <field name="left_id"/>
-                                    <field name="right_id"/>
-                                </tree>
-                            </field>
-                        </page>
-                        <page string="Drag Zones" invisible="type != 'drag_zone'">
-                            <field name="drag_zone_ids">
-                                <tree editable="bottom">
-                                    <field name="zone_id"/>
-                                    <field name="zone_label"/>
-                                    <field name="correct_items"/>
-                                </tree>
-                            </field>
-                        </page>
-                        <page string="Drag Tokens" invisible="type != 'drag_into_text'">
+                        
+                        <!-- Match Questions -->
+                        <page string="Matching Pairs" 
+                              invisible="type != 'match'">
+                            <div class="alert alert-info">
+                                <strong>How to create matching questions:</strong>
+                                <ul>
+                                    <li>Add items in "Left Side" - these will appear on the left</li>
+                                    <li>Add items in "Right Side" - these will appear on the right</li>
+                                    <li>Use the same "Match ID" (like 1, 2, 3) for items that should match</li>
+                                    <li>Example: Left item "Paris" with Match ID "1", Right item "France" with Match ID "1"</li>
+                                </ul>
+                            </div>
                             <group>
-                                <field name="question_html" widget="html" string="Question with {{1}}, {{2}} placeholders"/>
+                                <group string="Left Side Items">
+                                    <field name="match_left_ids" nolabel="1">
+                                        <tree editable="bottom">
+                                            <field name="match_id" string="Match ID"/>
+                                            <field name="content" string="Left Item"/>
+                                        </tree>
+                                    </field>
+                                </group>
+                                <group string="Right Side Items">
+                                    <field name="match_right_ids" nolabel="1">
+                                        <tree editable="bottom">
+                                            <field name="match_id" string="Match ID"/>
+                                            <field name="content" string="Right Item"/>
+                                        </tree>
+                                    </field>
+                                </group>
                             </group>
+                        </page>
+                        
+                        <!-- Drag Tokens -->
+                        <page string="Drag Tokens" 
+                              invisible="type not in ['drag_into_text', 'drag_zone']">
+                            <div class="alert alert-info">
+                                <strong>Instructions for Drag into Text:</strong>
+                                <ul>
+                                    <li>Use placeholders {{1}}, {{2}}, {{3}} in your question HTML above</li>
+                                    <li>Add tokens below that can be dragged into these placeholders</li>
+                                    <li>Set "Correct for Blank" to specify which placeholder this token answers</li>
+                                </ul>
+                            </div>
                             <field name="drag_token_ids">
                                 <tree editable="bottom">
-                                    <field name="label"/>
-                                    <field name="blank_number"/>
-                                    <field name="is_correct"/>
+                                    <field name="token_text" string="Draggable Token"/>
+                                    <field name="correct_for_blank" string="Correct for Blank #"/>
                                 </tree>
                             </field>
                         </page>
-                        <page string="Explanation">
-                            <field name="explanation" widget="html"/>
+                        
+                        <!-- Fill in Blanks -->
+                        <page string="Blank Answers" 
+                              invisible="type != 'fill_blank'">
+                            <div class="alert alert-info">
+                                <strong>Instructions:</strong> Add the correct answers for fill-in-the-blank questions.
+                                You can add multiple acceptable answers for each blank.
+                            </div>
+                            <field name="fill_blank_answers">
+                                <tree editable="bottom">
+                                    <field name="blank_number" string="Blank #"/>
+                                    <field name="correct_answer" string="Correct Answer"/>
+                                </tree>
+                            </field>
                         </page>
                     </notebook>
                 </sheet>
@@ -82,8 +112,8 @@
         <field name="model">quiz.question</field>
         <field name="arch" type="xml">
             <tree>
-                <field name="sequence" widget="handle"/>
                 <field name="quiz_id"/>
+                <field name="sequence"/>
                 <field name="type"/>
                 <field name="question_html" widget="html_simple"/>
                 <field name="points"/>
@@ -91,14 +121,4 @@
         </field>
     </record>
 
-    <!-- Question Action -->
-    <record id="action_quiz_questions" model="ir.actions.act_window">
-        <field name="name">Questions</field>
-        <field name="res_model">quiz.question</field>
-        <field name="view_mode">tree,form</field>
-        <field name="view_id" ref="view_question_tree"/>
-        <field name="context">{'default_quiz_id': active_id}</field>
-    </record>
-
-    <menuitem id="menu_questions" name="Questions" parent="menu_quiz_root" action="action_quiz_questions" sequence="20"/>
 </odoo>
