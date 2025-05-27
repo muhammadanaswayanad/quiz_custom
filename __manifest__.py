@@ -19,8 +19,7 @@
     'website': 'https://www.yourcompany.com',
     'depends': ['base', 'web', 'website'],
     'data': [
-        'data/cleanup.xml',  # Clean up residual data first
-        'security/ir.model.access.csv',
+        'security/access_rights.csv',  # Using new filename to avoid cached entries
         'views/quiz_views.xml',
         'views/question_views.xml',
         'views/session_views.xml',
@@ -36,4 +35,5 @@
     'auto_install': False,
     'application': True,
     'license': 'LGPL-3',
+}
 }
