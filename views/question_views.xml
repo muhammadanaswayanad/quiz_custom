@@ -22,7 +22,7 @@
                     <notebook>
                         <!-- Multiple Choice Options -->
                         <page string="Answer Options" 
-                              attrs="{'invisible': [('type', 'not in', ['mcq_single', 'mcq_multi'])]}">
+                              invisible="type not in ['mcq_single', 'mcq_multi']">
                             <div class="alert alert-info">
                                 <strong>Instructions:</strong> Add answer options below. 
                                 Check "Is Correct" for the right answer(s).
@@ -37,7 +37,7 @@
                         
                         <!-- Match Questions -->
                         <page string="Matching Pairs" 
-                              attrs="{'invisible': [('type', '!=', 'match')]}">
+                              invisible="type != 'match'">
                             <div class="alert alert-info">
                                 <strong>How to create matching questions:</strong>
                                 <ul>
@@ -56,7 +56,7 @@
                         
                         <!-- Drag Tokens -->
                         <page string="Drag Tokens" 
-                              attrs="{'invisible': [('type', 'not in', ['drag_into_text', 'drag_zone'])]}">
+                              invisible="type not in ['drag_into_text', 'drag_zone']">
                             <div class="alert alert-info">
                                 <strong>Instructions for Drag into Text:</strong>
                                 <ul>
@@ -75,7 +75,7 @@
                         
                         <!-- Fill in Blanks -->
                         <page string="Blank Answers" 
-                              attrs="{'invisible': [('type', '!=', 'fill_blank')]}">
+                              invisible="type != 'fill_blank'">
                             <div class="alert alert-info">
                                 <strong>Instructions:</strong> Add the correct answers for fill-in-the-blank questions.
                                 You can add multiple acceptable answers for each blank.
