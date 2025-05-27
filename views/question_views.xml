@@ -29,7 +29,7 @@
                             </div>
                             <field name="choice_ids">
                                 <tree editable="bottom">
-                                    <field name="choice_text"/>
+                                    <field name="text"/>
                                     <field name="is_correct"/>
                                 </tree>
                             </field>
@@ -52,7 +52,7 @@
                                     <field name="match_left_ids" nolabel="1">
                                         <tree editable="bottom">
                                             <field name="match_id" string="Match ID"/>
-                                            <field name="content" string="Left Item"/>
+                                            <field name="text" string="Left Item"/>
                                         </tree>
                                     </field>
                                 </group>
@@ -60,7 +60,7 @@
                                     <field name="match_right_ids" nolabel="1">
                                         <tree editable="bottom">
                                             <field name="match_id" string="Match ID"/>
-                                            <field name="content" string="Right Item"/>
+                                            <field name="text" string="Right Item"/>
                                         </tree>
                                     </field>
                                 </group>
@@ -80,7 +80,7 @@
                             </div>
                             <field name="drag_token_ids">
                                 <tree editable="bottom">
-                                    <field name="token_text" string="Draggable Token"/>
+                                    <field name="text" string="Draggable Token"/>
                                     <field name="correct_for_blank" string="Correct for Blank #"/>
                                 </tree>
                             </field>
