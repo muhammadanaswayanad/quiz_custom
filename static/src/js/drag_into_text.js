@@ -1,227 +1,224 @@
-odoo.define('quiz_custom.drag_into_text', function (require) {
+odoo.define('quiz_engine_pro.drag_into_text', function (require) {
     'use strict';
 
     var publicWidget = require('web.public.widget');
-    
+    var ajax = require('web.ajax');
+
     publicWidget.registry.QuizDragIntoText = publicWidget.Widget.extend({
-        selector: '.quiz-drag-into-text-container',
+        selector: '.quiz-container',
         events: {
-            'dragstart .draggable': '_onDragStart',
-            'dragover .dropzone': '_onDragOver',
-            'dragleave .dropzone': '_onDragLeave',
-            'drop .dropzone': '_onDrop',
-            'touchstart .draggable': '_onTouchStart',
-            'touchmove': '_onTouchMove',
-            'touchend': '_onTouchEnd'
+            'click #next-btn': '_onNextQuestion',
+            'click #prev-btn': '_onPrevQuestion',
+            'click #submit-btn': '_onSubmitQuiz',
         },
-        
+
         start: function () {
-            this.dragElement = null;
-            this.touchActive = false;
-            this.dropzoneTargets = this.el.querySelectorAll('.dropzone');
-            this.draggableItems = this.el.querySelectorAll('.draggable');
+            this._super.apply(this, arguments);
+            this.currentQuestionIndex = 0;
+            this.totalQuestions = parseInt(window.totalQuestions || 0);
+            this.sessionToken = window.sessionToken;
+            this.answers = {};
             
-            // Make elements draggable
-            this.draggableItems.forEach(item => {
-                item.setAttribute('draggable', true);
+            this._initializeDragAndDrop();
+            this._updateNavigation();
+            return Promise.resolve();
+        },
+
+        _initializeDragAndDrop: function () {
+            var self = this;
+            
+            // Process drag-into-text questions
+            this.$('.drag-into-text').each(function () {
+                var $container = $(this);
+                self._setupDragIntoText($container);
+            });
+        },
+
+        _setupDragIntoText: function ($container) {
+            var self = this;
+            
+            // Convert {{1}}, {{2}} placeholders to drop zones
+            var $questionText = $container.find('.question-with-blanks');
+            var html = $questionText.html();
+            html = html.replace(/\{\{(\d+)\}\}/g, function(match, blankNumber) {
+                return '<span class="dropzone" data-blank="' + blankNumber + '" data-id="' + blankNumber + '">Drop here</span>';
+            });
+            $questionText.html(html);
+
+            // Make tokens draggable
+            $container.find('.token').each(function () {
+                var $token = $(this);
+                $token.attr('draggable', true);
+                
+                $token.on('dragstart', function (e) {
+                    e.originalEvent.dataTransfer.setData('text/plain', $token.data('value'));
+                    $token.addClass('dragging');
+                });
+                
+                $token.on('dragend', function (e) {
+                    $token.removeClass('dragging');
+                });
+            });
+
+            // Setup drop zones
+            $container.find('.dropzone').each(function () {
+                var $dropzone = $(this);
+                
+                $dropzone.on('dragover', function (e) {
+                    e.preventDefault();
+                    $dropzone.addClass('drag-over');
+                });
+                
+                $dropzone.on('dragleave', function (e) {
+                    $dropzone.removeClass('drag-over');
+                });
+                
+                $dropzone.on('drop', function (e) {
+                    e.preventDefault();
+                    $dropzone.removeClass('drag-over');
+                    
+                    var tokenValue = e.originalEvent.dataTransfer.getData('text/plain');
+                    var blankId = $dropzone.data('blank');
+                    
+                    // Update dropzone content
+                    $dropzone.text(tokenValue);
+                    $dropzone.addClass('filled');
+                    
+                    // Hide the used token
+                    $container.find('.token[data-value="' + tokenValue + '"]').hide();
+                    
+                    // Store answer
+                    var questionId = $container.closest('.question-container').data('question-id');
+                    if (!self.answers[questionId]) {
+                        self.answers[questionId] = { type: 'drag_into_text', placements: {} };
+                    }
+                    self.answers[questionId].placements[blankId] = tokenValue;
+                    
+                    // Allow clearing by clicking
+                    $dropzone.off('click').on('click', function () {
+                        self._clearDropzone($dropzone, $container);
+                    });
+                });
+            });
+        },
+
+        _clearDropzone: function ($dropzone, $container) {
+            var tokenValue = $dropzone.text();
+            var blankId = $dropzone.data('blank');
+            
+            // Clear dropzone
+            $dropzone.text('Drop here');
+            $dropzone.removeClass('filled');
+            
+            // Show token again
+            $container.find('.token[data-value="' + tokenValue + '"]').show();
+            
+            // Remove from answers
+            var questionId = $container.closest('.question-container').data('question-id');
+            if (this.answers[questionId] && this.answers[questionId].placements) {
+                delete this.answers[questionId].placements[blankId];
+            }
+        },
+
+        _onNextQuestion: function (e) {
+            e.preventDefault();
+            this._saveCurrentAnswer();
+            
+            if (this.currentQuestionIndex < this.totalQuestions - 1) {
+                this.currentQuestionIndex++;
+                this._showQuestion(this.currentQuestionIndex);
+                this._updateNavigation();
+            }
+        },
+
+        _onPrevQuestion: function (e) {
+            e.preventDefault();
+            this._saveCurrentAnswer();
+            
+            if (this.currentQuestionIndex > 0) {
+                this.currentQuestionIndex--;
+                this._showQuestion(this.currentQuestionIndex);
+                this._updateNavigation();
+            }
+        },
+
+        _showQuestion: function (index) {
+            this.$('.question-container').addClass('d-none');
+            this.$('.question-container').eq(index).removeClass('d-none');
+            this.$('#current-question').text(index + 1);
+        },
+
+        _updateNavigation: function () {
+            this.$('#prev-btn').prop('disabled', this.currentQuestionIndex === 0);
+            
+            if (this.currentQuestionIndex === this.totalQuestions - 1) {
+                this.$('#next-btn').addClass('d-none');
+                this.$('#submit-btn').removeClass('d-none');
+            } else {
+                this.$('#next-btn').removeClass('d-none');
+                this.$('#submit-btn').addClass('d-none');
+            }
+        },
+
+        _saveCurrentAnswer: function () {
+            var $currentQuestion = this.$('.question-container').eq(this.currentQuestionIndex);
+            var questionId = $currentQuestion.data('question-id');
+            var questionType = $currentQuestion.find('[class*="mcq-"], [class*="drag-"]').attr('class');
+            
+            if ($currentQuestion.find('.mcq-options').length > 0) {
+                this._saveMCQAnswer($currentQuestion, questionId);
+            }
+            // Drag into text answers are saved in real-time
+        },
+
+        _saveMCQAnswer: function ($question, questionId) {
+            var answerData = {};
+            
+            if ($question.find('input[type="radio"]').length > 0) {
+                // Single choice
+                var selectedChoice = $question.find('input[type="radio"]:checked').val();
+                if (selectedChoice) {
+                    answerData = { type: 'mcq_single', choice_id: parseInt(selectedChoice) };
+                }
+            } else if ($question.find('input[type="checkbox"]').length > 0) {
+                // Multiple choice
+                var selectedChoices = [];
+                $question.find('input[type="checkbox"]:checked').each(function () {
+                    selectedChoices.push(parseInt($(this).val()));
+                });
+                answerData = { type: 'mcq_multi', choice_ids: selectedChoices };
+            }
+            
+            if (Object.keys(answerData).length > 0) {
+                this.answers[questionId] = answerData;
+            }
+        },
+
+        _onSubmitQuiz: function (e) {
+            e.preventDefault();
+            this._saveCurrentAnswer();
+            
+            // Submit all answers
+            var self = this;
+            var promises = [];
+            
+            Object.keys(this.answers).forEach(function (questionId) {
+                var promise = ajax.jsonRpc('/quiz/session/' + self.sessionToken + '/answer', 'call', {
+                    question_id: parseInt(questionId),
+                    answer_data: self.answers[questionId]
+                });
+                promises.push(promise);
             });
             
-            return this._super.apply(this, arguments);
-        },
-        
-        /**
-         * When dragging starts, store the current element and add a visual cue
-         */
-        _onDragStart: function (ev) {
-            ev.originalEvent.dataTransfer.setData('text', ev.currentTarget.dataset.value);
-            ev.originalEvent.dataTransfer.effectAllowed = 'move';
-            ev.currentTarget.classList.add('being-dragged');
-            this.dragElement = ev.currentTarget;
-        },
-        
-        /**
-         * When dragging over a dropzone, allow the drop
-         */
-        _onDragOver: function (ev) {
-            ev.preventDefault();
-            ev.originalEvent.dataTransfer.dropEffect = 'move';
-            ev.currentTarget.classList.add('dragover');
-        },
-        
-        /**
-         * When leaving a dropzone, remove visual cue
-         */
-        _onDragLeave: function (ev) {
-            ev.currentTarget.classList.remove('dragover');
-        },
-        
-        /**
-         * When dropping onto a dropzone, handle the transfer
-         */
-        _onDrop: function (ev) {
-            ev.preventDefault();
-            const dropzone = ev.currentTarget;
-            dropzone.classList.remove('dragover');
-            
-            const tokenValue = ev.originalEvent.dataTransfer.getData('text');
-            const targetNumber = dropzone.dataset.target;
-            
-            // If dropzone already has a token, return that token to available tokens
-            if (dropzone.querySelector('.token-content')) {
-                this._returnTokenToAvailable(dropzone.querySelector('.token-content').textContent);
-            }
-            
-            // Update the dropzone with the new token
-            dropzone.innerHTML = `<span class="token-content">${tokenValue}</span>`;
-            
-            // Remove the original draggable if it came from the token bank
-            if (this.dragElement && this.dragElement.parentNode.classList.contains('token-bank')) {
-                this.dragElement.classList.add('used');
-                this.dragElement.setAttribute('draggable', false);
-            }
-            
-            // Update the hidden input field with the current state
-            this._updateHiddenField();
-            
-            this.dragElement.classList.remove('being-dragged');
-            this.dragElement = null;
-        },
-        
-        /**
-         * Return a token to the available tokens area
-         */
-        _returnTokenToAvailable: function (tokenValue) {
-            const tokenBank = this.el.querySelector('.token-bank');
-            const tokens = tokenBank.querySelectorAll('.draggable');
-            
-            for (let i = 0; i < tokens.length; i++) {
-                if (tokens[i].dataset.value === tokenValue) {
-                    tokens[i].classList.remove('used');
-                    tokens[i].setAttribute('draggable', true);
-                    break;
-                }
-            }
-        },
-        
-        /**
-         * Update the hidden field with the current state of all dropzones
-         */
-        _updateHiddenField: function () {
-            const result = {};
-            const dropzones = this.el.querySelectorAll('.dropzone');
-            
-            dropzones.forEach(function (zone) {
-                const content = zone.querySelector('.token-content');
-                if (content) {
-                    result[zone.dataset.target] = content.textContent;
-                } else {
-                    result[zone.dataset.target] = "";
-                }
+            Promise.all(promises).then(function () {
+                // Complete the quiz
+                window.location.href = '/quiz/session/' + self.sessionToken + '/complete';
+            }).catch(function (error) {
+                console.error('Error submitting answers:', error);
+                alert('Error submitting quiz. Please try again.');
             });
-            
-            // Update the hidden field with JSON data
-            const hiddenField = this.el.querySelector('.drag-into-text-result');
-            hiddenField.value = JSON.stringify(result);
         },
-        
-        // Touch event handlers for mobile support
-        _onTouchStart: function (ev) {
-            const touch = ev.originalEvent.touches[0];
-            const draggable = ev.currentTarget;
-            
-            this.touchActive = true;
-            this.dragElement = draggable;
-            draggable.classList.add('being-dragged');
-            
-            // Store initial touch position
-            this.touchOffsetX = touch.clientX - draggable.getBoundingClientRect().left;
-            this.touchOffsetY = touch.clientY - draggable.getBoundingClientRect().top;
-            
-            // Create a clone for dragging visual
-            this.touchDragImage = draggable.cloneNode(true);
-            this.touchDragImage.classList.add('touch-drag-image');
-            document.body.appendChild(this.touchDragImage);
-            
-            this._positionTouchDragImage(touch.clientX, touch.clientY);
-        },
-        
-        _onTouchMove: function (ev) {
-            if (!this.touchActive || !this.dragElement) return;
-            
-            ev.preventDefault(); // Prevent scrolling while dragging
-            const touch = ev.originalEvent.touches[0];
-            
-            // Move the drag image
-            this._positionTouchDragImage(touch.clientX, touch.clientY);
-            
-            // Check if over a dropzone
-            const dropzone = this._getTouchDropzone(touch.clientX, touch.clientY);
-            
-            // Update visual cues
-            this.dropzoneTargets.forEach(zone => {
-                zone.classList.remove('dragover');
-            });
-            
-            if (dropzone) {
-                dropzone.classList.add('dragover');
-            }
-        },
-        
-        _onTouchEnd: function (ev) {
-            if (!this.touchActive || !this.dragElement) return;
-            
-            const touch = ev.originalEvent.changedTouches[0];
-            const dropzone = this._getTouchDropzone(touch.clientX, touch.clientY);
-            
-            if (dropzone) {
-                // Handle the drop
-                dropzone.classList.remove('dragover');
-                
-                const tokenValue = this.dragElement.dataset.value;
-                const targetNumber = dropzone.dataset.target;
-                
-                // If dropzone already has a token, return that token
-                if (dropzone.querySelector('.token-content')) {
-                    this._returnTokenToAvailable(dropzone.querySelector('.token-content').textContent);
-                }
-                
-                // Update the dropzone
-                dropzone.innerHTML = `<span class="token-content">${tokenValue}</span>`;
-                
-                // Mark the original token as used
-                if (this.dragElement.parentNode.classList.contains('token-bank')) {
-                    this.dragElement.classList.add('used');
-                    this.dragElement.setAttribute('draggable', false);
-                }
-                
-                this._updateHiddenField();
-            }
-            
-            // Clean up
-            this.dragElement.classList.remove('being-dragged');
-            document.body.removeChild(this.touchDragImage);
-            this.touchDragImage = null;
-            this.dragElement = null;
-            this.touchActive = false;
-        },
-        
-        _positionTouchDragImage: function (x, y) {
-            if (!this.touchDragImage) return;
-            this.touchDragImage.style.left = (x - this.touchOffsetX) + 'px';
-            this.touchDragImage.style.top = (y - this.touchOffsetY) + 'px';
-        },
-        
-        _getTouchDropzone: function (x, y) {
-            let result = null;
-            this.dropzoneTargets.forEach(zone => {
-                const rect = zone.getBoundingClientRect();
-                if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
-                    result = zone;
-                }
-            });
-            return result;
-        }
     });
-    
+
     return publicWidget.registry.QuizDragIntoText;
 });

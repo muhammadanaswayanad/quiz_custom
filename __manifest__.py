@@ -1,33 +1,38 @@
 {
     'name': 'Quiz Engine Pro',
-    'version': '1.1',  # Increment version to trigger upgrade
-    'category': 'Website',
-    'summary': 'Advanced standalone quiz system',
+    'version': '17.0.1.0.0',
+    'category': 'Education',
+    'summary': 'Advanced Quiz Engine with Multiple Question Types',
     'description': """
-        A fully independent quiz engine for Odoo 17 Community Edition that allows:
-        - Advanced question types (Fill in Blanks, Match the Following, Drag and Drop, MCQ)
-        - Custom quiz creation and management
-        - Frontend quiz execution
-        - Detailed result evaluation
+    Standalone Quiz Engine for Odoo 17
+    ===================================
+    
+    Features:
+    - Multiple Choice (single/multiple correct)
+    - Fill in the Blanks
+    - Match the Following
+    - Drag and Drop into Zones
+    - Drag and Drop Into Text
+    - Advanced scoring and analytics
     """,
-    'author': 'Odoo Developer',
-    'website': 'https://www.example.com',
+    'author': 'Your Company',
+    'website': 'https://www.yourcompany.com',
     'depends': ['base', 'web', 'website'],
     'data': [
-        'security/quiz_security.xml',
         'security/ir.model.access.csv',
         'views/quiz_views.xml',
         'views/question_views.xml',
         'views/session_views.xml',
-        'views/quiz_templates.xml',
-        'views/quiz_menus.xml',
+        'views/website_templates.xml',
     ],
     'assets': {
         'web.assets_frontend': [
-            'quiz_custom/static/src/js/quiz_frontend.js',
+            'quiz_engine_pro/static/src/js/drag_into_text.js',
+            'quiz_engine_pro/static/src/css/quiz_styles.css',
         ],
     },
-    'application': True,
     'installable': True,
+    'auto_install': False,
+    'application': True,
     'license': 'LGPL-3',
 }

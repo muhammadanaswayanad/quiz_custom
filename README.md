@@ -1,184 +1,241 @@
-# Quiz Engine Pro
+# Quiz Engine Pro - Odoo 17 Module
 
-A modular, extensible quiz system for Odoo 17 Community Edition. This README is designed to help both human and AI developers understand, maintain, and extend the module.
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Installation](#installation)
-- [Directory Structure](#directory-structure)
-- [Key Models](#key-models)
-- [Frontend & Backend](#frontend--backend)
-- [Development Guidelines](#development-guidelines)
-- [Extending the Module](#extending-the-module)
-- [Testing](#testing)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License](#license)
-
----
-
-## Overview
-
-Quiz Engine Pro enables advanced quiz creation, management, and analytics in Odoo. It supports multiple question types, user attempts, and detailed reporting. The codebase is modular and follows Odoo best practices for easy extension.
-
----
+A comprehensive, standalone quiz engine for Odoo 17 Community Edition that provides advanced question types and interactive features.
 
 ## Features
 
-- Create and manage quizzes with time limits, login requirements, and attempt tracking
-- Multiple question types:
-  - Multiple Choice (MCQ)
-  - Fill in the Blanks
-  - Match the Following
-  - Drag and Drop
-  - Drag and Drop Into Text
-- Randomization of questions and answers with shuffle option
-- One question per page or all questions at once view options
-- User attempt tracking and scoring with negative marking support
-- Frontend quiz execution with website integration
-- Analytics and exportable reports
-- Role-based access control
-- Case sensitivity option for fill in the blanks questions
-- Partial scoring for MCQs with multiple correct answers
+### Question Types
+- **Multiple Choice (Single Answer)** - Traditional radio button selection
+- **Multiple Choice (Multiple Answers)** - Checkbox-based selection
+- **Fill in the Blanks** - Text input fields within questions
+- **Match the Following** - Drag and connect related items
+- **Drag and Drop into Zones** - Drag items into designated areas
+- **Drag and Drop Into Text** - Interactive text with draggable tokens
 
----
+### Core Functionality
+- ✅ Quiz creation and management
+- ✅ Question sequencing and randomization
+- ✅ Time limits and attempt restrictions
+- ✅ Real-time scoring and evaluation
+- ✅ Session tracking for anonymous and logged-in users
+- ✅ Responsive frontend interface
+- ✅ SEO-friendly URLs with custom slugs
 
 ## Installation
 
-1. Copy `quiz_custom` to your Odoo addons directory.
-2. Update the Odoo app list.
-3. Install "Quiz Engine Pro" from the Apps menu.
+1. Copy the `quiz_engine_pro` folder to your Odoo addons directory
+2. Update the addons list in Odoo
+3. Install the "Quiz Engine Pro" module
 
-**Dependencies:**  
-- Odoo 17 Community Edition  
-- Python 3.8+  
-- Modules: `base`, `web`, `website`
-
----
-
-## Directory Structure
+## Module Structure
 
 ```
-quiz_custom/
+quiz_engine_pro/
 ├── __init__.py
 ├── __manifest__.py
 ├── README.md
-├── controllers/
-│   └── main.py
 ├── models/
 │   ├── __init__.py
-│   ├── quiz.py
-│   ├── question.py
-│   ├── session.py
-│   └── response.py
-├── static/
-│   └── src/js/quiz_frontend.js
-├── upgrade/
-│   └── upgrade_response_model.py
+│   ├── quiz.py          # Main quiz model
+│   ├── question.py      # Question types and choices
+│   └── response.py      # Sessions and answers
 ├── views/
 │   ├── quiz_views.xml
 │   ├── question_views.xml
 │   ├── session_views.xml
-│   ├── quiz_templates.xml
-│   └── quiz_menus.xml
-└── security/
-    ├── quiz_security.xml
-    └── ir.model.access.csv
+│   └── website_templates.xml
+├── controllers/
+│   ├── __init__.py
+│   └── main.py          # Frontend routes
+├── security/
+│   └── ir.model.access.csv
+└── static/src/
+    ├── js/
+    │   └── drag_into_text.js
+    └── css/
+        └── quiz_styles.css
 ```
 
----
+## Models Overview
 
-## Key Models
+### quiz.quiz
+Main quiz container with configuration options.
 
-- **quiz.quiz**: The quiz itself (title, description, settings, time limits, etc.)
-- **quiz.question**: A question belonging to a quiz (type, content, points, negative marks, etc.)
-- **quiz.answer.option**: Answer options for MCQ and drag questions
-- **quiz.match.pair**: Pairs for matching questions (left and right items)
-- **quiz.blank.expected**: Expected answers for fill-in-the-blank questions
-- **quiz.question.dragtoken**: Tokens for drag-into-text questions
-- **quiz.session**: A user's attempt at a quiz
-- **quiz.response**: A user's response to a question in a session
+**Key Fields:**
+- `name` - Quiz title
+- `slug` - URL-friendly identifier
+- `is_published` - Publication status
+- `randomize_questions` - Question order randomization
+- `time_limit` - Maximum time in minutes
+- `passing_score` - Minimum percentage to pass
 
----
+### quiz.question
+Individual questions with type-specific configurations.
 
-## Frontend & Backend
+**Question Types:**
+- `mcq_single` - Single correct answer
+- `mcq_multi` - Multiple correct answers
+- `fill_blank` - Text input blanks
+- `match` - Matching pairs
+- `drag_zone` - Drag into zones
+- `drag_into_text` - Drag tokens into text placeholders
 
-- **Frontend**: Website templates (`quiz_templates.xml`) and JavaScript (`quiz_frontend.js`) provide the quiz-taking interface, including drag-and-drop, timers, and dynamic forms.
-- **Backend**: Models and business logic in `models/`, admin views in `views/`, and security in `security/`.
+### quiz.session
+Tracks individual quiz attempts and scoring.
 
----
+**Features:**
+- Session state management
+- Time tracking
+- Score calculation
+- Anonymous user support
 
-## Development Guidelines
+## Usage Guide
 
-- Follow Odoo's modular structure and naming conventions.
-- Use computed fields and related fields for dynamic data.
-- Use `@api.depends` for field dependencies.
-- Use `@api.model_create_multi` for batch creation.
-- Use `sudo()` carefully, especially in controllers.
-- Add new question types by extending `quiz.question` and updating templates and evaluation logic.
-- For frontend changes, update both the XML templates and the JS widgets as needed.
+### Creating a Quiz
 
----
+1. Go to Quiz Engine → Quizzes
+2. Click "Create" 
+3. Fill in quiz details:
+   - Name and description
+   - Time limit (optional)
+   - Passing score percentage
+   - Randomization settings
+4. Save and add questions
 
-## Extending the Module
+### Adding Questions
 
-**To add a new question type:**
-1. Add a new selection value to `question_type` in `quiz.question`.
-2. Add supporting fields/models if needed.
-3. Update the backend evaluation logic in `quiz.response`.
-4. Update the website templates to render the new type.
-5. Update JS if frontend interactivity is required.
+1. Open a quiz record
+2. Go to "Questions" tab or click "Manage Questions"
+3. Select question type
+4. Enter question content using HTML editor
+5. Configure type-specific options:
 
-**Example:**
-The module already implements 5 question types:
-- Multiple Choice (mcq)
-- Fill in the Blanks (fill_blank)
-- Match the Following (match)
-- Drag and Drop Answer (drag)
-- Drag and Drop Into Text (drag_into_text)
+#### Multiple Choice
+- Add choices in the "Answer Options" tab
+- Mark correct answers with checkbox
 
-**To add analytics or reporting:**
-- Add computed fields or new models as needed.
-- Add new menu items and views in XML.
-- Use Odoo's reporting tools or integrate with external BI tools.
+#### Drag Into Text
+- Use `{{1}}`, `{{2}}` placeholders in question HTML
+- Add drag tokens in "Drag Tokens" tab
+- Set correct token for each blank number
 
----
+### Frontend Access
 
-## Testing
+Quiz URLs follow the pattern: `/quiz/<slug>`
 
-- Write unit tests for model methods and business logic.
-- Use Odoo's test framework for integration tests.
-- Test frontend flows manually or with Selenium.
-- For migrations, use scripts in `upgrade/`.
+Example: `/quiz/javascript-basics`
 
----
+## Technical Details
 
-## Troubleshooting
+### Drag and Drop Implementation
 
-- Check Odoo logs for errors (`odoo.log`).
-- Ensure all dependencies are installed and up to date.
-- If a field is missing after upgrade, run the upgrade script in `upgrade/`.
-- For frontend issues, check browser console and network logs.
-- Validate questions using the `validate_question()` method to ensure they are properly configured.
+The drag-into-text feature uses native HTML5 drag and drop:
 
----
+1. Question HTML contains placeholders: `{{1}}`, `{{2}}`
+2. JavaScript converts these to drop zones
+3. Tokens are rendered as draggable elements
+4. Answer data is stored as JSON: `{"1": "token1", "2": "token2"}`
+
+### Scoring System
+
+- Each question has a configurable point value
+- Answers are evaluated using question-specific logic
+- Partial scoring supported for some question types
+- Final percentage calculated for pass/fail determination
+
+### Session Management
+
+- Unique tokens identify quiz sessions
+- State tracking: draft → in_progress → completed/expired
+- Anonymous user support with optional participant info
+- Time limit enforcement with automatic expiry
+
+## API Endpoints
+
+### Frontend Routes
+- `GET /quiz` - List published quizzes
+- `GET /quiz/<slug>` - Quiz start page
+- `POST /quiz/<slug>/take` - Begin quiz session
+- `GET /quiz/session/<token>/question/<id>` - Question display
+- `POST /quiz/session/<token>/answer` - Submit answer (JSON)
+- `POST /quiz/session/<token>/complete` - Complete quiz
+- `GET /quiz/session/<token>/results` - View results
+
+## Customization
+
+### Adding New Question Types
+
+1. Add new type to `quiz.question.type` selection
+2. Create supporting model if needed (like `quiz.drag.token`)
+3. Implement evaluation logic in `evaluate_answer()`
+4. Add frontend template and JavaScript handling
+5. Update backend form views
+
+### Styling Customization
+
+Modify `/static/src/css/quiz_styles.css` for visual customization:
+- Colors and branding
+- Layout adjustments
+- Mobile responsiveness
+- Animation effects
+
+## Security
+
+- Public access for taking quizzes
+- Admin-only backend management
+- Session token validation
+- XSS protection with proper HTML escaping
+
+## Dependencies
+
+- Odoo 17 Community Edition
+- Base modules: `base`, `web`, `website`
+- No external dependencies
+
+## Roadmap
+
+### Planned Features
+- [ ] Advanced analytics dashboard
+- [ ] Question banks and categories
+- [ ] Bulk question import/export
+- [ ] Certificate generation
+- [ ] Integration with LMS systems
+- [ ] Mobile app support
+- [ ] Advanced reporting
+- [ ] Question difficulty ratings
+- [ ] Adaptive testing
+
+### Performance Optimizations
+- [ ] Question preloading
+- [ ] Answer caching
+- [ ] Database indexing
+- [ ] CDN asset delivery
 
 ## Contributing
 
-- Fork the repository and create a feature branch.
-- Follow PEP8 and Odoo coding standards.
-- Add docstrings and comments for clarity.
-- Submit pull requests with a clear description of changes.
-- Increment version number in `__manifest__.py` when making significant changes.
-
----
+1. Fork the repository
+2. Create feature branch
+3. Follow Odoo coding standards
+4. Add tests for new functionality
+5. Submit pull request
 
 ## License
 
-This module is licensed under LGPL-3. See `__manifest__.py` for details.
+LGPL-3 (same as Odoo Community Edition)
 
----
+## Support
+
+For issues and questions:
+- Check existing GitHub issues
+- Create new issue with detailed description
+- Include Odoo version and error logs
+- Provide steps to reproduce
+
+## Changelog
+
+### Version 17.0.1.0.0
+- Initial release
+- All core question types implemented
+- Frontend quiz interface
+- Session tracking and scoring
+- Basic analytics

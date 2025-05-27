@@ -1,115 +1,144 @@
-from odoo import api, fields, models, _
-from odoo.exceptions import ValidationError
+from odoo import models, fields, api, _
+import json
 
 
-class Question(models.Model):
+class QuizQuestion(models.Model):
     _name = 'quiz.question'
     _description = 'Quiz Question'
     _order = 'sequence, id'
-    
+
     quiz_id = fields.Many2one('quiz.quiz', string='Quiz', required=True, ondelete='cascade')
     sequence = fields.Integer(string='Sequence', default=10)
-    question_type = fields.Selection([
+    type = fields.Selection([
+        ('mcq_single', 'Multiple Choice (Single Answer)'),
+        ('mcq_multi', 'Multiple Choice (Multiple Answers)'),
         ('fill_blank', 'Fill in the Blanks'),
         ('match', 'Match the Following'),
-        ('drag', 'Drag and Drop Answer'),
-        ('mcq', 'Multiple Choice Question'),
+        ('drag_zone', 'Drag and Drop into Zones'),
         ('drag_into_text', 'Drag and Drop Into Text'),
-    ], string='Question Type', required=True, default='mcq')
+    ], string='Question Type', required=True, default='mcq_single')
     
-    content = fields.Html(string='Question Content', required=True, sanitize=False)
+    question_html = fields.Html(string='Question', required=True)
+    explanation = fields.Html(string='Explanation')
     points = fields.Float(string='Points', default=1.0)
-    negative_marks = fields.Float(string='Negative Marks', default=0.0)
-    case_sensitive = fields.Boolean(string='Case Sensitive', default=False, 
-                                   help="For fill in the blanks questions")
-    partial_scoring = fields.Boolean(string='Partial Scoring', default=False,
-                                   help="For MCQ with multiple correct options")
     
-    # New field for drag_into_text question type
-    text_template = fields.Html(string='Text Template', 
-                               help="Text with placeholders like {{1}}, {{2}} where tokens will be dropped")
+    # Relationships for different question types
+    choice_ids = fields.One2many('quiz.choice', 'question_id', string='Choices')
+    blank_ids = fields.One2many('quiz.blank', 'question_id', string='Blanks')
+    match_pair_ids = fields.One2many('quiz.match.pair', 'question_id', string='Match Pairs')
+    drag_zone_ids = fields.One2many('quiz.drag.zone', 'question_id', string='Drag Zones')
+    drag_token_ids = fields.One2many('quiz.drag.token', 'question_id', string='Drag Tokens')
     
-    # Relationship fields based on question type
-    answer_option_ids = fields.One2many('quiz.answer.option', 'question_id', string='Answer Options')
-    match_pair_ids = fields.One2many('quiz.match.pair', 'question_id', string='Matching Pairs')
-    blank_expected_ids = fields.One2many('quiz.blank.expected', 'question_id', string='Expected Answers')
-    dragtoken_ids = fields.One2many('quiz.question.dragtoken', 'question_id', string='Drag Tokens')
+    def evaluate_answer(self, answer_data):
+        """Evaluate answer based on question type"""
+        if self.type == 'mcq_single':
+            return self._evaluate_mcq_single(answer_data)
+        elif self.type == 'mcq_multi':
+            return self._evaluate_mcq_multi(answer_data)
+        elif self.type == 'fill_blank':
+            return self._evaluate_fill_blank(answer_data)
+        elif self.type == 'match':
+            return self._evaluate_match(answer_data)
+        elif self.type == 'drag_zone':
+            return self._evaluate_drag_zone(answer_data)
+        elif self.type == 'drag_into_text':
+            return self._evaluate_drag_into_text(answer_data)
+        return 0.0
     
-    @api.onchange('question_type')
-    def _onchange_question_type(self):
-        if self.question_type == 'mcq':
-            self.case_sensitive = False
-        elif self.question_type == 'fill_blank':
-            self.partial_scoring = False
+    def _evaluate_mcq_single(self, answer_data):
+        choice_id = answer_data.get('choice_id')
+        correct_choice = self.choice_ids.filtered('is_correct')
+        return self.points if correct_choice and correct_choice.id == choice_id else 0.0
     
-    def validate_question(self):
-        self.ensure_one()
-        if self.question_type == 'mcq' and not self.answer_option_ids:
-            raise ValidationError(_("Multiple choice question must have at least one answer option."))
-        if self.question_type == 'match' and len(self.match_pair_ids) < 2:
-            raise ValidationError(_("Match the following must have at least two pairs."))
-        if self.question_type == 'fill_blank' and not self.blank_expected_ids:
-            raise ValidationError(_("Fill in the blanks question must have at least one blank to fill."))
-        if self.question_type == 'drag' and not self.answer_option_ids:
-            raise ValidationError(_("Drag and drop question must have at least one draggable option."))
-        if self.question_type == 'drag_into_text' and not self.dragtoken_ids:
-            raise ValidationError(_("Drag into text question must have at least one drag token."))
-        return True
+    def _evaluate_mcq_multi(self, answer_data):
+        selected_ids = set(answer_data.get('choice_ids', []))
+        correct_ids = set(self.choice_ids.filtered('is_correct').ids)
+        return self.points if selected_ids == correct_ids else 0.0
+    
+    def _evaluate_fill_blank(self, answer_data):
+        answers = answer_data.get('answers', {})
+        correct = 0
+        total = len(self.blank_ids)
+        for blank in self.blank_ids:
+            user_answer = answers.get(str(blank.id), '').strip().lower()
+            if user_answer in blank.correct_answers.lower().split(','):
+                correct += 1
+        return (correct / total) * self.points if total > 0 else 0.0
+    
+    def _evaluate_match(self, answer_data):
+        matches = answer_data.get('matches', {})
+        correct = 0
+        total = len(self.match_pair_ids)
+        for pair in self.match_pair_ids:
+            if matches.get(str(pair.left_id)) == pair.right_id:
+                correct += 1
+        return (correct / total) * self.points if total > 0 else 0.0
+    
+    def _evaluate_drag_zone(self, answer_data):
+        placements = answer_data.get('placements', {})
+        # Implementation depends on specific requirements
+        return 0.0  # Placeholder
+    
+    def _evaluate_drag_into_text(self, answer_data):
+        placements = answer_data.get('placements', {})
+        correct = 0
+        total_blanks = len(set(self.drag_token_ids.mapped('blank_number')))
+        
+        for token in self.drag_token_ids.filtered('is_correct'):
+            blank_key = str(token.blank_number)
+            if placements.get(blank_key) == token.label:
+                correct += 1
+        
+        return (correct / total_blanks) * self.points if total_blanks > 0 else 0.0
 
 
-class AnswerOption(models.Model):
-    _name = 'quiz.answer.option'
-    _description = 'Quiz Answer Option'
+class QuizChoice(models.Model):
+    _name = 'quiz.choice'
+    _description = 'Quiz Choice'
     _order = 'sequence, id'
-    
+
     question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
     sequence = fields.Integer(string='Sequence', default=10)
-    label = fields.Char(string='Option Label', required=True)
-    is_correct = fields.Boolean(string='Is Correct', default=False)
-    
-    @api.constrains('is_correct', 'question_id')
-    def _check_has_correct_answer(self):
-        for question in self.mapped('question_id'):
-            if question.question_type == 'mcq':
-                if not any(answer.is_correct for answer in question.answer_option_ids):
-                    raise ValidationError(_("Multiple choice question must have at least one correct answer."))
+    text = fields.Html(string='Choice Text', required=True)
+    is_correct = fields.Boolean(string='Is Correct')
 
 
-class MatchPair(models.Model):
+class QuizBlank(models.Model):
+    _name = 'quiz.blank'
+    _description = 'Quiz Fill in the Blank'
+
+    question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
+    blank_number = fields.Integer(string='Blank Number', required=True)
+    correct_answers = fields.Char(string='Correct Answers', required=True, 
+                                  help='Comma-separated list of correct answers')
+
+
+class QuizMatchPair(models.Model):
     _name = 'quiz.match.pair'
     _description = 'Quiz Match Pair'
-    _order = 'id'
-    
+
     question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
-    left_item = fields.Char(string='Left Item', required=True)
-    right_item = fields.Char(string='Right Item', required=True)
+    left_text = fields.Char(string='Left Item', required=True)
+    right_text = fields.Char(string='Right Item', required=True)
+    left_id = fields.Integer(string='Left ID')
+    right_id = fields.Integer(string='Right ID')
 
 
-class BlankExpected(models.Model):
-    _name = 'quiz.blank.expected'
-    _description = 'Quiz Fill in the Blank Expected Answer'
-    _order = 'id'
-    
+class QuizDragZone(models.Model):
+    _name = 'quiz.drag.zone'
+    _description = 'Quiz Drag Zone'
+
     question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
-    placeholder_label = fields.Char(string='Placeholder Label', required=True)
-    correct_answer = fields.Char(string='Correct Answer', required=True)
+    zone_id = fields.Char(string='Zone ID', required=True)
+    zone_label = fields.Char(string='Zone Label')
+    correct_items = fields.Text(string='Correct Items JSON')
 
 
-class DragToken(models.Model):
-    _name = 'quiz.question.dragtoken'
+class QuizDragToken(models.Model):
+    _name = 'quiz.drag.token'
     _description = 'Quiz Drag Token'
-    _order = 'sequence, id'
-    
+
     question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
-    sequence = fields.Integer(string='Sequence', default=10)
-    label = fields.Char(string='Token Label', required=True, help="Text to be dragged")
-    blank_number = fields.Integer(string='Blank Number', required=True, 
-                                 help="Target blank number this token belongs to (e.g. 1 for {{1}})")
-    is_correct = fields.Boolean(string='Is Correct Match', default=True, 
-                               help="Whether this token is correct for its blank")
-    
-    @api.constrains('blank_number', 'question_id')
-    def _check_blank_number_exists(self):
-        for token in self:
-            if token.blank_number < 1:
-                raise ValidationError(_("Blank number must be a positive number."))
+    label = fields.Char(string='Token Label', required=True, help='The text shown on the draggable token')
+    blank_number = fields.Integer(string='Blank Number', required=True, help='Which blank this token belongs to')
+    is_correct = fields.Boolean(string='Is Correct', help='Whether this token is the correct answer for the blank')

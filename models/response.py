@@ -1,137 +1,118 @@
-from odoo import api, fields, models
+from odoo import models, fields, api, _
+from datetime import datetime, timedelta
 import json
 
 
-class QuizResponse(models.Model):
-    _name = 'quiz.response'
-    _description = 'Quiz Answer Response'
+class QuizSession(models.Model):
+    _name = 'quiz.session'
+    _description = 'Quiz Session'
+    _order = 'create_date desc'
+
+    quiz_id = fields.Many2one('quiz.quiz', string='Quiz', required=True, ondelete='cascade')
+    user_id = fields.Many2one('res.users', string='User')
+    session_token = fields.Char(string='Session Token', required=True)
     
+    # Session status
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('expired', 'Expired'),
+    ], string='State', default='draft')
+    
+    # Timing
+    start_time = fields.Datetime(string='Start Time')
+    end_time = fields.Datetime(string='End Time')
+    time_limit = fields.Integer(string='Time Limit (minutes)')
+    
+    # Scoring
+    total_score = fields.Float(string='Total Score', compute='_compute_scores', store=True)
+    max_score = fields.Float(string='Maximum Score', compute='_compute_scores', store=True)
+    percentage = fields.Float(string='Percentage', compute='_compute_scores', store=True)
+    passed = fields.Boolean(string='Passed', compute='_compute_passed', store=True)
+    
+    # Relationships
+    answer_ids = fields.One2many('quiz.answer', 'session_id', string='Answers')
+    
+    # Participant info (for anonymous users)
+    participant_name = fields.Char(string='Participant Name')
+    participant_email = fields.Char(string='Participant Email')
+    
+    @api.depends('answer_ids.score')
+    def _compute_scores(self):
+        for session in self:
+            session.total_score = sum(session.answer_ids.mapped('score'))
+            session.max_score = session.quiz_id.total_points
+            session.percentage = (session.total_score / session.max_score * 100) if session.max_score > 0 else 0
+    
+    @api.depends('percentage', 'quiz_id.passing_score')
+    def _compute_passed(self):
+        for session in self:
+            session.passed = session.percentage >= session.quiz_id.passing_score
+    
+    def start_session(self):
+        self.write({
+            'state': 'in_progress',
+            'start_time': fields.Datetime.now(),
+            'time_limit': self.quiz_id.time_limit,
+        })
+    
+    def complete_session(self):
+        self.write({
+            'state': 'completed',
+            'end_time': fields.Datetime.now(),
+        })
+    
+    def check_expiry(self):
+        if self.state == 'in_progress' and self.time_limit > 0:
+            if self.start_time + timedelta(minutes=self.time_limit) < datetime.now():
+                self.write({'state': 'expired'})
+                return True
+        return False
+
+
+class QuizAnswer(models.Model):
+    _name = 'quiz.answer'
+    _description = 'Quiz Answer'
+
     session_id = fields.Many2one('quiz.session', string='Session', required=True, ondelete='cascade')
-    question_id = fields.Many2one('quiz.question', string='Question', required=True)
-    answer_json = fields.Text(string='Answer Data', help='JSON formatted answer data')
+    question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
     
-    score = fields.Float(string='Score Awarded', default=0.0)
-    max_score = fields.Float(related='question_id.points', string='Max Score')
-    is_correct = fields.Boolean(string='Is Correct', compute='_compute_is_correct', store=True)
-    feedback = fields.Text(string='Feedback')
+    # Answer data stored as JSON
+    answer_data = fields.Text(string='Answer Data', help='JSON containing the answer details')
+    score = fields.Float(string='Score')
+    max_score = fields.Float(string='Maximum Score', related='question_id.points', store=True)
     
-    @api.depends('score', 'max_score')
-    def _compute_is_correct(self):
-        for response in self:
-            response.is_correct = response.score >= response.max_score
+    # Timing
+    time_spent = fields.Float(string='Time Spent (seconds)')
+    answered_at = fields.Datetime(string='Answered At', default=fields.Datetime.now)
     
-    def evaluate_answer(self):
-        self.ensure_one()
-        if not self.answer_json:
-            self.score = 0
-            return
-            
-        answer_data = json.loads(self.answer_json)
-        question = self.question_id
-        
-        if question.question_type == 'mcq':
-            self._evaluate_mcq(answer_data)
-        elif question.question_type == 'fill_blank':
-            self._evaluate_fill_blank(answer_data)
-        elif question.question_type == 'match':
-            self._evaluate_matching(answer_data)
-        elif question.question_type == 'drag':
-            self._evaluate_drag_drop(answer_data)
-            
-        return True
-        
-    def _evaluate_mcq(self, answer_data):
-        question = self.question_id
-        selected_ids = answer_data.get('selected_options', [])
-        
-        # Get all options and correct options
-        all_options = self.question_id.answer_option_ids
-        correct_options = all_options.filtered(lambda o: o.is_correct)
-        correct_ids = correct_options.ids
-        
-        # Check if single-correct question is correctly answered
-        if len(correct_options) == 1 and len(selected_ids) == 1:
-            self.score = question.points if selected_ids[0] in correct_ids else 0
-            return
-            
-        # Multiple correct options
-        if not question.partial_scoring:
-            # All or nothing
-            if set(selected_ids) == set(correct_ids):
-                self.score = question.points
-            else:
-                self.score = 0
-        else:
-            # Partial scoring
-            total_correct = len(correct_options)
-            if total_correct == 0:
-                self.score = 0
-                return
-                
-            correct_selected = sum(1 for opt_id in selected_ids if opt_id in correct_ids)
-            incorrect_selected = len(selected_ids) - correct_selected
-            
-            # Calculate score based on correct answers minus incorrect selections
-            raw_score = (correct_selected / total_correct) - (incorrect_selected / len(all_options))
-            self.score = max(0, raw_score * question.points)  # Ensure non-negative score
+    @api.model
+    def create(self, vals):
+        answer = super().create(vals)
+        answer._compute_score()
+        return answer
     
-    def _evaluate_fill_blank(self, answer_data):
-        question = self.question_id
-        submitted_answers = answer_data.get('blanks', {})
-        expected_answers = {str(blank.id): blank.correct_answer for blank in question.blank_expected_ids}
-        
-        if not expected_answers:
-            self.score = 0
-            return
-            
-        correct_count = 0
-        for blank_id, expected in expected_answers.items():
-            submitted = submitted_answers.get(blank_id, '')
-            
-            if question.case_sensitive:
-                is_correct = submitted == expected
-            else:
-                is_correct = submitted.lower() == expected.lower()
-                
-            if is_correct:
-                correct_count += 1
-        
-        # Calculate score based on proportion of correct answers
-        self.score = (correct_count / len(expected_answers)) * question.points
+    def write(self, vals):
+        result = super().write(vals)
+        if 'answer_data' in vals:
+            self._compute_score()
+        return result
     
-    def _evaluate_matching(self, answer_data):
-        question = self.question_id
-        submitted_matches = answer_data.get('matches', {})
-        
-        # Create a dictionary of correct matches
-        correct_matches = {str(pair.id): pair.right_item for pair in question.match_pair_ids}
-        
-        if not correct_matches:
-            self.score = 0
-            return
-            
-        # Count correct matches
-        correct_count = sum(1 for pair_id, right_item in submitted_matches.items() 
-                           if pair_id in correct_matches and submitted_matches[pair_id] == correct_matches[pair_id])
-        
-        # Calculate score based on proportion of correct matches
-        self.score = (correct_count / len(correct_matches)) * question.points
+    def _compute_score(self):
+        for answer in self:
+            if answer.answer_data and answer.question_id:
+                try:
+                    answer_data = json.loads(answer.answer_data)
+                    answer.score = answer.question_id.evaluate_answer(answer_data)
+                except (json.JSONDecodeError, AttributeError):
+                    answer.score = 0.0
     
-    def _evaluate_drag_drop(self, answer_data):
-        question = self.question_id
-        submitted_positions = answer_data.get('positions', {})
-        # For sentence fill, positions = {blank_id: answer_option_id}
-        correct_answers = {str(blank.id): blank.correct_answer for blank in question.blank_expected_ids}
-        option_map = {str(opt.id): opt.label for opt in question.answer_option_ids}
-        if not correct_answers:
-            self.score = 0
-            return
-        correct_count = 0
-        for blank_id, correct_label in correct_answers.items():
-            answer_id = submitted_positions.get(blank_id)
-            if answer_id and option_map.get(answer_id, '').strip().lower() == correct_label.strip().lower():
-                correct_count += 1
-        self.score = (correct_count / len(correct_answers)) * question.points
-        
-        # Calculate score based on proportion of correct placements
-        self.score = (correct_count / len(correct_positions)) * question.points
+    def get_answer_data_dict(self):
+        try:
+            return json.loads(self.answer_data) if self.answer_data else {}
+        except json.JSONDecodeError:
+            return {}
+    
+    def set_answer_data_dict(self, data):
+        self.answer_data = json.dumps(data)

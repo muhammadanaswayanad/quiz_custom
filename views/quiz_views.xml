@@ -1,155 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
-        <!-- Quiz Tree View -->
-        <record id="view_quiz_tree" model="ir.ui.view">
-            <field name="name">quiz.quiz.tree</field>
-            <field name="model">quiz.quiz</field>
-            <field name="arch" type="xml">
-                <tree string="Quizzes">
-                    <field name="name"/>
-                    <field name="is_published"/>
-                    <field name="question_count"/>
-                    <field name="total_marks"/>
-                    <field name="session_count"/>
-                    <field name="create_date"/>
-                </tree>
-            </field>
-        </record>
+    <!-- Quiz Tree View -->
+    <record id="view_quiz_tree" model="ir.ui.view">
+        <field name="name">quiz.quiz.tree</field>
+        <field name="model">quiz.quiz</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="slug"/>
+                <field name="is_published"/>
+                <field name="total_questions"/>
+                <field name="total_points"/>
+                <field name="create_date"/>
+            </tree>
+        </field>
+    </record>
 
-        <!-- Quiz Form View -->
-        <record id="view_quiz_form" model="ir.ui.view">
-            <field name="name">quiz.quiz.form</field>
-            <field name="model">quiz.quiz</field>
-            <field name="arch" type="xml">
-                <form string="Quiz">
-                    <header>
-                        <button name="action_view_questions" string="Manage Questions" type="object" class="btn-primary"/>
-                    </header>
-                    <sheet>
-                        <div class="oe_button_box" name="button_box">
-                            <button name="action_view_questions" type="object" class="oe_stat_button" icon="fa-question-circle">
-                                <field name="question_count" widget="statinfo" string="Questions"/>
-                            </button>
-                            <button name="action_view_sessions" type="object" class="oe_stat_button" icon="fa-pencil-square-o">
-                                <field name="session_count" widget="statinfo" string="Attempts"/>
-                            </button>
-                            <field name="is_published" widget="website_redirect_button" options='{"url": "/quiz/${slug}"}'/>
-                        </div>
-                        <div class="oe_title">
-                            <h1>
-                                <field name="name" placeholder="Quiz Title"/>
-                            </h1>
-                        </div>
+    <!-- Quiz Form View -->
+    <record id="view_quiz_form" model="ir.ui.view">
+        <field name="name">quiz.quiz.form</field>
+        <field name="model">quiz.quiz</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="%(action_quiz_questions)d" type="action" string="Manage Questions" class="btn-primary"/>
+                    <field name="is_published" widget="boolean_toggle"/>
+                </header>
+                <sheet>
+                    <group>
                         <group>
-                            <group>
-                                <field name="slug" placeholder="quiz-url-slug"/>
-                                <field name="total_marks"/>
-                                <field name="time_limit"/>
-                            </group>
-                            <group>
-                                <field name="shuffle_questions"/>
-                                <field name="one_question_per_page"/>
-                                <field name="require_login"/>
-                            </group>
+                            <field name="name"/>
+                            <field name="slug"/>
+                            <field name="time_limit"/>
+                            <field name="max_attempts"/>
                         </group>
-                        <notebook>
-                            <page string="Description">
-                                <field name="description" placeholder="Quiz description or instructions..."/>
-                            </page>
-                            <page string="Questions" invisible="1">
-                                <field name="question_ids">
-                                    <tree>
-                                        <field name="sequence" widget="handle"/>
-                                        <field name="content"/>
-                                        <field name="question_type"/>
-                                        <field name="points"/>
-                                    </tree>
-                                </field>
-                            </page>
-                        </notebook>
-                    </sheet>
-                    <div class="oe_chatter">
-                        <field name="message_follower_ids"/>
-                        <field name="activity_ids"/>
-                        <field name="message_ids"/>
-                    </div>
-                </form>
-            </field>
-        </record>
-
-        <!-- Quiz Action -->
-        <record id="action_quiz" model="ir.actions.act_window">
-            <field name="name">Quizzes</field>
-            <field name="res_model">quiz.quiz</field>
-            <field name="view_mode">tree,form</field>
-            <field name="help" type="html">
-                <p class="o_view_nocontent_smiling_face">
-                    Create your first quiz
-                </p>
-                <p>
-                    Create different quizzes with multiple question types.
-                </p>
-            </field>
-        </record>
-
-        <!-- Drag Token Form View -->
-        <record id="view_quiz_question_dragtoken_form" model="ir.ui.view">
-            <field name="name">quiz.question.dragtoken.form</field>
-            <field name="model">quiz.question.dragtoken</field>
-            <field name="arch" type="xml">
-                <form>
-                    <sheet>
                         <group>
-                            <field name="label"/>
-                            <field name="blank_number"/>
-                            <field name="is_correct"/>
-                            <field name="sequence"/>
+                            <field name="total_questions"/>
+                            <field name="total_points"/>
+                            <field name="passing_score"/>
+                            <field name="randomize_questions"/>
+                            <field name="show_results"/>
                         </group>
-                    </sheet>
-                </form>
-            </field>
-        </record>
+                    </group>
+                    <notebook>
+                        <page string="Description">
+                            <field name="description" widget="html"/>
+                        </page>
+                        <page string="Questions">
+                            <field name="question_ids" widget="one2many_list" mode="tree">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="type"/>
+                                    <field name="question_html" widget="html_simple"/>
+                                    <field name="points"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Sessions">
+                            <field name="session_ids" mode="tree" readonly="1">
+                                <tree>
+                                    <field name="participant_name"/>
+                                    <field name="state"/>
+                                    <field name="total_score"/>
+                                    <field name="percentage"/>
+                                    <field name="passed"/>
+                                    <field name="create_date"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
 
-        <!-- Drag Token Tree View -->
-        <record id="view_quiz_question_dragtoken_tree" model="ir.ui.view">
-            <field name="name">quiz.question.dragtoken.tree</field>
-            <field name="model">quiz.question.dragtoken</field>
-            <field name="arch" type="xml">
-                <tree editable="bottom">
-                    <field name="sequence" widget="handle"/>
-                    <field name="label"/>
-                    <field name="blank_number"/>
-                    <field name="is_correct"/>
-                </tree>
-            </field>
-        </record>
+    <!-- Quiz Action -->
+    <record id="action_quiz" model="ir.actions.act_window">
+        <field name="name">Quizzes</field>
+        <field name="res_model">quiz.quiz</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_quiz_tree"/>
+    </record>
 
-        <!-- Update Question Form View to include drag tokens -->
-        <record id="view_quiz_question_form_inherited" model="ir.ui.view">
-            <field name="name">quiz.question.form.inherited</field>
-            <field name="model">quiz.question</field>
-            <field name="inherit_id" ref="quiz_custom.view_quiz_question_form"/>
-            <field name="arch" type="xml">
-                <field name="question_type" position="after">
-                    <field name="text_template" attrs="{'invisible': [('question_type', '!=', 'drag_into_text')], 'required': [('question_type', '=', 'drag_into_text')]}"/>
-                </field>
-                <notebook position="inside">
-                    <page string="Drag Tokens" attrs="{'invisible': [('question_type', '!=', 'drag_into_text')]}">
-                        <field name="dragtoken_ids" context="{'default_question_id': id}">
-                            <tree editable="bottom">
-                                <field name="sequence" widget="handle"/>
-                                <field name="label"/>
-                                <field name="blank_number"/>
-                                <field name="is_correct"/>
-                            </tree>
-                        </field>
-                        <div class="text-muted mt-2">
-                            Create tokens that users can drag into the template text. Use {{1}}, {{2}}, etc. in the text template to create drop zones.
-                        </div>
-                    </page>
-                </notebook>
-            </field>
-        </record>
-    </data>
+    <!-- Menu Items -->
+    <menuitem id="menu_quiz_root" name="Quiz Engine" sequence="10"/>
+    <menuitem id="menu_quiz" name="Quizzes" parent="menu_quiz_root" action="action_quiz" sequence="10"/>
 </odoo>

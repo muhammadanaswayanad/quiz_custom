@@ -1,97 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
-        <!-- Question Tree View -->
-        <record id="view_question_tree" model="ir.ui.view">
-            <field name="name">quiz.question.tree</field>
-            <field name="model">quiz.question</field>
-            <field name="arch" type="xml">
-                <tree string="Questions">
-                    <field name="sequence" widget="handle"/>
-                    <field name="content" string="Question"/>
-                    <field name="question_type"/>
-                    <field name="points"/>
-                    <field name="quiz_id"/>
-                </tree>
-            </field>
-        </record>
-
-        <!-- Question Form View -->
-        <record id="view_question_form" model="ir.ui.view">
-            <field name="name">quiz.question.form</field>
-            <field name="model">quiz.question</field>
-            <field name="arch" type="xml">
-                <form string="Question">
-                    <sheet>
+    <!-- Question Form View -->
+    <record id="view_question_form" model="ir.ui.view">
+        <field name="name">quiz.question.form</field>
+        <field name="model">quiz.question</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
                         <group>
-                            <group>
-                                <field name="quiz_id" options="{'no_create': True}"/>
-                                <field name="question_type"/>
-                                <field name="points"/>
-                            </group>
-                            <group>
-                                <field name="sequence"/>
-                                <field name="negative_marks" invisible="question_type not in ['mcq']"/>
-                                <field name="case_sensitive" invisible="question_type != 'fill_blank'"/>
-                                <field name="partial_scoring" invisible="question_type != 'mcq'"/>
-                            </group>
+                            <field name="quiz_id"/>
+                            <field name="type"/>
+                            <field name="sequence"/>
+                            <field name="points"/>
                         </group>
-                        <field name="content" placeholder="Write your question here..."/>
-                        
-                        <!-- Answer options for MCQ -->
-                        <field name="answer_option_ids" invisible="question_type not in ['mcq', 'drag']">
-                            <tree editable="bottom">
-                                <field name="sequence" widget="handle"/>
-                                <field name="label"/>
-                                <field name="is_correct" column_invisible="parent.question_type == 'drag'"/>
-                            </tree>
-                        </field>
-                        
-                        <!-- Match pairs for matching questions -->
-                        <field name="match_pair_ids" invisible="question_type != 'match'">
-                            <tree editable="bottom">
-                                <field name="left_item"/>
-                                <field name="right_item"/>
-                            </tree>
-                        </field>
-                        
-                        <!-- Expected answers for fill in the blanks -->
-                        <field name="blank_expected_ids" invisible="question_type != 'fill_blank'">
-                            <tree editable="bottom">
-                                <field name="placeholder_label"/>
-                                <field name="correct_answer"/>
-                            </tree>
-                        </field>
-                    </sheet>
-                </form>
-            </field>
-        </record>
-
-        <!-- Question Search View -->
-        <record id="view_question_search" model="ir.ui.view">
-            <field name="name">quiz.question.search</field>
-            <field name="model">quiz.question</field>
-            <field name="arch" type="xml">
-                <search>
-                    <field name="content"/>
-                    <field name="quiz_id"/>
-                    <filter string="Multiple Choice" name="mcq" domain="[('question_type', '=', 'mcq')]"/>
-                    <filter string="Fill in the Blanks" name="fill_blank" domain="[('question_type', '=', 'fill_blank')]"/>
-                    <filter string="Matching" name="match" domain="[('question_type', '=', 'match')]"/>
-                    <filter string="Drag and Drop" name="drag" domain="[('question_type', '=', 'drag')]"/>
-                    <group expand="0" string="Group By">
-                        <filter name="group_by_quiz" string="Quiz" context="{'group_by':'quiz_id'}"/>
-                        <filter name="group_by_type" string="Question Type" context="{'group_by':'question_type'}"/>
                     </group>
-                </search>
-            </field>
-        </record>
+                    <notebook>
+                        <page string="Question">
+                            <field name="question_html" widget="html"/>
+                        </page>
+                        <page string="Answer Options" invisible="type not in ['mcq_single', 'mcq_multi']">
+                            <field name="choice_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="text" widget="html_simple"/>
+                                    <field name="is_correct"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Blanks" invisible="type != 'fill_blank'">
+                            <field name="blank_ids">
+                                <tree editable="bottom">
+                                    <field name="blank_number"/>
+                                    <field name="correct_answers"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Match Pairs" invisible="type != 'match'">
+                            <field name="match_pair_ids">
+                                <tree editable="bottom">
+                                    <field name="left_text"/>
+                                    <field name="right_text"/>
+                                    <field name="left_id"/>
+                                    <field name="right_id"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Drag Zones" invisible="type != 'drag_zone'">
+                            <field name="drag_zone_ids">
+                                <tree editable="bottom">
+                                    <field name="zone_id"/>
+                                    <field name="zone_label"/>
+                                    <field name="correct_items"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Drag Tokens" invisible="type != 'drag_into_text'">
+                            <group>
+                                <field name="question_html" widget="html" string="Question with {{1}}, {{2}} placeholders"/>
+                            </group>
+                            <field name="drag_token_ids">
+                                <tree editable="bottom">
+                                    <field name="label"/>
+                                    <field name="blank_number"/>
+                                    <field name="is_correct"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Explanation">
+                            <field name="explanation" widget="html"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
 
-        <!-- Question Action -->
-        <record id="action_question" model="ir.actions.act_window">
-            <field name="name">Questions</field>
-            <field name="res_model">quiz.question</field>
-            <field name="view_mode">tree,form</field>
-        </record>
-    </data>
+    <!-- Question Tree View -->
+    <record id="view_question_tree" model="ir.ui.view">
+        <field name="name">quiz.question.tree</field>
+        <field name="model">quiz.question</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="quiz_id"/>
+                <field name="type"/>
+                <field name="question_html" widget="html_simple"/>
+                <field name="points"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Question Action -->
+    <record id="action_quiz_questions" model="ir.actions.act_window">
+        <field name="name">Questions</field>
+        <field name="res_model">quiz.question</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_question_tree"/>
+        <field name="context">{'default_quiz_id': active_id}</field>
+    </record>
+
+    <menuitem id="menu_questions" name="Questions" parent="menu_quiz_root" action="action_quiz_questions" sequence="20"/>
 </odoo>
