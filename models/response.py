@@ -118,7 +118,7 @@ class QuizAnswer(models.Model):
         self.answer_data = json.dumps(data)
 
 
-class QuizResponse(models.Model):
+class Response(models.Model):
     _name = 'quiz.response'
     _description = 'Quiz Response'
     
