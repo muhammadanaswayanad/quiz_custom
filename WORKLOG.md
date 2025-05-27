@@ -281,6 +281,17 @@ External ID not found in the system: quiz_engine_pro.menu_quiz_root
 - `security/ir.model.access.csv` - Recreated with clean, simple IDs
 - `__manifest__.py` - Updated to use standard CSV filename
 
+### Session 8: Persistent Cache Issues - New Security File (2024-01-XX)
+**Problem:** Residual CSV data still cached despite file recreation
+
+**Solution:** 
+- Created completely new security file: `quiz_security.csv`
+- Used minimal access for core models only (quiz, question, session)
+- Avoided all problematic model references
+
+**Files Created:**
+- `security/quiz_security.csv` - Fresh security file with unique naming
+
 ---
 *Last Updated: Session 8 - Security Re-enablement*
 *Status: ✅ MODULE READY FOR FUNCTIONAL TESTING WITH SECURITY CONTROLS*
