@@ -91,32 +91,33 @@ class QuizController(http.Controller):
 
     @http.route('/quiz/session/<string:token>/results', type='http', auth='public', website=True)
     def quiz_results(self, token, **kwargs):
-        """View quiz results"""
-        session = request.env['quiz.session'].sudo().search([('session_token', '=', token)], limit=1)
-        if not session or session.state != 'completed':
-            return request.redirect('/quiz')
+        """Display quiz results"""
+        session = request.env['quiz.session'].sudo().search([('token', '=', token)], limit=1)
+        if not session:
+            return request.not_found()
+        
+        # Calculate total score
+        responses = request.env['quiz.response'].sudo().search([('session_id', '=', session.id)])
+        total_score = sum(responses.mapped('score'))
+        max_score = sum(session.quiz_id.question_ids.mapped('points'))
+        percentage = (total_score / max_score * 100) if max_score > 0 else 0
+        
+        # Update session
+        session.write({
+            'state': 'completed',
+            'end_time': fields.Datetime.now(),
+            'total_score': total_score,
+            'percentage': percentage,
+            'passed': percentage >= session.quiz_id.passing_score,
+        })
         
         return request.render('quiz_engine_pro.quiz_results', {
             'session': session,
-            'quiz': session.quiz_id,
+            'responses': responses,
+            'total_score': total_score,
+            'max_score': max_score,
+            'percentage': percentage,
         })
-                'answer_data': json.dumps(answer_data),
-                'answered_at': request.env['ir.fields'].Datetime.now(),
-            })
-        else:
-            request.env['quiz.answer'].sudo().create({
-                'session_id': session.id,
-                'question_id': question_id,
-                'answer_data': json.dumps(answer_data),
-            })
-        
-        return {'success': True}
-
-    @http.route('/quiz/session/<string:token>/complete', type='http', auth='public', website=True, methods=['POST'])
-    def quiz_complete(self, token, **kwargs):
-        """Complete the quiz"""
-        session = request.env['quiz.session'].sudo().search([('session_token', '=', token)], limit=1)
-        if not session:
             return request.redirect('/quiz')
         
         session.complete_session()
