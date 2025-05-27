@@ -2,7 +2,7 @@
 
 A comprehensive, standalone quiz engine for Odoo 17 Community Edition that provides advanced question types and interactive features.
 
-## Current Status - v17.0.1.0.0
+## Current Status - v17.0.1.0.1
 
 ✅ **COMPLETED FEATURES:**
 - Complete module structure and manifest
@@ -13,15 +13,48 @@ A comprehensive, standalone quiz engine for Odoo 17 Community Edition that provi
 - CSS styling and responsive design
 - Security access controls
 
-🔧 **RECENT FIXES:**
-- Fixed missing `action_quiz_questions` definition
-- Separated menu actions to prevent `active_id` context errors
-- Added proper action references in quiz form view
+🔧 **RECENT FIXES (Latest):**
+- Fixed XML syntax errors in question_views.xml
+- Corrected field name references to match model definitions
+- Changed `invisible` attribute syntax to use `attrs` for Odoo 17 compatibility
+- Simplified matching question interface
+- Added "View Public URL" button functionality
+- Fixed menu structure to single parent menu
 
-📋 **INSTALLATION VERIFIED:**
-- Module installs without errors
+📋 **INSTALLATION STATUS:**
+- Module upgrades successfully
 - Menu structure working correctly
 - Backend forms accessible
+- Question forms properly rendered
+
+## Testing Issues - RESOLVED
+
+### ✅ Issue 1: Menu Structure Fixed
+- **Problem:** Multiple main menu items created
+- **Solution:** Consolidated into single "Quiz Engine" parent menu with sub-items
+- **Result:** Clean hierarchical menu structure
+
+### ✅ Issue 2: Match Questions Interface Improved  
+- **Problem:** Confusing field references and UI
+- **Solution:** 
+  - Fixed field names to match model definitions
+  - Simplified to use `match_pair_ids` with `left_text` and `right_text`
+  - Added clear instructions in the form
+- **Usage:** Create pairs with left and right text that should match
+
+### ✅ Issue 3: Public Quiz URLs Available
+- **Problem:** No way to access public quiz URLs
+- **Solution:** Added multiple access methods:
+  - "View Public URL" button in quiz form and tree view
+  - Public URL shown in quiz form: `/quiz/<slug>`
+  - Quiz listing page at `/quiz` shows all published quizzes
+
+### ✅ Issue 4: XML Syntax and Field Errors Fixed
+- **Problem:** XML parsing errors and field name mismatches
+- **Solution:** 
+  - Corrected all field references to match actual model definitions
+  - Fixed XML structure and syntax
+  - Updated `invisible` attributes to use proper `attrs` syntax
 
 ## Features
 
@@ -46,15 +79,50 @@ A comprehensive, standalone quiz engine for Odoo 17 Community Edition that provi
 
 1. Copy the `quiz_engine_pro` folder to your Odoo addons directory
 2. Update the addons list in Odoo
-3. Install the "Quiz Engine Pro" module
+3. Install/Upgrade the "Quiz Engine Pro" module
+
+## Quick Start Testing
+
+1. **Create a Quiz:**
+   - Go to Quiz Engine → Quizzes → Create
+   - Fill in name and slug
+   - Mark as "Published"
+
+2. **Add Questions:**
+   - Click "Manage Questions" button
+   - Select question type
+   - Follow the improved instructions for each type:
+     - **Multiple Choice:** Add options, mark correct answers
+     - **Match:** Add pairs with left and right text
+     - **Drag into Text:** Use {{1}}, {{2}} placeholders, add tokens
+     - **Fill Blanks:** Add correct answers for each blank
+
+3. **Access Public Quiz:**
+   - Click "View Public URL" button, OR
+   - Visit `/quiz/<your-slug>` directly, OR  
+   - Browse all quizzes at `/quiz`
+
+## Field Reference Guide
+
+### Question Model Fields
+- `choice_ids` → `text`, `is_correct`
+- `match_pair_ids` → `left_text`, `right_text`  
+- `drag_token_ids` → `text`, `correct_for_blank`
+- `fill_blank_answers` → `blank_number`, `correct_answer`
+
+## Public Access URLs
+
+- **Quiz List:** `http://your-domain/quiz`
+- **Specific Quiz:** `http://your-domain/quiz/<slug>`
+- **Example:** `http://your-domain/quiz/javascript-basics`
 
 ## Menu Structure
 
 ```
 Quiz Engine/
 ├── Quizzes (quiz.quiz list/form)
-├── Questions (quiz.question list/form) 
-└── Sessions (quiz.session list/form)
+├── All Questions (quiz.question list/form) 
+└── Quiz Sessions (quiz.session list/form)
 ```
 
 ## Module Structure
@@ -66,17 +134,17 @@ quiz_engine_pro/
 ├── README.md
 ├── models/
 │   ├── __init__.py
-│   ├── quiz.py          # Main quiz model
+│   ├── quiz.py          # Main quiz model + action_view_public_url method
 │   ├── question.py      # Question types and choices
 │   └── response.py      # Sessions and answers
 ├── views/
-│   ├── quiz_views.xml
-│   ├── question_views.xml
+│   ├── quiz_views.xml           # Fixed menu structure & public URL buttons
+│   ├── question_views.xml       # Fixed field names & XML syntax
 │   ├── session_views.xml
 │   └── website_templates.xml
 ├── controllers/
 │   ├── __init__.py
-│   └── main.py          # Frontend routes
+│   └── main.py          # Frontend routes + quiz listing
 ├── security/
 │   └── ir.model.access.csv
 └── static/src/
@@ -86,88 +154,12 @@ quiz_engine_pro/
         └── quiz_styles.css
 ```
 
-## Models Overview
+## Technical Notes
 
-### quiz.quiz
-Main quiz container with configuration options.
-
-**Key Fields:**
-- `name` - Quiz title
-- `slug` - URL-friendly identifier
-- `is_published` - Publication status
-- `randomize_questions` - Question order randomization
-- `time_limit` - Maximum time in minutes
-- `passing_score` - Minimum percentage to pass
-
-### quiz.question
-Individual questions with type-specific configurations.
-
-**Question Types:**
-- `mcq_single` - Single correct answer
-- `mcq_multi` - Multiple correct answers
-- `fill_blank` - Text input blanks
-- `match` - Matching pairs
-- `drag_zone` - Drag into zones
-- `drag_into_text` - Drag tokens into text placeholders
-
-### quiz.session
-Tracks individual quiz attempts and scoring.
-
-**Features:**
-- Session state management
-- Time tracking
-- Score calculation
-- Anonymous user support
-
-## Known Issues & Troubleshooting
-
-### Common Errors Fixed:
-1. **Missing action reference**: Fixed `action_quiz_questions` not found error
-2. **Context evaluation**: Separated menu actions to prevent `active_id` errors
-3. **Menu structure**: Proper parent-child relationships established
-
-### Current Limitations:
-- Frontend templates need testing with real quiz data
-- Drag-and-drop functionality needs browser testing
-- Session management needs stress testing
-
-## Usage Guide
-
-### Creating a Quiz
-
-1. Go to Quiz Engine → Quizzes
-2. Click "Create" 
-3. Fill in quiz details:
-   - Name and description
-   - Time limit (optional)
-   - Passing score percentage
-   - Randomization settings
-4. Save and add questions
-
-### Adding Questions
-
-1. Open a quiz record
-2. Go to "Questions" tab or click "Manage Questions"
-3. Select question type
-4. Enter question content using HTML editor
-5. Configure type-specific options:
-
-#### Multiple Choice
-- Add choices in the "Answer Options" tab
-- Mark correct answers with checkbox
-
-#### Drag Into Text
-- Use `{{1}}`, `{{2}}` placeholders in question HTML
-- Add drag tokens in "Drag Tokens" tab
-- Set correct token for each blank number
-
-### Frontend Access
-
-Quiz URLs follow the pattern: `/quiz/<slug>`
-
-Example: `/quiz/javascript-basics`
-
-## Technical Details
+### Odoo 17 Compatibility
+- Used `attrs` instead of `invisible` for conditional visibility
+- Proper field name references matching model definitions
+- Compatible widget usage (`html`, `radio`, etc.)
 
 ### Action Definitions
 - `action_quiz_list` - Main quiz listing
@@ -175,45 +167,53 @@ Example: `/quiz/javascript-basics`
 - `action_questions` - All questions (standalone menu)
 - `action_quiz_sessions` - Session management
 
-### Drag and Drop Implementation
+## Next Steps for Testing
 
-The drag-into-text feature uses native HTML5 drag and drop:
+1. **Create Sample Data:** Test each question type with real content
+2. **Frontend Testing:** Test the public quiz interface at `/quiz`
+3. **Question Workflow:** Verify complete question creation process
+4. **Session Testing:** Test quiz taking and result generation
 
-1. Question HTML contains placeholders: `{{1}}`, `{{2}}`
-2. JavaScript converts these to drop zones
-3. Tokens are rendered as draggable elements
-4. Answer data is stored as JSON: `{"1": "token1", "2": "token2"}`
+## Known Limitations
 
-### Scoring System
+- Frontend templates need testing with real quiz data
+- Drag-and-drop functionality needs browser compatibility testing
+- Session management performance testing needed
 
-- Each question has a configurable point value
-- Answers are evaluated using question-specific logic
-- Partial scoring supported for some question types
-- Final percentage calculated for pass/fail determination
+## Version History
 
-### Session Management
+### v17.0.1.0.1 - Bug Fixes
+- ✅ Fixed XML syntax errors
+- ✅ Corrected field name references
+- ✅ Updated Odoo 17 compatibility
+- ✅ Improved question form interface
 
-- Unique tokens identify quiz sessions
-- State tracking: draft → in_progress → completed/expired
-- Anonymous user support with optional participant info
-- Time limit enforcement with automatic expiry
+### v17.0.1.0.0 - Initial Release
+- ✅ Complete module structure
+- ✅ All question types implemented
+- ✅ Backend management interface
+- ✅ Fixed installation errors
+- ✅ Working menu structure
 
-## API Endpoints
+## Contributing
 
-### Frontend Routes
-- `GET /quiz` - List published quizzes
-- `GET /quiz/<slug>` - Quiz start page
-- `POST /quiz/<slug>/take` - Begin quiz session
-- `GET /quiz/session/<token>/question/<id>` - Question display
-- `POST /quiz/session/<token>/answer` - Submit answer (JSON)
-- `POST /quiz/session/<token>/complete` - Complete quiz
-- `GET /quiz/session/<token>/results` - View results
+1. Fork the repository
+2. Create feature branch
+3. Follow Odoo coding standards
+4. Add tests for new functionality
+5. Submit pull request
 
-## Testing Checklist
+## License
 
-### Backend Testing
-- [x] Module installation
-- [x] Menu navigation
+LGPL-3 (same as Odoo Community Edition)
+
+## Support
+
+For issues and questions:
+- Check existing GitHub issues
+- Create new issue with detailed description
+- Include Odoo version and error logs
+- Provide steps to reproduce
 - [x] Quiz creation
 - [ ] Question creation for each type
 - [ ] Session tracking
