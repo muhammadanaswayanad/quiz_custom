@@ -67,7 +67,7 @@
                             </div>
                             <field name="drag_token_ids">
                                 <tree editable="bottom">
-                                    <field name="token_text" string="Draggable Token"/>
+                                    <field name="text" string="Draggable Token"/>
                                     <field name="correct_for_blank" string="Correct for Blank #"/>
                                 </tree>
                             </field>
