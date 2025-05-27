@@ -107,18 +107,4 @@
             </tree>
         </field>
     </record>
-
-</odoo>
-        <field name="model">quiz.question</field>
-        <field name="arch" type="xml">
-            <tree>
-                <field name="quiz_id"/>
-                <field name="sequence"/>
-                <field name="type"/>
-                <field name="question_html" widget="html_simple"/>
-                <field name="points"/>
-            </tree>
-        </field>
-    </record>
-
 </odoo>
