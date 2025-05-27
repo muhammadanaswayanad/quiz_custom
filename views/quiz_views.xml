@@ -16,6 +16,16 @@
         </field>
     </record>
 
+    <!-- Action for managing questions -->
+    <record id="action_quiz_questions" model="ir.actions.act_window">
+        <field name="name">Quiz Questions</field>
+        <field name="res_model">quiz.question</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('quiz_id', '=', active_id)]</field>
+        <field name="context">{'default_quiz_id': active_id}</field>
+        <field name="target">current</field>
+    </record>
+
     <!-- Quiz Form View -->
     <record id="view_quiz_form" model="ir.ui.view">
         <field name="name">quiz.quiz.form</field>
