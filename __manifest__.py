@@ -19,7 +19,7 @@
     'website': 'https://www.yourcompany.com',
     'depends': ['base', 'web', 'website'],
     'data': [
-        'security/ir.model.access.csv',  # Standard filename with clean content
+        'security/ir.model.access.csv',  # Re-enabled with placeholder models
         'views/quiz_views.xml',
         'views/question_views.xml', 
         'views/session_views.xml',

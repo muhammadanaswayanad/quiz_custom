@@ -2,11 +2,16 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 quiz_engine_quiz_user,Quiz Engine quiz user,model_quiz_quiz,base.group_user,1,1,1,1
 quiz_engine_question_user,Quiz Engine question user,model_quiz_question,base.group_user,1,1,1,1
 quiz_engine_session_user,Quiz Engine session user,model_quiz_session,base.group_user,1,1,1,1
+quiz_engine_choice_user,Quiz Engine choice user,model_quiz_choice,base.group_user,1,1,1,1
+quiz_engine_match_pair_user,Quiz Engine match pair user,model_quiz_match_pair,base.group_user,1,1,1,1
+quiz_engine_drag_token_user,Quiz Engine drag token user,model_quiz_drag_token,base.group_user,1,1,1,1
+quiz_engine_fill_blank_answer_user,Quiz Engine fill blank answer user,model_quiz_fill_blank_answer,base.group_user,1,1,1,1
+quiz_engine_response_user,Quiz Engine response user,model_quiz_response,base.group_user,1,1,1,1
+quiz_engine_blank_user,Quiz Engine blank user,model_quiz_blank,base.group_user,1,1,1,1
+quiz_engine_drag_zone_user,Quiz Engine drag zone user,model_quiz_drag_zone,base.group_user,1,1,1,1
 quiz_engine_quiz_public,Quiz Engine quiz public,model_quiz_quiz,base.group_public,1,0,0,0
 quiz_engine_question_public,Quiz Engine question public,model_quiz_question,base.group_public,1,0,0,0
 quiz_engine_session_public,Quiz Engine session public,model_quiz_session,base.group_public,1,1,1,0
-quiz_session_user,quiz.session user,model_quiz_session,base.group_user,1,1,1,1
-quiz_response_user,quiz.response user,model_quiz_response,base.group_user,1,1,1,1
 quiz_quiz_public,quiz.quiz public,model_quiz_quiz,base.group_public,1,0,0,0
 quiz_question_public,quiz.question public,model_quiz_question,base.group_public,1,0,0,0
 quiz_choice_public,quiz.choice public,model_quiz_choice,base.group_public,1,0,0,0

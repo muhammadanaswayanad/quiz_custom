@@ -171,3 +171,18 @@ class FillBlankAnswer(models.Model):
     question_id = fields.Many2one('quiz.question', required=True, ondelete='cascade')
     blank_number = fields.Integer(string='Blank Number', required=True)
     correct_answer = fields.Char(string='Correct Answer', required=True)
+
+
+# Placeholder models for cached database references
+class QuizBlank(models.Model):
+    _name = 'quiz.blank'
+    _description = 'Quiz Blank (Placeholder)'
+    
+    name = fields.Char(string='Name')
+
+
+class QuizDragZone(models.Model):
+    _name = 'quiz.drag.zone'
+    _description = 'Quiz Drag Zone (Placeholder)'
+    
+    name = fields.Char(string='Name')
