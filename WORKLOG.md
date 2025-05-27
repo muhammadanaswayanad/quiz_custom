@@ -272,6 +272,15 @@ External ID not found in the system: quiz_engine_pro.menu_quiz_root
 
 **Status:** Ready to upgrade module with security controls
 
+### Session 8: Security CSV Model Name Error (2024-01-XX)
+**Error:** `KeyError: 'access_rights'` - System tried to use filename as model name
+
+**Fix:** Reverted to standard `ir.model.access.csv` filename with completely fresh content and simplified IDs
+
+**Files Modified:**
+- `security/ir.model.access.csv` - Recreated with clean, simple IDs
+- `__manifest__.py` - Updated to use standard CSV filename
+
 ---
 *Last Updated: Session 8 - Security Re-enablement*
 *Status: ✅ MODULE READY FOR FUNCTIONAL TESTING WITH SECURITY CONTROLS*
