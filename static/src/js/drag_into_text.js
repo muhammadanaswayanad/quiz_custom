@@ -12,13 +12,12 @@ odoo.define('quiz_engine_pro.drag_into_text', function (require) {
             'click #submit-btn': '_onSubmitQuiz',
         },
 
-        start: function () {
+        start: function() {
             this._super.apply(this, arguments);
             this.currentQuestionIndex = 0;
             this.totalQuestions = parseInt(window.totalQuestions || 0);
             this.sessionToken = window.sessionToken;
             this.answers = {};
-            
             this._initializeDragAndDrop();
             this._updateNavigation();
             return Promise.resolve();
@@ -221,4 +220,5 @@ odoo.define('quiz_engine_pro.drag_into_text', function (require) {
     });
 
     return publicWidget.registry.QuizDragIntoText;
+});
 });
