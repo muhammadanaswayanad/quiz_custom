@@ -1,10 +1,10 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_quiz_quiz_admin,quiz.quiz admin,model_quiz_quiz,base.group_user,1,1,1,1
-access_quiz_question_admin,quiz.question admin,model_quiz_question,base.group_user,1,1,1,1
-access_quiz_choice_admin,quiz.choice admin,model_quiz_choice,base.group_user,1,1,1,1
-access_quiz_match_pair_admin,quiz.match.pair admin,model_quiz_match_pair,base.group_user,1,1,1,1
-access_quiz_drag_token_admin,quiz.drag.token admin,model_quiz_drag_token,base.group_user,1,1,1,1
-access_quiz_fill_blank_answer_admin,quiz.fill.blank.answer admin,model_quiz_fill_blank_answer,base.group_user,1,1,1,1
+access_quiz_quiz_user,quiz.quiz user,model_quiz_quiz,base.group_user,1,1,1,1
+access_quiz_question_user,quiz.question user,model_quiz_question,base.group_user,1,1,1,1
+access_quiz_session_user,quiz.session user,model_quiz_session,base.group_user,1,1,1,1
+access_quiz_quiz_public,quiz.quiz public,model_quiz_quiz,base.group_public,1,0,0,0
+access_quiz_question_public,quiz.question public,model_quiz_question,base.group_public,1,0,0,0
+access_quiz_session_public,quiz.session public,model_quiz_session,base.group_public,1,1,1,0
 access_quiz_session_admin,quiz.session admin,model_quiz_session,base.group_user,1,1,1,1
 access_quiz_response_admin,quiz.response admin,model_quiz_response,base.group_user,1,1,1,1
 access_quiz_quiz_public,quiz.quiz public,model_quiz_quiz,base.group_public,1,0,0,0

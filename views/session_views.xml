@@ -6,15 +6,13 @@
         <field name="model">quiz.session</field>
         <field name="arch" type="xml">
             <tree>
-                <field name="quiz_id"/>
                 <field name="participant_name"/>
-                <field name="user_id"/>
+                <field name="quiz_id"/>
                 <field name="state"/>
                 <field name="total_score"/>
                 <field name="percentage"/>
                 <field name="passed"/>
-                <field name="start_time"/>
-                <field name="end_time"/>
+                <field name="create_date"/>
             </tree>
         </field>
     </record>
@@ -28,32 +26,34 @@
                 <sheet>
                     <group>
                         <group>
-                            <field name="quiz_id"/>
-                            <field name="state"/>
-                            <field name="session_token"/>
-                        </group>
-                        <group>
-                            <field name="user_id"/>
                             <field name="participant_name"/>
-                            <field name="participant_email"/>
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="start_time"/>
-                            <field name="end_time"/>
-                            <field name="time_limit"/>
+                            <field name="quiz_id"/>
+                            <field name="token"/>
+                            <field name="state"/>
                         </group>
                         <group>
                             <field name="total_score"/>
-                            <field name="max_score"/>
                             <field name="percentage"/>
                             <field name="passed"/>
+                            <field name="start_time"/>
+                            <field name="end_time"/>
                         </group>
                     </group>
-                    <notebook>
-                        <page string="Answers">
-                            <field name="answer_ids" mode="tree" readonly="1">
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Session Action -->
+    <record id="action_quiz_sessions" model="ir.actions.act_window">
+        <field name="name">Quiz Sessions</field>
+        <field name="res_model">quiz.session</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_session_tree"/>
+    </record>
+
+    <menuitem id="menu_sessions" name="Sessions" parent="menu_quiz_root" action="action_quiz_sessions" sequence="30"/>
+</odoo>
                                 <tree>
                                     <field name="question_id"/>
                                     <field name="score"/>
