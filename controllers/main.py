@@ -75,22 +75,22 @@ class QuizController(http.Controller):
             'question_index': question_num - 1,
         })
 
-    @http.route('/quiz/session/<string:token>/complete', type='http', auth='public', website=True, methods=['POST'])
+    @http.route(['/quiz/session/<string:token>/complete'], type='http', auth='public', website=True)
     def quiz_complete(self, token, **kwargs):
-        """Complete the quiz"""
+        """Complete quiz and redirect to results"""
+        return request.redirect('/quiz')
+
+    @http.route('/quiz/session/<string:token>/results', type='http', auth='public', website=True)
+    def quiz_results(self, token, **kwargs):
+        """View quiz results"""
         session = request.env['quiz.session'].sudo().search([('session_token', '=', token)], limit=1)
-        if not session:
+        if not session or session.state != 'completed':
             return request.redirect('/quiz')
-        
-        session.complete_session()
         
         return request.render('quiz_engine_pro.quiz_results', {
             'session': session,
             'quiz': session.quiz_id,
         })
-
-    @http.route('/quiz/session/<string:token>/results', type='http', auth='public', website=True)
-    def quiz_results(self, token, **kwargs):
         """Display quiz results"""
         session = request.env['quiz.session'].sudo().search([('token', '=', token)], limit=1)
         if not session:
@@ -118,7 +118,7 @@ class QuizController(http.Controller):
             'max_score': max_score,
             'percentage': percentage,
         })
-            return request.redirect('/quiz')
+        return request.redirect('/quiz')
         
         session.complete_session()
         
