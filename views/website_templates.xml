@@ -3,163 +3,250 @@
     <!-- Quiz List Template -->
     <template id="quiz_list" name="Quiz List">
         <t t-call="website.layout">
-            <div class="container mt-4">
-                <h1>Available Quizzes</h1>
-                <div class="row">
-                    <t t-foreach="quizzes" t-as="quiz">
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title" t-field="quiz.name"/>
-                                    <p class="card-text" t-field="quiz.description"/>
-                                    <div class="quiz-meta">
-                                        <small class="text-muted">
-                                            <i class="fa fa-question-circle"/> <t t-esc="quiz.total_questions"/> questions
-                                            <i class="fa fa-star ml-2"/> <t t-esc="quiz.total_points"/> points
-                                        </small>
-                                    </div>
-                                    <a t-attf-href="/quiz/#{quiz.slug}" class="btn btn-primary mt-2">Take Quiz</a>
+            <div id="wrap">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 offset-lg-2">
+                            <h1 class="text-center mb-4">Available Quizzes</h1>
+                            <t t-if="not quizzes">
+                                <div class="alert alert-info text-center">
+                                    <h4>No quizzes available at the moment</h4>
+                                    <p>Please check back later for new quizzes.</p>
                                 </div>
-                            </div>
-                        </div>
-                    </t>
-                </div>
-            </div>
-        </t>
-    </template>
-
-    <!-- Quiz Start Template -->
-    <template id="quiz_start" name="Quiz Start">
-        <t t-call="website.layout">
-            <div class="container mt-4">
-                <div class="row justify-content-center">
-                    <div class="col-md-8">
-                        <div class="card">
-                            <div class="card-header">
-                                <h2 t-field="quiz.name"/>
-                            </div>
-                            <div class="card-body">
-                                <div t-field="quiz.description"/>
-                                <div class="quiz-info mt-4">
-                                    <p><strong>Questions:</strong> <t t-esc="quiz.total_questions"/></p>
-                                    <p><strong>Total Points:</strong> <t t-esc="quiz.total_points"/></p>
-                                    <p t-if="quiz.time_limit"><strong>Time Limit:</strong> <t t-esc="quiz.time_limit"/> minutes</p>
-                                    <p><strong>Passing Score:</strong> <t t-esc="quiz.passing_score"/>%</p>
-                                </div>
-                                <form method="post" t-attf-action="/quiz/#{quiz.slug}/take">
-                                    <div class="form-group">
-                                        <label for="participant_name">Name</label>
-                                        <input type="text" class="form-control" name="participant_name" required="required"/>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="participant_email">Email (optional)</label>
-                                        <input type="email" class="form-control" name="participant_email"/>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary btn-lg">Start Quiz</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </t>
-    </template>
-
-    <!-- Quiz Taking Template -->
-    <template id="quiz_take" name="Quiz Take">
-        <t t-call="website.layout">
-            <div class="container-fluid quiz-container">
-                <div class="quiz-header">
-                    <h3 t-field="quiz.name"/>
-                    <div class="quiz-progress">
-                        Question <span id="current-question">1</span> of <t t-esc="len(questions)"/>
-                    </div>
-                    <div id="timer" t-if="quiz.time_limit"/>
-                </div>
-                
-                <div class="quiz-content">
-                    <t t-foreach="questions" t-as="question">
-                        <div t-attf-class="question-container #{'' if question_index == 0 else 'd-none'}" 
-                             t-attf-data-question-id="#{question.id}">
-                            <div class="question-text" t-field="question.question_html"/>
-                            
-                            <!-- MCQ Single -->
-                            <div t-if="question.type == 'mcq_single'" class="mcq-options">
-                                <t t-foreach="question.choice_ids" t-as="choice">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" 
-                                               t-attf-name="question_#{question.id}" 
-                                               t-attf-value="#{choice.id}"/>
-                                        <label class="form-check-label" t-field="choice.text"/>
-                                    </div>
-                                </t>
-                            </div>
-                            
-                            <!-- MCQ Multiple -->
-                            <div t-if="question.type == 'mcq_multi'" class="mcq-options">
-                                <t t-foreach="question.choice_ids" t-as="choice">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" 
-                                               t-attf-name="question_#{question.id}[]" 
-                                               t-attf-value="#{choice.id}"/>
-                                        <label class="form-check-label" t-field="choice.text"/>
-                                    </div>
-                                </t>
-                            </div>
-                            
-                            <!-- Drag Into Text -->
-                            <div t-if="question.type == 'drag_into_text'" class="drag-into-text">
-                                <div class="question-with-blanks" t-field="question.question_html"/>
-                                <div class="drag-tokens">
-                                    <t t-foreach="question.drag_token_ids" t-as="token">
-                                        <div class="token" t-attf-data-value="#{token.label}" 
-                                             t-esc="token.label"/>
+                            </t>
+                            <t t-else="">
+                                <div class="row">
+                                    <t t-foreach="quizzes" t-as="quiz">
+                                        <div class="col-md-6 mb-4">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h5 class="card-title" t-field="quiz.name"/>
+                                                    <p class="card-text" t-field="quiz.description"/>
+                                                    <div class="quiz-info">
+                                                        <small class="text-muted">
+                                                            <i class="fa fa-question-circle"/> <t t-esc="quiz.total_questions"/> questions
+                                                            <t t-if="quiz.time_limit">
+                                                                | <i class="fa fa-clock-o"/> <t t-esc="quiz.time_limit"/> minutes
+                                                            </t>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer">
+                                                    <a t-attf-href="/quiz/#{quiz.slug}" class="btn btn-primary btn-block">
+                                                        Start Quiz
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </t>
                                 </div>
-                            </div>
+                            </t>
                         </div>
-                    </t>
-                </div>
-                
-                <div class="quiz-navigation">
-                    <button id="prev-btn" class="btn btn-secondary" disabled="disabled">Previous</button>
-                    <button id="next-btn" class="btn btn-primary">Next</button>
-                    <button id="submit-btn" class="btn btn-success d-none">Submit Quiz</button>
+                    </div>
                 </div>
             </div>
-            
-            <script>
-                var sessionToken = '<t t-esc="session.session_token"/>';
-                var totalQuestions = <t t-esc="len(questions)"/>;
-            </script>
+        </t>
+    </template>
+
+    <!-- Quiz Detail Template -->
+    <template id="quiz_detail" name="Quiz Detail">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 offset-lg-2">
+                            <div class="text-center mb-4">
+                                <h1 t-field="quiz.name"/>
+                                <div class="quiz-description" t-field="quiz.description"/>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Quiz Information</h5>
+                                    <ul class="list-unstyled">
+                                        <li><strong>Questions:</strong> <t t-esc="quiz.total_questions"/></li>
+                                        <li><strong>Total Points:</strong> <t t-esc="quiz.total_points"/></li>
+                                        <t t-if="quiz.time_limit">
+                                            <li><strong>Time Limit:</strong> <t t-esc="quiz.time_limit"/> minutes</li>
+                                        </t>
+                                        <li><strong>Passing Score:</strong> <t t-esc="quiz.passing_score"/>%</li>
+                                    </ul>
+                                    
+                                    <form t-attf-action="/quiz/#{quiz.slug}/start" method="post" class="mt-4">
+                                        <div class="form-group">
+                                            <label for="participant_name">Your Name *</label>
+                                            <input type="text" name="participant_name" class="form-control" required="required"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="participant_email">Email (Optional)</label>
+                                            <input type="email" name="participant_email" class="form-control"/>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary btn-lg btn-block">
+                                            Start Quiz
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Quiz Question Template -->
+    <template id="quiz_question" name="Quiz Question">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-10 offset-lg-1">
+                            <div class="quiz-header mb-4">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h2 t-field="quiz.name"/>
+                                        <p class="text-muted">Participant: <t t-esc="session.participant_name"/></p>
+                                    </div>
+                                    <div class="col-md-4 text-right">
+                                        <div class="progress mb-2">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 t-attf-style="width: #{(question_index + 1) / len(quiz.question_ids) * 100}%"/>
+                                        </div>
+                                        <small class="text-muted">
+                                            Question <t t-esc="question_index + 1"/> of <t t-esc="len(quiz.question_ids)"/>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="question-content mb-4">
+                                        <h4>Question <t t-esc="question_index + 1"/></h4>
+                                        <div t-field="question.question_html"/>
+                                        <small class="text-muted">Points: <t t-esc="question.points"/></small>
+                                    </div>
+                                    
+                                    <form method="post" class="question-form">
+                                        <input type="hidden" name="session" t-att-value="session.token"/>
+                                        
+                                        <!-- Multiple Choice Single -->
+                                        <t t-if="question.type == 'mcq_single'">
+                                            <div class="choices">
+                                                <t t-foreach="question.choice_ids" t-as="choice">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" 
+                                                               name="answer_data" t-att-value="choice.id" 
+                                                               t-att-id="'choice_%s' % choice.id"/>
+                                                        <label class="form-check-label" t-att-for="'choice_%s' % choice.id">
+                                                            <t t-esc="choice.text"/>
+                                                        </label>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </t>
+                                        
+                                        <!-- Multiple Choice Multiple -->
+                                        <t t-if="question.type == 'mcq_multiple'">
+                                            <div class="choices">
+                                                <t t-foreach="question.choice_ids" t-as="choice">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" 
+                                                               name="answer_data" t-att-value="choice.id" 
+                                                               t-att-id="'choice_%s' % choice.id"/>
+                                                        <label class="form-check-label" t-att-for="'choice_%s' % choice.id">
+                                                            <t t-esc="choice.text"/>
+                                                        </label>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </t>
+                                        
+                                        <!-- Fill in the Blanks -->
+                                        <t t-if="question.type == 'fill_blanks'">
+                                            <div class="fill-blanks">
+                                                <p>Fill in the missing words:</p>
+                                                <t t-foreach="question.fill_blank_answer_ids" t-as="blank">
+                                                    <div class="form-group">
+                                                        <label>Blank <t t-esc="blank.sequence"/>:</label>
+                                                        <input type="text" class="form-control" 
+                                                               t-att-name="'blank_%s' % blank.sequence" 
+                                                               placeholder="Enter your answer"/>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </t>
+                                        
+                                        <!-- Other question types would be added here -->
+                                        
+                                        <div class="question-navigation mt-4">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <t t-if="question_index > 0">
+                                                        <a t-attf-href="/quiz/#{quiz.slug}/question/#{question_index}?session=#{session.token}" 
+                                                           class="btn btn-secondary">Previous</a>
+                                                    </t>
+                                                </div>
+                                                <div class="col-6 text-right">
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <t t-if="question_index + 1 == len(quiz.question_ids)">
+                                                            Complete Quiz
+                                                        </t>
+                                                        <t t-else="">
+                                                            Next Question
+                                                        </t>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </t>
     </template>
 
     <!-- Quiz Results Template -->
     <template id="quiz_results" name="Quiz Results">
         <t t-call="website.layout">
-            <div class="container mt-4">
-                <div class="row justify-content-center">
-                    <div class="col-md-8">
-                        <div class="card">
-                            <div class="card-header">
-                                <h2>Quiz Results</h2>
+            <div id="wrap">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 offset-lg-2">
+                            <div class="text-center mb-4">
+                                <h1>Quiz Complete!</h1>
+                                <h2 t-field="session.quiz_id.name"/>
                             </div>
-                            <div class="card-body">
-                                <div class="results-summary">
-                                    <h4>Your Score: <t t-esc="session.total_score"/> / <t t-esc="session.max_score"/></h4>
-                                    <h5>Percentage: <t t-esc="round(session.percentage, 1)"/>%</h5>
-                                    <div t-attf-class="alert #{session.passed and 'alert-success' or 'alert-danger'}">
-                                        <t t-if="session.passed">
-                                            <i class="fa fa-check-circle"/> Congratulations! You passed the quiz.
-                                        </t>
-                                        <t t-else="">
-                                            <i class="fa fa-times-circle"/> You did not meet the passing score of <t t-esc="session.quiz_id.passing_score"/>%.
-                                        </t>
+                            
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h3>Your Results</h3>
+                                    <div class="result-score mb-4">
+                                        <div class="score-display">
+                                            <span class="score-number"><t t-esc="session.total_score or 0"/></span>
+                                            <span class="score-total">/ <t t-esc="max_score or 0"/></span>
+                                        </div>
+                                        <div class="score-percentage">
+                                            <t t-esc="'%.1f' % (session.percentage or 0)"/>%
+                                        </div>
+                                        <div t-att-class="'result-status ' + ('passed' if session.passed else 'failed')">
+                                            <t t-if="session.passed">
+                                                <i class="fa fa-check-circle"/> Passed!
+                                            </t>
+                                            <t t-else="">
+                                                <i class="fa fa-times-circle"/> Not Passed
+                                            </t>
+                                        </div>
                                     </div>
-                                </div>
-                                
-                                <div class="mt-4">
+                                    
+                                    <div class="participant-info">
+                                        <p><strong>Participant:</strong> <t t-esc="session.participant_name"/></p>
+                                        <p><strong>Completed:</strong> <t t-esc="session.end_time"/></p>
+                                    </div>
+                                    
                                     <a href="/quiz" class="btn btn-primary">Take Another Quiz</a>
                                 </div>
                             </div>
