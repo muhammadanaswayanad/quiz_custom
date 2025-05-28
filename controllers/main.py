@@ -25,7 +25,7 @@ class QuizController(http.Controller):
             'quiz': quiz
         })
 
-    @http.route(['/quiz/<string:slug>/start'], type='http', auth='public', methods=['POST'], csrf=False)
+    @http.route(['/quiz/<string:slug>/start'], type='http', auth='public', methods=['POST'], csrf=False, website=True)
     def quiz_start(self, slug, **kwargs):
         """Start a quiz session"""
         quiz = request.env['quiz.quiz'].sudo().search([('slug', '=', slug), ('published', '=', True)], limit=1)
@@ -35,11 +35,15 @@ class QuizController(http.Controller):
         participant_name = kwargs.get('participant_name', 'Anonymous')
         participant_email = kwargs.get('participant_email', '')
         
-        # Create session
+        # Generate unique session token
+        session_token = str(uuid.uuid4())
+        
+        # Create quiz session with token
         session = request.env['quiz.session'].sudo().create({
             'quiz_id': quiz.id,
             'participant_name': participant_name,
             'participant_email': participant_email,
+            'session_token': session_token,  # Add this required field
             'state': 'in_progress',
             'start_time': fields.Datetime.now(),
         })
