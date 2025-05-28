@@ -43,18 +43,18 @@ class QuizController(http.Controller):
             'quiz_id': quiz.id,
             'participant_name': participant_name,
             'participant_email': participant_email,
-            'session_token': session_token,  # Add this required field
+            'session_token': session_token,
             'state': 'in_progress',
             'start_time': fields.Datetime.now(),
         })
         
-        return request.redirect(f'/quiz/{slug}/question/1?session={session.token}')
+        return request.redirect(f'/quiz/{slug}/question/1?session={session.session_token}')
 
     @http.route(['/quiz/<string:slug>/question/<int:question_num>'], type='http', auth='public', methods=['GET', 'POST'], csrf=False)
     def quiz_question(self, slug, question_num, **kwargs):
         """Display or process a quiz question"""
         session_token = request.params.get('session')
-        session = request.env['quiz.session'].sudo().search([('token', '=', session_token)], limit=1)
+        session = request.env['quiz.session'].sudo().search([('session_token', '=', session_token)], limit=1)
         
         if not session or session.state != 'in_progress':
             return request.redirect('/quiz')
@@ -74,10 +74,10 @@ class QuizController(http.Controller):
             if len(quiz.question_ids) == question_num:
                 # Last question, complete the quiz
                 session.write({'state': 'completed', 'end_time': fields.Datetime.now()})
-                return request.redirect(f'/quiz/{slug}/results?session={session.token}')
+                return request.redirect(f'/quiz/{slug}/results?session={session.session_token}')
             else:
                 # Next question
-                return request.redirect(f'/quiz/{slug}/question/{question_num + 1}?session={session.token}')
+                return request.redirect(f'/quiz/{slug}/question/{question_num + 1}?session={session.session_token}')
         
         return request.render('quiz_engine_pro.quiz_question', {
             'quiz': quiz,
