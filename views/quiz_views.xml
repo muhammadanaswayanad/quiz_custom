@@ -42,6 +42,7 @@
             <tree>
                 <field name="name"/>
                 <field name="slug"/>
+                <field name="published"/>
                 <field name="total_questions"/>
                 <field name="total_points"/>
                 <field name="time_limit"/>
@@ -59,7 +60,7 @@
                 <header>
                     <button name="%(action_quiz_questions)d" type="action" string="Manage Questions" class="btn-primary"/>
                     <button name="action_view_public_url" type="object" string="View Public URL" class="btn-secondary"/>
-                    <field name="is_published" widget="boolean_toggle"/>
+                    <field name="published" widget="boolean_toggle"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -116,7 +117,7 @@
         </field>
     </record>
 
-    <!-- SINGLE Main Menu Structure -->
+    <!-- Main Menu Structure -->
     <menuitem id="menu_quiz_engine_root" 
               name="Quiz Engine" 
               web_icon="quiz_engine_pro,static/description/icon.png"
