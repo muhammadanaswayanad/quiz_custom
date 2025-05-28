@@ -1,190 +1,190 @@
-# Quiz Engine Pro - Odoo 17 Module
+# Quiz Engine Pro
 
-A comprehensive, standalone quiz engine for Odoo 17 Community Edition that provides advanced question types and interactive features.
-
-## Current Status - v17.0.1.0.1
-
-✅ **COMPLETED FEATURES:**
-- Complete module structure and manifest
-- All core models (quiz, question, session, response)
-- Backend views and menu structure
-- Frontend controller routes
-- Drag-and-drop JavaScript functionality
-- CSS styling and responsive design
-- Security access controls
-
-🔧 **RECENT FIXES (Latest):**
-- Fixed XML syntax errors in question_views.xml
-- Corrected field name references to match model definitions
-- Changed `invisible` attribute syntax to use `attrs` for Odoo 17 compatibility
-- Simplified matching question interface
-- Added "View Public URL" button functionality
-- Fixed menu structure to single parent menu
-
-📋 **INSTALLATION STATUS:**
-- Module upgrades successfully
-- Menu structure working correctly
-- Backend forms accessible
-- Question forms properly rendered
-
-## Testing Issues - RESOLVED
-
-### ✅ Issue 1: Menu Structure Fixed
-- **Problem:** Multiple main menu items created
-- **Solution:** Consolidated into single "Quiz Engine" parent menu with sub-items
-- **Result:** Clean hierarchical menu structure
-
-### ✅ Issue 2: Match Questions Interface Improved  
-- **Problem:** Confusing field references and UI
-- **Solution:** 
-  - Fixed field names to match model definitions
-  - Simplified to use `match_pair_ids` with `left_text` and `right_text`
-  - Added clear instructions in the form
-- **Usage:** Create pairs with left and right text that should match
-
-### ✅ Issue 3: Public Quiz URLs Available
-- **Problem:** No way to access public quiz URLs
-- **Solution:** Added multiple access methods:
-  - "View Public URL" button in quiz form and tree view
-  - Public URL shown in quiz form: `/quiz/<slug>`
-  - Quiz listing page at `/quiz` shows all published quizzes
-
-### ✅ Issue 4: XML Syntax and Field Errors Fixed
-- **Problem:** XML parsing errors and field name mismatches
-- **Solution:** 
-  - Corrected all field references to match actual model definitions
-  - Fixed XML structure and syntax
-  - Updated `invisible` attributes to use proper `attrs` syntax
+A comprehensive quiz engine module for Odoo 17 Community Edition with advanced question types and interactive features.
 
 ## Features
 
 ### Question Types
-- **Multiple Choice (Single Answer)** - Traditional radio button selection
-- **Multiple Choice (Multiple Answers)** - Checkbox-based selection
-- **Fill in the Blanks** - Text input fields within questions
-- **Match the Following** - Drag and connect related items
-- **Drag and Drop into Zones** - Drag items into designated areas
-- **Drag and Drop Into Text** - Interactive text with draggable tokens
+- **Multiple Choice (Single Answer)** - Radio button selection
+- **Multiple Choice (Multiple Answers)** - Checkbox selection  
+- **Fill in the Blanks** - Text input for missing words
+- **Match the Following** - Drag and drop matching pairs
+- **Drag and Drop into Text** - Interactive token placement
+- **Drag and Drop into Zones** - Zone-based placement
 
 ### Core Functionality
-- ✅ Quiz creation and management
-- ✅ Question sequencing and randomization
-- ✅ Time limits and attempt restrictions
-- ✅ Real-time scoring and evaluation
-- ✅ Session tracking for anonymous and logged-in users
-- ✅ Responsive frontend interface
-- ✅ SEO-friendly URLs with custom slugs
+- **Public Quiz Access** - Share quizzes via public URLs
+- **Real-time Scoring** - Automatic answer evaluation
+- **Session Tracking** - Complete quiz attempt monitoring
+- **Responsive Design** - Mobile-friendly interface
+- **Progress Navigation** - Next/Previous question controls
+- **Results Dashboard** - Detailed performance analytics
 
 ## Installation
 
-1. Copy the `quiz_engine_pro` folder to your Odoo addons directory
-2. Update the addons list in Odoo
-3. Install/Upgrade the "Quiz Engine Pro" module
+1. Clone or download the module to your Odoo addons directory:
+   ```bash
+   /home/tl/code/custom_addons/quiz_engine_pro/
+   ```
 
-## Quick Start Testing
+2. Update your Odoo configuration to include the custom addons path
 
-1. **Create a Quiz:**
-   - Go to Quiz Engine → Quizzes → Create
-   - Fill in name and slug
-   - Mark as "Published"
+3. Restart Odoo server
 
-2. **Add Questions:**
-   - Click "Manage Questions" button
-   - Select question type
-   - Follow the improved instructions for each type:
-     - **Multiple Choice:** Add options, mark correct answers
-     - **Match:** Add pairs with left and right text
-     - **Drag into Text:** Use {{1}}, {{2}} placeholders, add tokens
-     - **Fill Blanks:** Add correct answers for each blank
+4. Go to Apps menu and install "Quiz Engine Pro"
 
-3. **Access Public Quiz:**
-   - Click "View Public URL" button, OR
-   - Visit `/quiz/<your-slug>` directly, OR  
-   - Browse all quizzes at `/quiz`
+## Quick Start
 
-## Field Reference Guide
+### Creating a Quiz
 
-### Question Model Fields
-- `choice_ids` → `text`, `is_correct`
-- `match_pair_ids` → `left_text`, `right_text`  
-- `drag_token_ids` → `text`, `correct_for_blank`
-- `fill_blank_answers` → `blank_number`, `correct_answer`
+1. Navigate to **Quiz Engine** menu in Odoo backend
+2. Click **Quizzes** → **Create**
+3. Fill in quiz details:
+   - Title and description
+   - Passing score percentage
+   - Time limit (optional)
+   - Publication settings
 
-## Public Access URLs
+### Adding Questions
 
-- **Quiz List:** `http://your-domain/quiz`
-- **Specific Quiz:** `http://your-domain/quiz/<slug>`
-- **Example:** `http://your-domain/quiz/javascript-basics`
+1. Open your quiz and go to **Questions** tab
+2. Click **Add a line** to create new questions
+3. Select question type and configure:
+   - **MCQ**: Add choices and mark correct answers
+   - **Fill Blanks**: Use `{{1}}`, `{{2}}` placeholders and define answers
+   - **Matching**: Create left-right text pairs
+   - **Drag & Drop**: Define tokens and target positions
 
-## Menu Structure
+### Publishing Quiz
 
-```
-Quiz Engine/
-├── Quizzes (quiz.quiz list/form)
-├── All Questions (quiz.question list/form) 
-└── Quiz Sessions (quiz.session list/form)
-```
+1. Set quiz status to **Published**
+2. Click **View Public URL** to get shareable link
+3. Share URL with participants
 
-## Module Structure
+## Usage
 
+### Public Quiz Taking
+
+1. Participants access quiz via public URL
+2. Enter name (email optional)
+3. Navigate through questions using Next/Previous
+4. Submit quiz to see results
+5. View score and performance breakdown
+
+### Backend Management
+
+- **Quiz Analytics** - Track all sessions and responses
+- **Question Bank** - Reuse questions across multiple quizzes
+- **Session Monitoring** - Real-time participant progress
+- **Results Export** - Download quiz performance data
+
+## Technical Details
+
+### Models
+- `quiz.quiz` - Main quiz container
+- `quiz.question` - Question definitions with type-specific fields
+- `quiz.session` - Individual quiz attempts
+- `quiz.response` - Answer storage per question
+- `quiz.choice` - Multiple choice options
+- `quiz.match.pair` - Matching question pairs
+- `quiz.drag.token` - Drag and drop elements
+- `quiz.fill.blank.answer` - Fill-in-the-blank solutions
+
+### URL Structure
+- `/quiz` - Public quiz listing
+- `/quiz/{slug}` - Quiz information page
+- `/quiz/{slug}/start` - Begin quiz session
+- `/quiz/{slug}/question/{num}` - Question display
+- `/quiz/session/{token}/complete` - Results page
+
+### Security
+- Public access for quiz taking
+- Admin access for quiz management
+- Session token-based security
+- CSRF protection disabled for public forms
+
+## Development
+
+### Requirements
+- Odoo 17.0 Community Edition
+- Python 3.8+
+- Modern web browser with JavaScript enabled
+
+### Module Structure
 ```
 quiz_engine_pro/
 ├── __init__.py
 ├── __manifest__.py
-├── README.md
-├── models/
-│   ├── __init__.py
-│   ├── quiz.py          # Main quiz model + action_view_public_url method
-│   ├── question.py      # Question types and choices
-│   └── response.py      # Sessions and answers
-├── views/
-│   ├── quiz_views.xml           # Fixed menu structure & public URL buttons
-│   ├── question_views.xml       # Fixed field names & XML syntax
-│   ├── session_views.xml
-│   └── website_templates.xml
 ├── controllers/
-│   ├── __init__.py
-│   └── main.py          # Frontend routes + quiz listing
+│   └── main.py
+├── models/
+│   ├── quiz.py
+│   ├── question.py
+│   └── response.py
 ├── security/
 │   └── ir.model.access.csv
-└── static/src/
-    ├── js/
-    │   └── drag_into_text.js
-    └── css/
-        └── quiz_styles.css
+├── static/
+│   ├── description/icon.png
+│   └── src/
+│       ├── css/quiz_styles.css
+│       └── js/drag_into_text.js
+├── views/
+│   ├── quiz_views.xml
+│   ├── question_views.xml
+│   ├── session_views.xml
+│   └── website_templates.xml
+└── README.md
 ```
 
-## Technical Notes
+### Customization
 
-### Odoo 17 Compatibility
-- Used `attrs` instead of `invisible` for conditional visibility
-- Proper field name references matching model definitions
-- Compatible widget usage (`html`, `radio`, etc.)
+The module supports extensive customization:
 
-### Action Definitions
-- `action_quiz_list` - Main quiz listing
-- `action_quiz_questions` - Questions filtered by quiz (context-dependent)
-- `action_questions` - All questions (standalone menu)
-- `action_quiz_sessions` - Session management
+- **Custom Question Types**: Extend the question model
+- **Theming**: Modify CSS in `static/src/css/`
+- **Scoring Logic**: Customize evaluation methods
+- **Report Templates**: Create custom result layouts
 
-## Next Steps for Testing
+## Troubleshooting
 
-1. **Create Sample Data:** Test each question type with real content
-2. **Frontend Testing:** Test the public quiz interface at `/quiz`
-3. **Question Workflow:** Verify complete question creation process
-4. **Session Testing:** Test quiz taking and result generation
+### Common Issues
 
-## Known Limitations
+1. **Quiz not accessible publicly**
+   - Check quiz is marked as "Published"
+   - Verify website module is installed
 
-- Frontend templates need testing with real quiz data
-- Drag-and-drop functionality needs browser compatibility testing
-- Session management performance testing needed
+2. **JavaScript errors**
+   - Clear browser cache
+   - Check console for specific errors
+   - Ensure all dependencies loaded
+
+3. **Session expired errors**
+   - Module uses `csrf=False` for public access
+   - Check Odoo session configuration
+
+### Support
+
+For technical support or feature requests:
+- Review the WORKLOG.md for development history
+- Check Odoo logs for detailed error messages
+- Verify all dependencies are properly installed
 
 ## Version History
 
-### v17.0.1.0.1 - Bug Fixes
-- ✅ Fixed XML syntax errors
-- ✅ Corrected field name references
+- **17.0.1.0.1** - Initial release
+  - Complete Odoo 17 compatibility
+  - All question types implemented
+  - Public quiz interface
+  - Session management
+  - Results tracking
+
+## License
+
+LGPL-3 - See LICENSE file for details
+
+## Author
+
+Developed for Tijus Academy with comprehensive quiz functionality and modern web interface.
 - ✅ Updated Odoo 17 compatibility
 - ✅ Improved question form interface
 

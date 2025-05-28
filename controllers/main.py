@@ -1,22 +1,29 @@
-from odoo import http
+from odoo import http, fields
 from odoo.http import request
 import json
 import uuid
 
 
 class QuizController(http.Controller):
-    
-    @http.route('/quiz', type='http', auth='public', website=True)
+
+    @http.route(['/quiz'], type='http', auth='public', website=True)
     def quiz_list(self, **kwargs):
         """List all published quizzes"""
-        quizzes = request.env['quiz.quiz'].sudo().search([
-            ('is_published', '=', True)
-        ])
+        quizzes = request.env['quiz.quiz'].sudo().search([('published', '=', True)])
+        return request.render('quiz_engine_pro.quiz_list', {
+            'quizzes': quizzes
+        })
+
+    @http.route(['/quiz/<string:slug>'], type='http', auth='public', website=True)
+    def quiz_detail(self, slug, **kwargs):
+        """Show quiz details and start form"""
+        quiz = request.env['quiz.quiz'].sudo().search([('slug', '=', slug), ('published', '=', True)], limit=1)
+        if not quiz:
+            return request.not_found()
         
-        values = {
-            'quizzes': quizzes,
-        }
-        return request.render('quiz_engine_pro.quiz_list_template', values)
+        return request.render('quiz_engine_pro.quiz_detail', {
+            'quiz': quiz
+        })
 
     @http.route(['/quiz/<string:slug>/start'], type='http', auth='public', methods=['POST'], csrf=False)
     def quiz_start(self, slug, **kwargs):

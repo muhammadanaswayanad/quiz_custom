@@ -7,10 +7,10 @@ class Quiz(models.Model):
     _description = 'Quiz'
     _order = 'create_date desc'
 
-    name = fields.Char(string='Quiz Title', required=True)
+    name = fields.Char(string='Title', required=True)
     description = fields.Html(string='Description')
-    slug = fields.Char(string='URL Slug', required=True, help='Used in URL for SEO-friendly links')
-    is_published = fields.Boolean(string='Published', default=False)
+    slug = fields.Char(string='URL Slug', required=True, help="Used in public URL")
+    published = fields.Boolean(string='Published', default=False)
     randomize_questions = fields.Boolean(string='Randomize Questions', default=False)
     time_limit = fields.Integer(string='Time Limit (minutes)', default=0, help='0 = No time limit')
     max_attempts = fields.Integer(string='Maximum Attempts', default=1)
@@ -48,10 +48,11 @@ class Quiz(models.Model):
         return super().create(vals)
     
     def _generate_slug(self, name):
+        """Generate URL-friendly slug from name"""
         import re
-        slug = re.sub(r'[^a-zA-Z0-9\s-]', '', name.lower())
-        slug = re.sub(r'\s+', '-', slug.strip())
-        return slug or 'quiz'
+        slug = re.sub(r'[^\w\s-]', '', name.lower())
+        slug = re.sub(r'[-\s]+', '-', slug)
+        return slug.strip('-')
 
     def action_view_public_url(self):
         """Open the public quiz URL in a new tab"""
