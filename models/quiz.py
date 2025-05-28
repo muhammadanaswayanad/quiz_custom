@@ -16,6 +16,11 @@ class Quiz(models.Model):
     max_attempts = fields.Integer(string='Maximum Attempts', default=1)
     show_results = fields.Boolean(string='Show Results After Completion', default=True)
     passing_score = fields.Float(string='Passing Score (%)', default=60.0)
+    is_published = fields.Boolean(
+        string='Published', 
+        default=False,
+        help='Whether this quiz is published and available to users'
+    )
     
     # Relationships
     question_ids = fields.One2many('quiz.question', 'quiz_id', string='Questions')

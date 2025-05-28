@@ -42,7 +42,6 @@
             <tree>
                 <field name="name"/>
                 <field name="slug"/>
-                <field name="is_published"/>
                 <field name="total_questions"/>
                 <field name="total_points"/>
                 <field name="time_limit"/>
@@ -141,4 +140,5 @@
               action="action_quiz_sessions" 
               sequence="30"/>
 
+</odoo>
 </odoo>
