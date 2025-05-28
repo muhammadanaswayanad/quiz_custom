@@ -128,7 +128,7 @@
                                     </div>
                                     
                                     <form method="post" class="question-form">
-                                        <input type="hidden" name="session" t-att-value="session.token"/>
+                                        <input type="hidden" name="session" t-att-value="session.session_token"/>
                                         
                                         <!-- Multiple Choice Single -->
                                         <t t-if="question.type == 'mcq_single'">
@@ -183,7 +183,7 @@
                                             <div class="row">
                                                 <div class="col-6">
                                                     <t t-if="question_index > 0">
-                                                        <a t-attf-href="/quiz/#{quiz.slug}/question/#{question_index}?session=#{session.token}" 
+                                                        <a t-attf-href="/quiz/#{quiz.slug}/question/#{question_index}?session=#{session.session_token}" 
                                                            class="btn btn-secondary">Previous</a>
                                                     </t>
                                                 </div>
