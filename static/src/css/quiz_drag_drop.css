@@ -1,17 +1,14 @@
 /* Drag and Drop Styling */
 .quiz-drag-drop {
-    margin: 20px 0;
+    margin-bottom: 25px;
 }
 
 .tokens-container {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin-bottom: 20px;
-    padding: 15px;
-    background-color: #f8f9fa;
-    border-radius: 5px;
-    border: 1px dashed #ced4da;
+    min-height: 80px; /* Ensure container has height even when empty */
+    padding: 10px;
 }
 
 .tokens-label {
@@ -27,14 +24,17 @@
     background-color: #e9ecef;
     border: 1px solid #ced4da;
     border-radius: 4px;
+    cursor: move !important; 
     cursor: grab !important;
     user-select: none;
     transition: all 0.2s ease;
+    touch-action: none; /* Prevent scrolling on mobile during drag */
 }
 
 .draggable-token:hover {
     background-color: #dee2e6;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
 }
 
 .draggable-token.dragging {
@@ -63,6 +63,7 @@
 .drop-zone.drag-over {
     background-color: #e2f0ff;
     border-color: #86b7fe;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
 }
 
 .zone-label {
@@ -71,6 +72,12 @@
     margin-bottom: 10px;
     text-align: center;
     color: #6c757d;
+}
+
+/* Special class to make it obvious when a zone can accept drops */
+.drop-zone.can-drop {
+    border-style: dashed;
+    background-color: rgba(0, 123, 255, 0.05);
 }
 
 .reset-button-container {
@@ -119,6 +126,10 @@
     
     .drop-zone {
         margin-bottom: 10px;
+    }
+    
+    .draggable-token {
+        margin-bottom: 8px;
     }
     
     .match-pairs .row {

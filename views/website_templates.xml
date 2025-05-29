@@ -224,48 +224,82 @@
                                             </div>
                                             
                                             <script type="text/javascript">
-                                                $(function() {
-                                                    console.log("Inline script initialized");
+                                                // Use vanilla JavaScript instead of jQuery to avoid $ not defined error
+                                                document.addEventListener('DOMContentLoaded', function() {
+                                                    console.log("Vanilla JS script initialized");
                                                     
                                                     // Make tokens draggable
-                                                    $('.draggable-token').attr('draggable', true);
+                                                    var tokens = document.querySelectorAll('.draggable-token');
+                                                    var dropZones = document.querySelectorAll('.drop-zone');
+                                                    var tokensContainer = document.querySelector('.tokens-container');
+                                                    var resetButton = document.querySelector('.reset-tokens');
                                                     
-                                                    // Drag events
-                                                    $('.draggable-token').on('dragstart', function(e) {
-                                                        e.originalEvent.dataTransfer.setData('text', $(this).data('token-id'));
-                                                        $(this).addClass('dragging');
+                                                    tokens.forEach(function(token) {
+                                                        token.setAttribute('draggable', 'true');
+                                                        
+                                                        token.addEventListener('dragstart', function(e) {
+                                                            e.dataTransfer.setData('text/plain', this.getAttribute('data-token-id'));
+                                                            this.classList.add('dragging');
+                                                        });
                                                     });
                                                     
                                                     // Drop zone events
-                                                    $('.drop-zone').on('dragover', function(e) {
-                                                        e.preventDefault();
-                                                        $(this).addClass('drag-over');
-                                                    });
-                                                    
-                                                    $('.drop-zone').on('dragleave', function() {
-                                                        $(this).removeClass('drag-over');
-                                                    });
-                                                    
-                                                    $('.drop-zone').on('drop', function(e) {
-                                                        e.preventDefault();
-                                                        $(this).removeClass('drag-over');
+                                                    dropZones.forEach(function(zone) {
+                                                        zone.addEventListener('dragover', function(e) {
+                                                            e.preventDefault(); // Critical for allowing drop
+                                                            this.classList.add('drag-over');
+                                                        });
                                                         
-                                                        var tokenId = e.originalEvent.dataTransfer.getData('text');
-                                                        var $token = $('.draggable-token[data-token-id="' + tokenId + '"]');
+                                                        zone.addEventListener('dragleave', function(e) {
+                                                            this.classList.remove('drag-over');
+                                                        });
                                                         
-                                                        if ($token.length) {
-                                                            $(this).append($token.detach());
-                                                            $token.removeClass('dragging');
-                                                        }
+                                                        zone.addEventListener('drop', function(e) {
+                                                            e.preventDefault();
+                                                            this.classList.remove('drag-over');
+                                                            
+                                                            var tokenId = e.dataTransfer.getData('text/plain');
+                                                            var token = document.querySelector('.draggable-token[data-token-id="' + tokenId + '"]');
+                                                            
+                                                            if (token) {
+                                                                this.appendChild(token);
+                                                                token.classList.remove('dragging');
+                                                                updateFormData();
+                                                            }
+                                                        });
                                                     });
                                                     
                                                     // Reset button
-                                                    $('.reset-tokens').on('click', function() {
-                                                        var $container = $('.tokens-container');
-                                                        $('.draggable-token').each(function() {
-                                                            $container.append($(this).detach());
+                                                    if (resetButton) {
+                                                        resetButton.addEventListener('click', function() {
+                                                            tokens.forEach(function(token) {
+                                                                if (tokensContainer) {
+                                                                    tokensContainer.appendChild(token);
+                                                                }
+                                                            });
+                                                            updateFormData();
                                                         });
-                                                    });
+                                                    }
+                                                    
+                                                    function updateFormData() {
+                                                        var data = [];
+                                                        dropZones.forEach(function(zone) {
+                                                            var zoneId = zone.getAttribute('data-zone-id');
+                                                            var zoneTokens = zone.querySelectorAll('.draggable-token');
+                                                            
+                                                            zoneTokens.forEach(function(token) {
+                                                                data.push({
+                                                                    token_id: token.getAttribute('data-token-id'),
+                                                                    zone_id: zoneId
+                                                                });
+                                                            });
+                                                        });
+                                                        
+                                                        var hiddenField = document.querySelector('input[name="drag_drop_data"]');
+                                                        if (hiddenField) {
+                                                            hiddenField.value = JSON.stringify(data);
+                                                        }
+                                                    }
                                                 });
                                             </script>
                                         </t>
