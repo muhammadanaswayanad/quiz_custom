@@ -135,7 +135,7 @@
                                 <tree editable="bottom">
                                     <field name="correct_position"/>
                                     <field name="label"/>
-                                    <field name="description"/>
+                                    <field name="content"/>  <!-- Changed from description to content -->
                                 </tree>
                             </field>
                             <div class="alert alert-info mt-3" role="alert">

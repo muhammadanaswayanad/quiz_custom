@@ -467,20 +467,17 @@ class MatchPair(models.Model):
 class SequenceItem(models.Model):
     _name = 'quiz.sequence.item'
     _description = 'Sequence Item for Ordering Questions'
-    _order = 'sequence, id'
+    _order = 'correct_position, id'
     
-    sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one('quiz.question', string='Question', 
-                                 ondelete='cascade', required=True)
-    label = fields.Char(string='Step Label', required=True,
-                       help="The text shown for this step")
-    correct_position = fields.Integer(string='Correct Position', required=True,
-                                     help="The correct position in the sequence (1, 2, 3, etc.)")
+    question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
+    label = fields.Char('Step Label', required=True)
+    content = fields.Text('Content')  # Changed from 'description' to 'content'
+    correct_position = fields.Integer('Correct Position', required=True)
     
     _sql_constraints = [
         ('unique_position_per_question', 
          'UNIQUE(question_id, correct_position)',
-         'Each position in the sequence must be unique within a question')
+         'Each position must be unique within a question')
     ]
 
 

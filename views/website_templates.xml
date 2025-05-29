@@ -631,9 +631,9 @@
                                                                 </div>
                                                                 <span class="step-number">1</span>
                                                                 <span class="step-label"><t t-esc="step.label"/></span>
-                                                                <t t-if="step.description">
+                                                                <t t-if="step.content">
                                                                     <div class="step-description">
-                                                                        <t t-esc="step.description"/>
+                                                                        <t t-esc="step.content"/>  <!-- Changed from description to content -->
                                                                     </div>
                                                                 </t>
                                                             </div>
