@@ -8,31 +8,35 @@ class Question(models.Model):
     _description = 'Quiz Question'
     _order = 'sequence, id'
 
+    # Basic fields
+    sequence = fields.Integer(string='Sequence', default=10)
+    name = fields.Char(string='Title', compute='_compute_name', store=True)
     quiz_id = fields.Many2one('quiz.quiz', string='Quiz', required=True, ondelete='cascade')
+    question_html = fields.Html(string='Question Text', sanitize=True, required=True)
+    explanation = fields.Html(string='Explanation', sanitize=True,
+                              help="Shown after answering the question")
+    points = fields.Float(string='Points', default=1.0)
+    
+    # Question type selection - updated with dropdown_blank
     type = fields.Selection([
-        ('mcq_single', 'Multiple Choice (Single Answer)'),
-        ('mcq_multi', 'Multiple Choice (Multiple Answers)'),
+        ('mcq_single', 'Multiple Choice (Single)'),
+        ('mcq_multiple', 'Multiple Choice (Multiple)'),
         ('fill_blank', 'Fill in the Blanks'),
         ('match', 'Match the Following'),
-        ('drag_zone', 'Drag and Drop into Zones'),
-        ('drag_into_text', 'Drag and Drop into Text'),
-        ('text_box', 'Single Line Text Box'),
-        ('numerical', 'Numerical Value'),
-        ('matrix', 'Matrix Question'),
+        ('drag_text', 'Drag into Text'),
+        ('drag_zone', 'Drag into Zones'),
         ('dropdown_blank', 'Dropdown in Text')
-    ], string='Question Type', required=True, default='mcq_single')
+    ], string='Type', default='mcq_single', required=True)
     
-    question_html = fields.Html(string='Question', required=True)
-    points = fields.Float(string='Points', default=1.0)
-    sequence = fields.Integer(string='Sequence', default=10)
+    # Text template for dropdown_blank type
+    text_template = fields.Html(string='Text with Blanks', 
+                             help="Use {{1}}, {{2}}, etc. to mark where dropdowns should appear")
     
-    # Relationships
+    # Relationships - make sure inverse names match field names in related models
     choice_ids = fields.One2many('quiz.choice', 'question_id', string='Choices')
     match_pair_ids = fields.One2many('quiz.match.pair', 'question_id', string='Match Pairs')
     drag_token_ids = fields.One2many('quiz.drag.token', 'question_id', string='Drag Tokens')
     fill_blank_answer_ids = fields.One2many('quiz.fill.blank.answer', 'question_id', string='Fill Blank Answers')
-    matrix_row_ids = fields.One2many('quiz.matrix.row', 'question_id', string='Matrix Rows')
-    matrix_column_ids = fields.One2many('quiz.matrix.column', 'question_id', string='Matrix Columns')
     blank_ids = fields.One2many('quiz.blank', 'question_id', string='Dropdown Blanks')
     
     # Fields for numerical questions
@@ -47,10 +51,6 @@ class Question(models.Model):
     allow_partial_match = fields.Boolean(string='Allow Partial Match', default=False)
     keywords = fields.Text(string='Keywords (comma separated)',
                           help="Enter keywords that must be present in the answer, separated by commas")
-
-    # Add text_template field for dropdown_blank questions
-    text_template = fields.Html(string='Text with Blanks', 
-                             help="Use {{1}}, {{2}}, etc. to mark where dropdowns should appear")
 
     def evaluate_answer(self, answer_data):
         """Evaluate answer based on question type"""

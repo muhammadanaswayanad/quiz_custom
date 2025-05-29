@@ -37,3 +37,24 @@ access_quiz_matrix_cell,access.quiz.matrix.cell,model_quiz_matrix_cell,base.grou
 access_quiz_matrix_row_public,access.quiz.matrix.row.public,model_quiz_matrix_row,,1,0,0,0
 access_quiz_matrix_column_public,access.quiz.matrix.column.public,model_quiz_matrix_column,,1,0,0,0
 access_quiz_matrix_cell_public,access.quiz.matrix.cell.public,model_quiz_matrix_cell,,1,0,0,0
+access_quiz_admin,quiz.quiz admin,model_quiz_quiz,base.group_user,1,1,1,1
+access_quiz_question_admin,quiz.question admin,model_quiz_question,base.group_user,1,1,1,1
+access_quiz_choice_admin,quiz.choice admin,model_quiz_choice,base.group_user,1,1,1,1
+access_quiz_match_pair_admin,quiz.match.pair admin,model_quiz_match_pair,base.group_user,1,1,1,1
+access_quiz_drag_token_admin,quiz.drag.token admin,model_quiz_drag_token,base.group_user,1,1,1,1
+access_quiz_fill_blank_answer_admin,quiz.fill.blank.answer admin,model_quiz_fill_blank_answer,base.group_user,1,1,1,1
+access_quiz_session_admin,quiz.session admin,model_quiz_session,base.group_user,1,1,1,1
+access_quiz_response_admin,quiz.response admin,model_quiz_response,base.group_user,1,1,1,1
+access_quiz_blank_admin,quiz.blank admin,model_quiz_blank,base.group_user,1,1,1,1
+access_quiz_option_admin,quiz.option admin,model_quiz_option,base.group_user,1,1,1,1
+
+access_quiz_public,quiz.quiz public,model_quiz_quiz,base.group_public,1,0,0,0
+access_quiz_question_public,quiz.question public,model_quiz_question,base.group_public,1,0,0,0
+access_quiz_choice_public,quiz.choice public,model_quiz_choice,base.group_public,1,0,0,0
+access_quiz_match_pair_public,quiz.match.pair public,model_quiz_match_pair,base.group_public,1,0,0,0
+access_quiz_drag_token_public,quiz.drag.token public,model_quiz_drag_token,base.group_public,1,0,0,0
+access_quiz_fill_blank_answer_public,quiz.fill.blank.answer public,model_quiz_fill_blank_answer,base.group_public,1,0,0,0
+access_quiz_session_public,quiz.session public,model_quiz_session,base.group_public,1,1,1,0
+access_quiz_response_public,quiz.response public,model_quiz_response,base.group_public,1,1,1,0
+access_quiz_blank_public,quiz.blank public,model_quiz_blank,base.group_public,1,0,0,0
+access_quiz_option_public,quiz.option public,model_quiz_option,base.group_public,1,0,0,0

@@ -518,7 +518,7 @@
                                                                 </t>
                                                             </select>
                                                         </t>
-                                                        <t t-set="template" t-value="template.replace(placeholder, dropdown)"/>
+                                                        <t t-set="template" t-value="template.replace(placeholder, str(dropdown))"/>
                                                     </t>
                                                     
                                                     <!-- Render the final template with dropdowns -->
