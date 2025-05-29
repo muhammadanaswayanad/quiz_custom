@@ -454,9 +454,9 @@
                                                                             <div class="form-check d-flex justify-content-center">
                                                                                 <input type="checkbox" 
                                                                                        class="form-check-input matrix-cell" 
-                                                                                       t-att-data-row-id="row.id"
-                                                                                       t-att-data-col-id="column.id"
-                                                                                       t-att-id="'cell_' + row.id + '_' + column.id"/>
+                                                                                       t-att-data-row-id="str(row.id)"
+                                                                                       t-att-data-col-id="str(column.id)"
+                                                                                       t-att-id="'cell_' + str(row.id) + '_' + str(column.id)"/>
                                                                             </div>
                                                                         </td>
                                                                     </t>
