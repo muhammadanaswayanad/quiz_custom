@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Clean up invalid model access records -->
+    <!-- Only clean up access rights records, not the models themselves -->
     <delete model="ir.model.access" search="[('model_id', '=', False)]"/>
     
     <!-- Delete specific problematic records by name pattern -->
-    <delete model="ir.model.access" search="[('name', 'like', 'quiz.drag.zone')]"/>
-    
+    <delete model="ir.model.access" search="[('name', 'like', 'drag.zone')]"/>
+</odoo>
     <!-- Clean up old model references if they exist -->
     <delete model="ir.model" search="[('model', '=', 'quiz.drag.zone')]"/>
     <delete model="ir.model" search="[('model', '=', 'quiz.blank'), ('modules', '!=', 'quiz_engine_pro')]"/>
