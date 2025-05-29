@@ -30,7 +30,7 @@
             'quiz_engine_pro/static/src/css/quiz_drag_drop.css',
             'quiz_engine_pro/static/src/css/quiz_dropdown.css',
             'quiz_engine_pro/static/src/css/quiz_sequence.css',
-            'quiz_engine_pro/static/lib/sortable/sortable.min.js',  # Make sure this is included
+            'quiz_engine_pro/static/lib/sortable/sortable.min.js',
             'quiz_engine_pro/static/src/js/quiz_drag_drop.js',
             'quiz_engine_pro/static/src/js/quiz_sortable.js',
             'quiz_engine_pro/static/src/js/quiz_sequence.js',

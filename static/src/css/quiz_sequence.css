@@ -2,9 +2,6 @@
 
 .sequence-container {
     margin-bottom: 20px;
-    padding: 10px;
-    background-color: #f8f9fa;
-    border-radius: 5px;
 }
 
 .sequence-instructions {
@@ -16,25 +13,23 @@
     border: 1px solid #dee2e6;
     border-radius: 5px;
     padding: 10px;
-    background-color: #fff;
+    background-color: #f8f9fa;
     min-height: 200px;
 }
 
 .sequence-item {
-    background-color: #f1f8ff;
-    border: 1px solid #c8e1ff;
+    background-color: white;
+    border: 1px solid #ced4da;
     border-radius: 4px;
     margin-bottom: 8px;
     padding: 10px;
-    cursor: grab;
+    cursor: move;
     transition: all 0.2s ease;
     position: relative;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .sequence-item:hover {
-    background-color: #dbedff;
-    border-color: #79b8ff;
+    background-color: #e9ecef;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
@@ -46,18 +41,13 @@
 .sequence-item.sortable-chosen {
     background-color: #bbdefb;
     box-shadow: 0 0 10px rgba(0,0,0,0.15);
-    cursor: grabbing;
-}
-
-.sequence-item.sortable-drag {
-    cursor: grabbing;
 }
 
 .sequence-item .step-number {
     display: inline-block;
-    min-width: 24px;
+    width: 24px;
     height: 24px;
-    background-color: #0366d6;
+    background-color: #6c757d;
     color: white;
     border-radius: 50%;
     text-align: center;
@@ -67,11 +57,10 @@
 
 .sequence-item .step-label {
     font-weight: 500;
-    color: #24292e;
 }
 
 .sequence-item .step-description {
-    color: #586069;
+    color: #6c757d;
     margin-top: 5px;
     margin-left: 34px;
     font-size: 0.9em;
@@ -79,29 +68,16 @@
 
 .sequence-handle {
     float: right;
-    color: #6a737d;
+    color: #adb5bd;
+    cursor: move;
+    cursor: -webkit-grab;
     cursor: grab;
-    padding: 4px 8px;
-    border-radius: 3px;
-    background-color: #f6f8fa;
-    border: 1px solid #e1e4e8;
+    padding: 5px;
 }
 
-.sequence-handle:hover {
-    background-color: #e1e4e8;
-}
-
-/* Make it obvious items can be dragged */
-.sequence-item::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 4px;
-    background-color: #0366d6;
-    border-top-left-radius: 3px;
-    border-bottom-left-radius: 3px;
+.sequence-handle:active {
+    cursor: -webkit-grabbing;
+    cursor: grabbing;
 }
 
 /* Mobile optimization */

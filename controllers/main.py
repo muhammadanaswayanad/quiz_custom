@@ -150,31 +150,38 @@ class QuizController(http.Controller):
                 
             elif question.type == 'step_sequence':
                 # Sequencing evaluation
-                score = 0
-                total_steps = len(question.sequence_step_ids)
-                
-                if total_steps == 0:
-                    return 0
+                try:
+                    if not answer_data or not question.sequence_item_ids:
+                        return 0.0
+                        
+                    data = json.loads(answer_data) if isinstance(answer_data, str) else answer_data
+                    total_steps = len(question.sequence_item_ids)
                     
-                # Get the user's sequence
-                user_sequence = {}
-                for item in answer_data:
-                    step_id = item.get('step_id')
-                    position = item.get('position')
-                    if step_id and position:
-                        user_sequence[step_id] = position
-                
-                # Count correct positions
-                correct_positions = 0
-                for step in question.sequence_step_ids:
-                    user_pos = user_sequence.get(step.id)
-                    if user_pos and user_pos == step.correct_position:
-                        correct_positions += 1
-                
-                # Calculate score as percentage of correct positions
-                score = (correct_positions / total_steps) * question.points
-                
-                return score
+                    # Get correct positions from question
+                    correct_positions = {}
+                    for item in question.sequence_item_ids:
+                        correct_positions[item.id] = item.correct_position
+                    
+                    # Get the user's sequence
+                    user_sequence = {}
+                    for entry in data:
+                        step_id = entry.get('step_id')
+                        position = entry.get('position')
+                        if step_id and position:
+                            user_sequence[step_id] = position - 1  # Adjust for 0-indexed
+                    
+                    # Count correct positions
+                    correct_count = 0
+                    for step_id, correct_pos in correct_positions.items():
+                        if step_id in user_sequence and user_sequence[step_id] == correct_pos:
+                            correct_count += 1
+                    
+                    # Calculate score as percentage of correct positions
+                    return (correct_count / total_steps) * question.points
+                    
+                except Exception as e:
+                    _logger.exception("Error evaluating sequence question: %s", e)
+                    return 0.0
             
             return 0
             
