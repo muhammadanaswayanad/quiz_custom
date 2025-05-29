@@ -1,0 +1,84 @@
+/* Step Sequencing Question Type styling */
+
+.sequence-container {
+    margin-bottom: 20px;
+}
+
+.sequence-instructions {
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+.sequence-list {
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    min-height: 200px;
+}
+
+.sequence-item {
+    background-color: white;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    padding: 10px;
+    cursor: move;
+    transition: all 0.2s ease;
+}
+
+.sequence-item:hover {
+    background-color: #e9ecef;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.sequence-item.sortable-ghost {
+    opacity: 0.4;
+    background-color: #c8e6c9;
+}
+
+.sequence-item.sortable-chosen {
+    background-color: #bbdefb;
+    box-shadow: 0 0 10px rgba(0,0,0,0.15);
+}
+
+.sequence-item .step-number {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background-color: #6c757d;
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 24px;
+    margin-right: 10px;
+}
+
+.sequence-item .step-label {
+    font-weight: 500;
+}
+
+.sequence-item .step-description {
+    color: #6c757d;
+    margin-top: 5px;
+    margin-left: 34px;
+    font-size: 0.9em;
+}
+
+.sequence-handle {
+    float: right;
+    color: #adb5bd;
+    cursor: move;
+}
+
+/* Mobile optimization */
+@media (max-width: 767px) {
+    .sequence-item {
+        padding: 12px;
+    }
+    
+    .sequence-item .step-description {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+}

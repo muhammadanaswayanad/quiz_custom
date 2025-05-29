@@ -126,3 +126,58 @@ class QuizController(http.Controller):
             'max_score': sum(session.quiz_id.question_ids.mapped('points')),
         }
         return request.render('quiz_engine_pro.quiz_results', values)
+
+    def _evaluate_answer(self, question, answer_data):
+        """Evaluate answer based on question type"""
+        if not answer_data:
+            return 0
+            
+        try:
+            # Convert answer_data to proper format if needed
+            if isinstance(answer_data, str):
+                answer_data = json.loads(answer_data)
+                
+            # Evaluate based on question type
+            if question.type == 'mcq_single':
+                # ...existing code...
+                pass
+                
+            elif question.type == 'mcq_multiple':
+                # ...existing code...
+                pass
+                
+            # ...other question types...
+                
+            elif question.type == 'step_sequence':
+                # Sequencing evaluation
+                score = 0
+                total_steps = len(question.sequence_step_ids)
+                
+                if total_steps == 0:
+                    return 0
+                    
+                # Get the user's sequence
+                user_sequence = {}
+                for item in answer_data:
+                    step_id = item.get('step_id')
+                    position = item.get('position')
+                    if step_id and position:
+                        user_sequence[step_id] = position
+                
+                # Count correct positions
+                correct_positions = 0
+                for step in question.sequence_step_ids:
+                    user_pos = user_sequence.get(step.id)
+                    if user_pos and user_pos == step.correct_position:
+                        correct_positions += 1
+                
+                # Calculate score as percentage of correct positions
+                score = (correct_positions / total_steps) * question.points
+                
+                return score
+            
+            return 0
+            
+        except Exception as e:
+            _logger.error(f"Error evaluating answer: {e}")
+            return 0

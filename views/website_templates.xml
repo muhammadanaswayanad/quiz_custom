@@ -616,6 +616,106 @@
                                                 </script>
                                             </t>
 
+                                            <!-- Step Sequencing Question Type -->
+                                            <t t-if="question.type == 'step_sequence'">
+                                                <div class="sequence-container">
+                                                    <div class="sequence-instructions mb-3">
+                                                        <strong>Instructions:</strong> Arrange the steps in the correct order by dragging them up or down.
+                                                    </div>
+                                                    
+                                                    <div class="sequence-list">
+                                                        <t t-foreach="question.sequence_step_ids" t-as="step">
+                                                            <div class="sequence-item" t-att-data-step-id="step.id">
+                                                                <div class="sequence-handle">
+                                                                    <i class="fa fa-bars"></i>
+                                                                </div>
+                                                                <span class="step-number">1</span>
+                                                                <span class="step-label"><t t-esc="step.label"/></span>
+                                                                <t t-if="step.description">
+                                                                    <div class="step-description">
+                                                                        <t t-esc="step.description"/>
+                                                                    </div>
+                                                                </t>
+                                                            </div>
+                                                        </t>
+                                                    </div>
+                                                    
+                                                    <input type="hidden" name="sequence_data" value="[]"/>
+                                                    
+                                                    <div class="mt-3 text-end">
+                                                        <button type="button" class="btn btn-sm btn-secondary reset-sequence">
+                                                            <i class="fa fa-refresh"></i> Randomize Order
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                
+                                                <script type="text/javascript">
+                                                    $(function() {
+                                                        // Initialize sequence sorting
+                                                        if (typeof Sortable !== 'undefined') {
+                                                            var sequenceList = document.querySelector('.sequence-list');
+                                                            if (sequenceList) {
+                                                                var sortable = new Sortable(sequenceList, {
+                                                                    animation: 150,
+                                                                    ghostClass: 'sortable-ghost',
+                                                                    onEnd: function() {
+                                                                        updateSequenceData();
+                                                                    }
+                                                                });
+                                                                
+                                                                // Randomize initial order
+                                                                var items = Array.from(sequenceList.querySelectorAll('.sequence-item'));
+                                                                for (let i = items.length - 1; i > 0; i--) {
+                                                                    const j = Math.floor(Math.random() * (i + 1));
+                                                                    sequenceList.appendChild(items[j]);
+                                                                }
+                                                                
+                                                                // Update step numbers and data
+                                                                updateStepNumbers();
+                                                                updateSequenceData();
+                                                            }
+                                                        }
+                                                        
+                                                        // Update sequence numbers
+                                                        function updateStepNumbers() {
+                                                            $('.sequence-item').each(function(index) {
+                                                                $(this).find('.step-number').text(index + 1);
+                                                            });
+                                                        }
+                                                        
+                                                        // Update hidden input with sequence data
+                                                        function updateSequenceData() {
+                                                            var data = [];
+                                                            $('.sequence-item').each(function(index) {
+                                                                var stepId = $(this).data('step-id');
+                                                                data.push({
+                                                                    'step_id': stepId,
+                                                                    'position': index + 1
+                                                                });
+                                                            });
+                                                            
+                                                            $('input[name="sequence_data"]').val(JSON.stringify(data));
+                                                            updateStepNumbers();
+                                                        }
+                                                        
+                                                        // Handle reset button
+                                                        $('.reset-sequence').on('click', function() {
+                                                            var items = $('.sequence-item').toArray();
+                                                            var list = $('.sequence-list');
+                                                            
+                                                            // Shuffle items
+                                                            for (let i = items.length - 1; i > 0; i--) {
+                                                                const j = Math.floor(Math.random() * (i + 1));
+                                                                list.append(items[j]);
+                                                            }
+                                                            
+                                                            updateStepNumbers();
+                                                            updateSequenceData();
+                                                        });
+                                                    });
+                                                </script>
+                                            </t>
+
                                             <!-- Default fallback for other question types -->
                                             <t t-if="question.type not in ['mcq_single', 'mcq_multiple', 'fill_blank', 'dropdown_blank', 'drag_zone', 'drag_text', 'match']">
                                                 <div class="alert alert-info">

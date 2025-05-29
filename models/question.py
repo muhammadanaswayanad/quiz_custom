@@ -26,7 +26,7 @@ class Question(models.Model):
         ('drag_text', 'Drag into Text'),
         ('drag_zone', 'Drag into Zones'),
         ('dropdown_blank', 'Dropdown in Text'),
-        ('drag_order', 'Drag and Drop - Step Sequencing')
+        ('step_sequence', 'Drag and Drop - Step Sequencing')
     ], string='Type', default='mcq_single', required=True)
     
     # Text template for dropdown_blank type
@@ -40,6 +40,7 @@ class Question(models.Model):
     fill_blank_answer_ids = fields.One2many(comodel_name='quiz.fill.blank.answer', inverse_name='question_id', string='Fill Blank Answers')
     blank_ids = fields.One2many(comodel_name='quiz.blank', inverse_name='question_id', string='Dropdown Blanks')
     sequence_item_ids = fields.One2many('quiz.sequence.item', 'question_id', string='Sequence Items')
+    sequence_step_ids = fields.One2many('quiz.sequence.step', 'question_id', string='Sequence Steps')
     
     # Fields for numerical questions
     numerical_exact_value = fields.Float(string='Exact Value', digits=(16, 6))
@@ -76,6 +77,8 @@ class Question(models.Model):
             return self._evaluate_dropdown_blank(answer_data)
         elif self.type == 'drag_order':
             return self._evaluate_drag_order(answer_data)
+        elif self.type == 'step_sequence':
+            return self._evaluate_step_sequence(answer_data)
         return 0.0
 
     def _evaluate_mcq_single(self, answer_data):
@@ -353,6 +356,9 @@ class Question(models.Model):
             elif question.type == 'drag_order':
                 if not question.sequence_item_ids:
                     raise ValidationError(_('Drag and Drop Ordering questions must have sequence items defined.'))
+            elif question.type == 'step_sequence':
+                if not question.sequence_step_ids:
+                    raise ValidationError(_('Step Sequencing questions must have sequence steps defined.'))
 
 
 class FillBlankAnswer(models.Model):
@@ -476,4 +482,20 @@ class SequenceItem(models.Model):
         ('unique_position_per_question', 
          'UNIQUE(question_id, correct_position)',
          'Each position in the sequence must be unique within a question.')
+    ]
+
+class SequenceStep(models.Model):
+    _name = 'quiz.sequence.step'
+    _description = 'Sequence Step'
+    _order = 'correct_position, id'
+    
+    question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
+    label = fields.Char('Step Label', required=True)
+    description = fields.Text('Description')
+    correct_position = fields.Integer('Correct Position', required=True)
+    
+    _sql_constraints = [
+        ('unique_position_per_question', 
+         'UNIQUE(question_id, correct_position)',
+         'Each position must be unique within a question')
     ]

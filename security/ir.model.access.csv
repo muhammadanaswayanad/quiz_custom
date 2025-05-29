@@ -24,6 +24,7 @@ access_quiz_session_admin,quiz.session admin,model_quiz_session,base.group_user,
 access_quiz_response_admin,quiz.response admin,model_quiz_response,base.group_user,1,1,1,1
 access_quiz_blank_admin,quiz.blank admin,model_quiz_blank,base.group_user,1,1,1,1
 access_quiz_option_admin,quiz.option admin,model_quiz_option,base.group_user,1,1,1,1
+access_quiz_sequence_step_admin,quiz.sequence.step admin,model_quiz_sequence_step,base.group_user,1,1,1,1
 
 access_quiz_quiz_public,quiz.quiz public,model_quiz_quiz,base.group_public,1,0,0,0
 access_quiz_question_public,quiz.question public,model_quiz_question,base.group_public,1,0,0,0
@@ -35,8 +36,7 @@ access_quiz_session_public,quiz.session public,model_quiz_session,base.group_pub
 access_quiz_response_public,quiz.response public,model_quiz_response,base.group_public,1,1,1,0
 access_quiz_blank_public,quiz.blank public,model_quiz_blank,base.group_public,1,0,0,0
 access_quiz_option_public,quiz.option public,model_quiz_option,base.group_public,1,0,0,0
-access_quiz_matrix_column_public,access.quiz.matrix.column.public,model_quiz_matrix_column,,1,0,0,0
-access_quiz_matrix_cell_public,access.quiz.matrix.cell.public,model_quiz_matrix_cell,,1,0,0,0
+access_quiz_sequence_step_public,quiz.sequence.step public,model_quiz_sequence_step,base.group_public,1,0,0,0
 access_quiz_admin,quiz.quiz admin,model_quiz_quiz,base.group_user,1,1,1,1
 access_quiz_question_admin,quiz.question admin,model_quiz_question,base.group_user,1,1,1,1
 access_quiz_choice_admin,quiz.choice admin,model_quiz_choice,base.group_user,1,1,1,1

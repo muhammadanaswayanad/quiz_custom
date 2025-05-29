@@ -20,7 +20,7 @@
                     
                     <group>
                         <field name="question_html" widget="html" options="{'style-inline': true}" 
-                               invisible="type == 'dropdown_blank'"/>
+                               invisible="type == 'dropdown_blank' or type == 'step_sequence'"/>
                         <field name="text_template" widget="html" options="{'style-inline': true}"
                                placeholder="Enter text with {{1}}, {{2}} placeholders for dropdowns"
                                invisible="type != 'dropdown_blank'"
@@ -123,6 +123,25 @@
                         <!-- Explanation -->
                         <page string="Explanation">
                             <field name="explanation" widget="html"/>
+                        </page>
+                        
+                        <!-- Add new page for Sequence Steps -->
+                        <page string="Sequence Steps" invisible="type != 'step_sequence'">
+                            <p class="text-muted mb-2">
+                                Add items that users will need to drag into the correct order.
+                                Set the correct position for each item in the sequence.
+                            </p>
+                            <field name="sequence_step_ids">
+                                <tree editable="bottom">
+                                    <field name="correct_position"/>
+                                    <field name="label"/>
+                                    <field name="description"/>
+                                </tree>
+                            </field>
+                            <div class="alert alert-info mt-3" role="alert">
+                                <strong>Tip:</strong> The steps will be displayed in random order to the user,
+                                who must rearrange them in the correct sequence.
+                            </div>
                         </page>
                     </notebook>
                 </sheet>
