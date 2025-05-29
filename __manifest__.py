@@ -23,6 +23,7 @@
         'views/question_views.xml', 
         'views/session_views.xml',
         'views/website_templates.xml',
+        'views/sequence_templates.xml',
     ],
     'assets': {
         'web.assets_frontend': [
@@ -35,6 +36,7 @@
             'quiz_engine_pro/static/src/js/quiz_sortable.js',
             'quiz_engine_pro/static/src/js/quiz_sequence_buttons.js',
             'quiz_engine_pro/static/src/js/sequence_buttons.js',
+            'quiz_engine_pro/static/src/js/sequence_handlers.js',
         ],
     },
     'images': ['static/description/icon.png'],
