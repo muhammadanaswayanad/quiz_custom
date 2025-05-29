@@ -149,38 +149,39 @@ class QuizController(http.Controller):
             # ...other question types...
                 
             elif question.type == 'step_sequence':
-                # Sequencing evaluation
                 try:
                     if not answer_data or not question.sequence_item_ids:
                         return 0.0
-                        
+                    
+                    # Parse answer data
                     data = json.loads(answer_data) if isinstance(answer_data, str) else answer_data
                     total_steps = len(question.sequence_item_ids)
                     
-                    # Get correct positions from question
+                    # Get correct positions from sequence items
                     correct_positions = {}
                     for item in question.sequence_item_ids:
                         correct_positions[item.id] = item.correct_position
                     
-                    # Get the user's sequence
-                    user_sequence = {}
+                    # Get user's sequence
+                    user_positions = {}
                     for entry in data:
                         step_id = entry.get('step_id')
                         position = entry.get('position')
                         if step_id and position:
-                            user_sequence[step_id] = position - 1  # Adjust for 0-indexed
+                            # Convert to 0-indexed to match correct_position field
+                            user_positions[step_id] = position - 1
                     
                     # Count correct positions
                     correct_count = 0
                     for step_id, correct_pos in correct_positions.items():
-                        if step_id in user_sequence and user_sequence[step_id] == correct_pos:
+                        if step_id in user_positions and user_positions[step_id] == correct_pos:
                             correct_count += 1
                     
                     # Calculate score as percentage of correct positions
                     return (correct_count / total_steps) * question.points
                     
                 except Exception as e:
-                    _logger.exception("Error evaluating sequence question: %s", e)
+                    _logger.error("Error evaluating sequence question: %s", e)
                     return 0.0
             
             return 0

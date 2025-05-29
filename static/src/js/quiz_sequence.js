@@ -6,20 +6,17 @@ odoo.define('quiz_engine_pro.sequence', function (require) {
     publicWidget.registry.QuizSequence = publicWidget.Widget.extend({
         selector: '.sequence-container',
         events: {
-            'click .reset-sequence': '_onClickResetSequence'
+            'click .reset-sequence': '_onResetClick'
         },
 
-        /**
-         * @override
-         */
         start: function () {
             var self = this;
 
-            // Initialize Sortable if library is loaded
+            // Initialize Sortable
             if (window.Sortable) {
-                this.sequenceList = this.el.querySelector('.sequence-list');
-                if (this.sequenceList) {
-                    this.sortable = new Sortable(this.sequenceList, {
+                var sequenceList = this.el.querySelector('.sequence-list');
+                if (sequenceList) {
+                    this.sortable = new Sortable(sequenceList, {
                         animation: 150,
                         ghostClass: 'sortable-ghost',
                         handle: '.sequence-handle',
@@ -28,10 +25,10 @@ odoo.define('quiz_engine_pro.sequence', function (require) {
                         }
                     });
 
-                    // Randomize order on initial load
-                    this._randomizeSequence();
+                    // Randomize on start
+                    this._randomizeItems();
 
-                    // Update initial data
+                    // Update data
                     this._updateSequenceData();
                 }
             }
@@ -39,59 +36,62 @@ odoo.define('quiz_engine_pro.sequence', function (require) {
             return this._super.apply(this, arguments);
         },
 
-        /**
-         * Randomize the order of sequence items on first load
-         *
-         * @private
-         */
-        _randomizeSequence: function() {
-            if (!this.sequenceList) return;
+        _randomizeItems: function() {
+            var list = this.el.querySelector('.sequence-list');
+            if (!list) return;
 
-            var items = Array.from(this.sequenceList.querySelectorAll('.sequence-item'));
+            var items = Array.from(list.querySelectorAll('.sequence-item'));
 
-            // Shuffle the items
-            for (let i = items.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                this.sequenceList.appendChild(items[j]);
+            // Shuffle items
+            for (var i = items.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                list.appendChild(items[j]);
             }
 
-            // Update the step numbers
             this._updateStepNumbers();
         },
 
-        /**
-         * Update the step numbers displayed on items
-         *
-         * @private
-         */
         _updateStepNumbers: function() {
-            if (!this.sequenceList) return;
-
-            var items = this.sequenceList.querySelectorAll('.sequence-item');
+            var items = this.el.querySelectorAll('.sequence-item');
             for (var i = 0; i < items.length; i++) {
-                var numberElement = items[i].querySelector('.step-number');
-                if (numberElement) {
-                    numberElement.textContent = (i + 1);
+                var numEl = items[i].querySelector('.step-number');
+                if (numEl) {
+                    numEl.textContent = (i + 1);
                 }
             }
         },
 
-        /**
-         * Update the hidden input with current sequence data
-         *
-         * @private
-         */
         _updateSequenceData: function() {
-            if (!this.sequenceList) return;
-
             var data = [];
-            var items = this.sequenceList.querySelectorAll('.sequence-item');
+            var items = this.el.querySelectorAll('.sequence-item');
 
             for (var i = 0; i < items.length; i++) {
-                var stepId = items[i].getAttribute('data-step-id');
-                var position = i + 1;
+                var stepId = items[i].dataset.stepId;
+                if (stepId) {
+                    data.push({
+                        'step_id': parseInt(stepId),
+                        'position': i + 1
+                    });
+                }
+            }
 
-                data.push({
+            this._updateStepNumbers();
+
+            var inputEl = this.el.querySelector('input[name="sequence_data"]');
+            if (inputEl) {
+                inputEl.value = JSON.stringify(data);
+            }
+        },
+
+        _onResetClick: function(ev) {
+            ev.preventDefault();
+            this._randomizeItems();
+            this._updateSequenceData();
+        }
+    });
+
+    return publicWidget.registry.QuizSequence;
+});
                     'step_id': parseInt(stepId),
                     'position': position
                 });

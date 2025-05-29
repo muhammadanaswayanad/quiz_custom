@@ -635,8 +635,8 @@
                                                                     <i class="fa fa-bars"></i>
                                                                 </div>
                                                                 <span class="step-number">1</span>
-                                                                <span class="step-label" t-esc="step.label"></span>
-                                                                <div t-if="step.content" class="step-description" t-esc="step.content"></div>
+                                                                <span class="step-label" t-esc="step.label"/>
+                                                                <div t-if="step.content" class="step-description" t-esc="step.content"/>
                                                             </div>
                                                         </t>
                                                     </div>
