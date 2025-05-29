@@ -48,6 +48,10 @@ class Question(models.Model):
     keywords = fields.Text(string='Keywords (comma separated)',
                           help="Enter keywords that must be present in the answer, separated by commas")
 
+    # Add text_template field for dropdown_blank questions
+    text_template = fields.Html(string='Text with Blanks', 
+                             help="Use {{1}}, {{2}}, etc. to mark where dropdowns should appear")
+
     def evaluate_answer(self, answer_data):
         """Evaluate answer based on question type"""
         if self.type == 'mcq_single':

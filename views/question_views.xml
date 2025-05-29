@@ -17,7 +17,15 @@
                     </group>
                     
                     <separator string="Question Content"/>
-                    <field name="question_html" widget="html"/>
+                    <!-- Regular question HTML field (hidden for dropdown_blank type) -->
+                    <field name="question_html" widget="html" 
+                           attrs="{'invisible': [('type', '=', 'dropdown_blank')]}"/>
+                    
+                    <!-- Text template field for dropdown_blank type -->
+                    <field name="text_template" widget="html" options="{'style-inline': true}"
+                           placeholder="Enter text with {{1}}, {{2}} placeholders for dropdowns"
+                           attrs="{'invisible': [('type', '!=', 'dropdown_blank')], 
+                                  'required': [('type', '=', 'dropdown_blank')]}"/>
                     
                     <notebook>
                         <!-- Multiple Choice Options -->
@@ -190,14 +198,21 @@
                             </div>
                         </page>
                         
-                        <!-- Dropdown Blanks (NEW) -->
+                        <!-- Dropdown Blanks -->
                         <page string="Dropdown Blanks" attrs="{'invisible': [('type', '!=', 'dropdown_blank')]}">
-                            <p class="text-muted mb-2">
-                                Define dropdowns for each placeholder in your text template ({{1}}, {{2}}, etc.).
-                                Add options for each dropdown and mark the correct answer.
-                            </p>
-                            <field name="blank_ids" widget="one2many" domain="[('input_type', '=', 'dropdown')]" context="{'default_input_type': 'dropdown'}">
-                                <tree>
+                            <div class="alert alert-info">
+                                <strong>Instructions:</strong>
+                                <ul>
+                                    <li>Use {{1}}, {{2}}, etc. in your text template above to mark dropdown positions</li>
+                                    <li>Add a blank for each placeholder number</li>
+                                    <li>Add dropdown options for each blank</li>
+                                    <li>Mark one option as correct for each blank</li>
+                                </ul>
+                            </div>
+                            <field name="blank_ids" widget="one2many" 
+                                   domain="[('input_type', '=', 'dropdown')]" 
+                                   context="{'default_input_type': 'dropdown'}">
+                                <tree editable="bottom">
                                     <field name="blank_number"/>
                                     <field name="input_type" invisible="1"/>
                                 </tree>
