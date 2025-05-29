@@ -33,12 +33,12 @@ class Question(models.Model):
     text_template = fields.Html(string='Text with Blanks', 
                              help="Use {{1}}, {{2}}, etc. to mark where dropdowns should appear")
     
-    # Define relationships correctly with comodel_name
-    choice_ids = fields.One2many(comodel_name='quiz.choice', inverse_name='question_id', string='Choices')
-    match_pair_ids = fields.One2many(comodel_name='quiz.match.pair', inverse_name='question_id', string='Match Pairs')
-    drag_token_ids = fields.One2many(comodel_name='quiz.drag.token', inverse_name='question_id', string='Drag Tokens')
-    fill_blank_answer_ids = fields.One2many(comodel_name='quiz.fill.blank.answer', inverse_name='question_id', string='Fill Blank Answers')
-    blank_ids = fields.One2many(comodel_name='quiz.blank', inverse_name='question_id', string='Dropdown Blanks')
+    # Fix relationship definitions by explicitly specifying inverse_name
+    choice_ids = fields.One2many('quiz.choice', 'question_id', string='Choices')
+    match_pair_ids = fields.One2many('quiz.match.pair', 'question_id', string='Match Pairs')
+    drag_token_ids = fields.One2many('quiz.drag.token', 'question_id', string='Drag Tokens')
+    fill_blank_answer_ids = fields.One2many('quiz.fill.blank.answer', 'question_id', string='Fill Blank Answers')
+    blank_ids = fields.One2many('quiz.blank', 'question_id', string='Dropdown Blanks')
     sequence_item_ids = fields.One2many('quiz.sequence.item', 'question_id', string='Sequence Items')
     sequence_step_ids = fields.One2many('quiz.sequence.step', 'question_id', string='Sequence Steps')
     
@@ -364,7 +364,7 @@ class FillBlankAnswer(models.Model):
     _description = 'Fill in the Blank Answer'
     _order = 'sequence, id'
     sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
+    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
     blank_number = fields.Integer(string='Blank Number', required=True,
                                   help="The number in the {{n}} placeholder")
     correct_answer = fields.Char(string='Answer', required=True)
@@ -377,7 +377,7 @@ class DragToken(models.Model):
     _description = 'Drag and Drop Token'
     _order = 'sequence, id'
     sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
+    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
     text = fields.Char(string='Token Text', required=True)
     blank_number = fields.Integer(string='Blank Number', required=True, 
                                   help="The number in the {{n}} placeholder")
@@ -389,7 +389,7 @@ class QuizBlank(models.Model):
     _name = 'quiz.blank'
     _description = 'Question Blank'
     _order = 'blank_number, id'
-    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
+    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
     blank_number = fields.Integer(string='Blank Number', required=True, 
                                   help="The number in the {{n}} placeholder")
     input_type = fields.Selection([
@@ -433,7 +433,7 @@ class Choice(models.Model):
     _description = 'Multiple Choice Option'
     _order = 'sequence, id'
     sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
+    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
     text = fields.Char(string='Choice Text', required=True)
     is_correct = fields.Boolean(string='Is Correct', default=False)
 class MatchPair(models.Model):
@@ -441,14 +441,14 @@ class MatchPair(models.Model):
     _description = 'Match Pair'
     _order = 'sequence, id'
     sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
+    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
     left_text = fields.Char(string='Left Item', required=True)
 class MatchPair(models.Model):
     _name = 'quiz.match.pair'
     _description = 'Match Pair'
     _order = 'sequence, id'
     sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
+    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
     left_text = fields.Char(string='Left Item', required=True)
     right_text = fields.Char(string='Right Item', required=True)
     _sql_constraints = [
@@ -461,7 +461,7 @@ class SequenceItem(models.Model):
     _description = 'Sequence Item for Ordering Questions'
     _order = 'correct_position, id'
     sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
+    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
     label = fields.Char('Step Label', required=True)
     content = fields.Text('Content')
     correct_position = fields.Integer('Correct Position', required=True)
