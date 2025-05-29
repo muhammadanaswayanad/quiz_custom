@@ -394,8 +394,111 @@
                                             </div>
                                         </t>
 
+                                        <!-- Single Line Text Box -->
+                                        <t t-if="question.type == 'text_box'">
+                                            <div class="text-box-question">
+                                                <div class="form-group mb-3">
+                                                    <label for="text_answer" class="form-label">Your Answer:</label>
+                                                    <input type="text" name="answer_data" class="form-control" 
+                                                           id="text_answer" placeholder="Type your answer here"/>
+                                                </div>
+                                                <t t-if="question.allow_partial_match and question.keywords">
+                                                    <div class="alert alert-info">
+                                                        <small>
+                                                            <i class="fa fa-info-circle"></i> Hint: Your answer should include certain keywords.
+                                                        </small>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </t>
+                                        
+                                        <!-- Numerical Value -->
+                                        <t t-if="question.type == 'numerical'">
+                                            <div class="numerical-question">
+                                                <div class="form-group mb-3">
+                                                    <label for="numerical_answer" class="form-label">Your Answer:</label>
+                                                    <input type="number" name="answer_data" class="form-control" 
+                                                           id="numerical_answer" step="any" placeholder="Enter a number"/>
+                                                </div>
+                                                <t t-if="question.numerical_tolerance > 0">
+                                                    <div class="alert alert-info">
+                                                        <small>
+                                                            <i class="fa fa-info-circle"></i> Your answer will be evaluated with a tolerance of ±<t t-esc="question.numerical_tolerance"/>.
+                                                        </small>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </t>
+                                        
+                                        <!-- Matrix Question -->
+                                        <t t-if="question.type == 'matrix'">
+                                            <div class="matrix-question">
+                                                <input type="hidden" name="matrix_data" value="{}"/>
+                                                
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th></th> <!-- Empty corner cell -->
+                                                                <t t-foreach="question.matrix_column_ids" t-as="column">
+                                                                    <th class="text-center"><t t-esc="column.name"/></th>
+                                                                </t>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <t t-foreach="question.matrix_row_ids" t-as="row">
+                                                                <tr>
+                                                                    <th><t t-esc="row.name"/></th>
+                                                                    <t t-foreach="question.matrix_column_ids" t-as="column">
+                                                                        <td class="text-center">
+                                                                            <div class="form-check d-flex justify-content-center">
+                                                                                <input type="checkbox" 
+                                                                                       class="form-check-input matrix-cell" 
+                                                                                       t-att-data-row-id="row.id"
+                                                                                       t-att-data-col-id="column.id"
+                                                                                       t-att-id="'cell_' + row.id + '_' + column.id"/>
+                                                                            </div>
+                                                                        </td>
+                                                                    </t>
+                                                                </tr>
+                                                            </t>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                
+                                                <script type="text/javascript">
+                                                    document.addEventListener('DOMContentLoaded', function() {
+                                                        // Update hidden form field when matrix cells are clicked
+                                                        var matrixCells = document.querySelectorAll('.matrix-cell');
+                                                        var hiddenField = document.querySelector('input[name="answer_data"]');
+                                                        
+                                                        if (!hiddenField) {
+                                                            // Create the hidden field if it doesn't exist
+                                                            hiddenField = document.createElement('input');
+                                                            hiddenField.type = 'hidden';
+                                                            hiddenField.name = 'answer_data';
+                                                            document.querySelector('.matrix-question').appendChild(hiddenField);
+                                                        }
+                                                        
+                                                        var matrixData = {};
+                                                        
+                                                        matrixCells.forEach(function(cell) {
+                                                            cell.addEventListener('change', function() {
+                                                                var rowId = this.getAttribute('data-row-id');
+                                                                var colId = this.getAttribute('data-col-id');
+                                                                var cellKey = 'cell_' + rowId + '_' + colId;
+                                                                
+                                                                matrixData[cellKey] = this.checked;
+                                                                hiddenField.value = JSON.stringify(matrixData);
+                                                            });
+                                                        });
+                                                    });
+                                                </script>
+                                            </div>
+                                        </t>
+
                                         <!-- Default fallback for other question types -->
-                                        <t t-if="question.type not in ['mcq_single', 'mcq_multiple', 'fill_blanks', 'drag_zone', 'drag_text', 'match']">
+                                        <t t-if="question.type not in ['mcq_single', 'mcq_multiple', 'fill_blanks', 'drag_zone', 'drag_into_text', 'match', 'text_box', 'numerical', 'matrix']">
                                             <div class="alert alert-info">
                                                 <p>This question type (<t t-esc="question.type"/>) is not yet implemented in the frontend.</p>
                                                 <textarea name="answer_data" class="form-control" placeholder="Enter your answer here..."></textarea>

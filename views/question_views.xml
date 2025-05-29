@@ -87,6 +87,115 @@
                                 </tree>
                             </field>
                         </page>
+                        
+                        <!-- Single Line Text Box -->
+                        <page string="Text Answer Settings" 
+                              invisible="type != 'text_box'">
+                            <group>
+                                <group>
+                                    <field name="correct_text_answer"/>
+                                    <field name="case_sensitive"/>
+                                    <field name="allow_partial_match"/>
+                                </group>
+                                <group>
+                                    <field name="keywords" placeholder="word1, word2, phrase1"
+                                           invisible="not allow_partial_match"/>
+                                </group>
+                            </group>
+                            <div class="alert alert-info" invisible="not allow_partial_match">
+                                <strong>Partial Matching:</strong>
+                                <p>Enter keywords or phrases that should be present in the answer.</p>
+                                <p>If no keywords are specified, a simple word comparison will be used.</p>
+                            </div>
+                        </page>
+                        
+                        <!-- Numerical Value -->
+                        <page string="Numerical Settings"
+                              invisible="type != 'numerical'">
+                            <group>
+                                <group string="Exact Value">
+                                    <field name="numerical_exact_value"/>
+                                    <field name="numerical_tolerance" 
+                                           invisible="numerical_exact_value == False"/>
+                                    <div class="alert alert-info" invisible="numerical_exact_value == False">
+                                        <strong>Tolerance:</strong>
+                                        <p>Answer will be considered correct if it's within ±<field name="numerical_tolerance"/> of the exact value.</p>
+                                    </div>
+                                </group>
+                                <group string="Value Range">
+                                    <field name="numerical_min_value"/>
+                                    <field name="numerical_max_value"/>
+                                    <div class="alert alert-info" invisible="numerical_min_value == False or numerical_max_value == False">
+                                        <strong>Range Check:</strong>
+                                        <p>Answer will be considered correct if it's between the minimum and maximum values (inclusive).</p>
+                                    </div>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <!-- Matrix Question -->
+                        <page string="Matrix Configuration"
+                              invisible="type != 'matrix'">
+                            <div class="alert alert-info">
+                                <strong>Matrix Question Setup:</strong>
+                                <p>1. Add rows and columns to create your matrix</p>
+                                <p>2. Check the "Is Correct" box for each cell that represents a correct answer</p>
+                            </div>
+                            
+                            <group string="Matrix Rows">
+                                <field name="matrix_row_ids">
+                                    <tree editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="name"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            
+                            <group string="Matrix Columns">
+                                <field name="matrix_column_ids">
+                                    <tree editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="name"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            
+                            <group string="Cell Values" invisible="not matrix_row_ids or not matrix_column_ids">
+                                <field name="matrix_row_ids" invisible="1"/>
+                                <field name="matrix_column_ids" invisible="1"/>
+                                <field name="id" invisible="1"/>
+                                <div class="alert alert-warning" role="alert">
+                                    <strong>Matrix Cells Setup:</strong>
+                                    <p>After adding rows and columns, go to Matrix Cells tab to define correct values.</p>
+                                </div>
+                            </group>
+                        </page>
+                        
+                        <!-- Matrix Cells -->
+                        <page string="Matrix Cells"
+                              invisible="type != 'matrix' or not matrix_row_ids or not matrix_column_ids">
+                            <field name="id" invisible="1"/>
+                            <div t-if="id">
+                                <field name="matrix_row_ids" invisible="1"/>
+                                <field name="matrix_column_ids" invisible="1"/>
+                                
+                                <!-- Use a widget to show the matrix editor -->
+                                <widget name="matrix_editor"
+                                        question_id="id"
+                                        readonly="0"/>
+                                        
+                                <!-- Fallback if widget doesn't load -->
+                                <field name="env" invisible="1"/>
+                                <field name="env.ref('quiz_engine_pro.matrix_cell_view_tree')" invisible="1"/>
+                                <button name="action_open_matrix_cells" 
+                                        string="Open Matrix Cell Editor" 
+                                        type="object" 
+                                        class="btn btn-primary"/>
+                            </div>
+                            <div t-if="not id" class="alert alert-info">
+                                <p>Please save the question first to edit matrix cells.</p>
+                            </div>
+                        </page>
                     </notebook>
                 </sheet>
             </form>
@@ -104,6 +213,20 @@
                 <field name="type"/>
                 <field name="question_html" widget="html_simple"/>
                 <field name="points"/>
+            </tree>
+        </field>
+    </record>
+    
+    <!-- Matrix Cell Tree View -->
+    <record id="matrix_cell_view_tree" model="ir.ui.view">
+        <field name="name">quiz.matrix.cell.tree</field>
+        <field name="model">quiz.matrix.cell</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="row_id" domain="[('question_id', '=', question_id)]"/>
+                <field name="column_id" domain="[('question_id', '=', question_id)]"/>
+                <field name="is_correct"/>
+                <field name="question_id" invisible="1"/>
             </tree>
         </field>
     </record>

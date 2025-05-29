@@ -28,7 +28,8 @@
         'web.assets_frontend': [
             'quiz_engine_pro/static/src/css/quiz_styles.css',
             'quiz_engine_pro/static/src/css/quiz_drag_drop.css',
-            'quiz_engine_pro/static/src/js/simple_drag_drop.js',
+            'quiz_engine_pro/static/src/css/quiz_matrix.css',
+            'quiz_engine_pro/static/src/js/quiz_drag_drop.js',
         ],
     },
     'images': ['static/description/icon.png'],

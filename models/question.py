@@ -1,5 +1,6 @@
 from odoo import models, fields, api
 import json
+import re
 
 class Question(models.Model):
     _name = 'quiz.question'
@@ -14,6 +15,9 @@ class Question(models.Model):
         ('match', 'Match the Following'),
         ('drag_zone', 'Drag and Drop into Zones'),
         ('drag_into_text', 'Drag and Drop into Text'),
+        ('text_box', 'Single Line Text Box'),
+        ('numerical', 'Numerical Value'),
+        ('matrix', 'Matrix Question'),
     ], string='Question Type', required=True, default='mcq_single')
     
     question_html = fields.Html(string='Question', required=True)
@@ -25,6 +29,21 @@ class Question(models.Model):
     match_pair_ids = fields.One2many('quiz.match.pair', 'question_id', string='Match Pairs')
     drag_token_ids = fields.One2many('quiz.drag.token', 'question_id', string='Drag Tokens')
     fill_blank_answer_ids = fields.One2many('quiz.fill.blank.answer', 'question_id', string='Fill Blank Answers')
+    matrix_row_ids = fields.One2many('quiz.matrix.row', 'question_id', string='Matrix Rows')
+    matrix_column_ids = fields.One2many('quiz.matrix.column', 'question_id', string='Matrix Columns')
+    
+    # For numerical questions
+    numerical_exact_value = fields.Float(string='Exact Value', digits=(16, 6))
+    numerical_min_value = fields.Float(string='Minimum Value', digits=(16, 6))
+    numerical_max_value = fields.Float(string='Maximum Value', digits=(16, 6))
+    numerical_tolerance = fields.Float(string='Tolerance (±)', default=0.0, digits=(16, 6))
+    
+    # For text box questions
+    correct_text_answer = fields.Char(string='Correct Answer')
+    case_sensitive = fields.Boolean(string='Case Sensitive', default=False)
+    allow_partial_match = fields.Boolean(string='Allow Partial Match', default=False)
+    keywords = fields.Text(string='Keywords (comma separated)',
+                          help="Enter keywords that must be present in the answer, separated by commas")
 
     def evaluate_answer(self, answer_data):
         """Evaluate answer based on question type"""
@@ -38,6 +57,12 @@ class Question(models.Model):
             return self._evaluate_match(answer_data)
         elif self.type in ['drag_zone', 'drag_into_text']:
             return self._evaluate_drag_drop(answer_data)
+        elif self.type == 'text_box':
+            return self._evaluate_text_box(answer_data)
+        elif self.type == 'numerical':
+            return self._evaluate_numerical(answer_data)
+        elif self.type == 'matrix':
+            return self._evaluate_matrix(answer_data)
         return 0.0
 
     def _evaluate_mcq_single(self, answer_data):
@@ -136,6 +161,101 @@ class Question(models.Model):
         
         return (correct_count / total_tokens) * self.points
 
+    def _evaluate_text_box(self, answer_data):
+        """Evaluate text box answers"""
+        if not answer_data or not self.correct_text_answer:
+            return 0.0
+        
+        user_answer = answer_data.strip()
+        correct_answer = self.correct_text_answer.strip()
+        
+        # Apply case sensitivity
+        if not self.case_sensitive:
+            user_answer = user_answer.lower()
+            correct_answer = correct_answer.lower()
+        
+        # Exact match
+        if user_answer == correct_answer:
+            return self.points
+        
+        # Partial match if allowed
+        if self.allow_partial_match:
+            if self.keywords:
+                keywords = [k.strip() for k in self.keywords.split(',')]
+                # Convert to lowercase if not case sensitive
+                if not self.case_sensitive:
+                    keywords = [k.lower() for k in keywords]
+                
+                # Check if all keywords are present
+                keywords_found = sum(1 for k in keywords if k in user_answer)
+                if keywords_found > 0:
+                    return (keywords_found / len(keywords)) * self.points
+            else:
+                # Simple partial match calculation if no specific keywords
+                ratio = len(set(user_answer.split()) & set(correct_answer.split())) / len(set(correct_answer.split()))
+                if ratio > 0.5:  # More than half the words match
+                    return ratio * self.points
+        
+        return 0.0
+
+    def _evaluate_numerical(self, answer_data):
+        """Evaluate numerical answers"""
+        if not answer_data:
+            return 0.0
+        
+        try:
+            user_value = float(answer_data)
+        except (ValueError, TypeError):
+            return 0.0
+        
+        # Exact value with tolerance
+        if self.numerical_exact_value is not False:
+            if abs(user_value - self.numerical_exact_value) <= self.numerical_tolerance:
+                return self.points
+        
+        # Range check
+        if self.numerical_min_value is not False and self.numerical_max_value is not False:
+            if self.numerical_min_value <= user_value <= self.numerical_max_value:
+                return self.points
+        
+        return 0.0
+
+    def _evaluate_matrix(self, answer_data):
+        """Evaluate matrix questions"""
+        if not answer_data:
+            return 0.0
+        
+        try:
+            answers = json.loads(answer_data) if isinstance(answer_data, str) else answer_data
+        except:
+            return 0.0
+        
+        total_cells = len(self.matrix_row_ids) * len(self.matrix_column_ids)
+        if total_cells == 0:
+            return 0.0
+        
+        correct_count = 0
+        
+        for row in self.matrix_row_ids:
+            for col in self.matrix_column_ids:
+                cell_key = f"cell_{row.id}_{col.id}"
+                expected_value = self._get_matrix_correct_value(row, col)
+                
+                if cell_key in answers and answers[cell_key] == expected_value:
+                    correct_count += 1
+        
+        return (correct_count / total_cells) * self.points
+    
+    def _get_matrix_correct_value(self, row, col):
+        """Get the correct value for a matrix cell"""
+        # Find the correct cell value from the matrix_cell_values model
+        cell = self.env['quiz.matrix.cell'].search([
+            ('row_id', '=', row.id),
+            ('column_id', '=', col.id)
+        ], limit=1)
+        
+        return cell.is_correct if cell else False
+
 
 class Choice(models.Model):
     _name = 'quiz.choice'
@@ -176,6 +296,43 @@ class FillBlankAnswer(models.Model):
     question_id = fields.Many2one('quiz.question', required=True, ondelete='cascade')
     blank_number = fields.Integer(string='Blank Number', required=True)
     correct_answer = fields.Char(string='Correct Answer', required=True)
+
+
+class MatrixRow(models.Model):
+    _name = 'quiz.matrix.row'
+    _description = 'Matrix Row'
+    _order = 'sequence, id'
+    
+    question_id = fields.Many2one('quiz.question', required=True, ondelete='cascade')
+    sequence = fields.Integer(string='Sequence', default=10)
+    name = fields.Char(string='Row Label', required=True)
+    cell_ids = fields.One2many('quiz.matrix.cell', 'row_id', string='Cell Values')
+
+
+class MatrixColumn(models.Model):
+    _name = 'quiz.matrix.column'
+    _description = 'Matrix Column'
+    _order = 'sequence, id'
+    
+    question_id = fields.Many2one('quiz.question', required=True, ondelete='cascade')
+    sequence = fields.Integer(string='Sequence', default=10)
+    name = fields.Char(string='Column Label', required=True)
+    cell_ids = fields.One2many('quiz.matrix.cell', 'column_id', string='Cell Values')
+
+
+class MatrixCell(models.Model):
+    _name = 'quiz.matrix.cell'
+    _description = 'Matrix Cell Value'
+    
+    row_id = fields.Many2one('quiz.matrix.row', required=True, ondelete='cascade')
+    column_id = fields.Many2one('quiz.matrix.column', required=True, ondelete='cascade')
+    is_correct = fields.Boolean(string='Is Correct Value', default=False)
+    
+    question_id = fields.Many2one(related='row_id.question_id', store=True)
+    
+    _sql_constraints = [
+        ('unique_cell', 'unique(row_id, column_id)', 'Each cell must be unique!')
+    ]
 
 
 # Placeholder models for cached database references
