@@ -32,13 +32,13 @@ class Question(models.Model):
     matrix_row_ids = fields.One2many('quiz.matrix.row', 'question_id', string='Matrix Rows')
     matrix_column_ids = fields.One2many('quiz.matrix.column', 'question_id', string='Matrix Columns')
     
-    # For numerical questions
+    # Fields for numerical questions
     numerical_exact_value = fields.Float(string='Exact Value', digits=(16, 6))
     numerical_min_value = fields.Float(string='Minimum Value', digits=(16, 6))
     numerical_max_value = fields.Float(string='Maximum Value', digits=(16, 6))
     numerical_tolerance = fields.Float(string='Tolerance (±)', default=0.0, digits=(16, 6))
     
-    # For text box questions
+    # Fields for text box questions
     correct_text_answer = fields.Char(string='Correct Answer')
     case_sensitive = fields.Boolean(string='Case Sensitive', default=False)
     allow_partial_match = fields.Boolean(string='Allow Partial Match', default=False)
@@ -255,6 +255,32 @@ class Question(models.Model):
         ], limit=1)
         
         return cell.is_correct if cell else False
+
+    @api.model
+    def create(self, vals):
+        """Create a new question and add blank rows/columns for matrix questions"""
+        res = super(Question, self).create(vals)
+        if res.type == 'matrix' and not res.matrix_row_ids and not res.matrix_column_ids:
+            # Add default rows and columns for new matrix questions
+            self.env['quiz.matrix.row'].create({'question_id': res.id, 'name': 'Row 1'})
+            self.env['quiz.matrix.row'].create({'question_id': res.id, 'name': 'Row 2'})
+            self.env['quiz.matrix.column'].create({'question_id': res.id, 'name': 'Column 1'})
+            self.env['quiz.matrix.column'].create({'question_id': res.id, 'name': 'Column 2'})
+        return res
+    
+    def action_open_matrix_cells(self):
+        """Open a view to edit matrix cells"""
+        self.ensure_one()
+        action = {
+            'name': 'Matrix Cells',
+            'type': 'ir.actions.act_window',
+            'res_model': 'quiz.matrix.cell',
+            'view_mode': 'tree',
+            'views': [(self.env.ref('quiz_engine_pro.matrix_cell_view_tree').id, 'tree')],
+            'domain': [('question_id', '=', self.id)],
+            'context': {'default_question_id': self.id},
+        }
+        return action
 
 
 class Choice(models.Model):
