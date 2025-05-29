@@ -9,21 +9,21 @@
 ## 🚀 Current Status
 
 **✅ Production Ready** - Module fully functional and tested  
-**Version:** 17.0.1.0.2  
+**Version:** 17.0.1.0.4  
 **Last Updated:** December 2024  
-**Development Sessions:** 11 completed  
-**Total Bugs Resolved:** 26+ major issues  
-**Latest Fix:** Session token attribute consistency in quiz workflow
+**Development Sessions:** 13 completed  
+**Total Bugs Resolved:** 30+ major issues  
 
 ## ✨ Features
 
-### 🎲 Question Types (6 Types Implemented)
+### 🎲 Question Types (7 Types Implemented)
 - **Multiple Choice (Single Answer)** - Radio button selection with single correct answer
 - **Multiple Choice (Multiple Answers)** - Checkbox selection with multiple correct answers  
 - **Fill in the Blanks** - Text input for missing words using `{{1}}`, `{{2}}` placeholders
 - **Match the Following** - Drag and drop matching pairs with left/right items
 - **Drag and Drop into Text** - Interactive token placement into text positions
 - **Drag and Drop into Zones** - Zone-based drag and drop placement
+- **Dropdown in Text** - Dropdown selection for missing words using `{{1}}`, `{{2}}` placeholders
 
 ### 🎯 Core Functionality
 - **📝 Public Quiz Access** - Share quizzes via clean public URLs (`/quiz/slug`)
@@ -41,6 +41,13 @@
 - **Analytics Dashboard** - Track participant performance and quiz statistics
 - **Bulk Operations** - Import/export questions and manage in bulk
 - **Access Controls** - Role-based permissions for quiz management
+
+### 🏆 Milestones Achieved
+- **December 2024 (v17.0.1.0.4):** Added Dropdown in Text question type
+- **December 2024 (v17.0.1.0.3):** Fixed critical session token issues, improved template rendering
+- **December 2024 (v17.0.1.0.2):** Enhanced drag and drop functionality, mobile optimization
+- **November 2024 (v17.0.1.0.1):** Initial release with 5 question types and core functionality
+- **November 2024 (v17.0.0.0.1):** Alpha version with basic question types and admin interface
 
 ## 📦 Installation
 
@@ -370,9 +377,9 @@ This module is free software: you can redistribute it and/or modify it under the
 ## 👨‍💻 Credits
 
 **Developed for Tijus Academy**  
-**Version:** 17.0.1.0.2  
+**Version:** 17.0.1.0.4  
 **Compatible with:** Odoo 17 Community Edition  
-**Development Time:** 11 sessions, 26+ bugs resolved  
+**Development Time:** 13 sessions, 30+ bugs resolved  
 **Status:** Production Ready ✅  
 
 ---
