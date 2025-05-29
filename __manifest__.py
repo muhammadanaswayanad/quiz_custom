@@ -19,7 +19,6 @@
     'external_dependencies': {'python': []},
     'data': [
         'security/ir.model.access.csv',
-        'views/sequence_templates.xml',  # Add this before other view files
         'views/quiz_views.xml',
         'views/question_views.xml', 
         'views/session_views.xml',
@@ -31,7 +30,7 @@
             'quiz_engine_pro/static/src/css/quiz_drag_drop.css',
             'quiz_engine_pro/static/src/css/quiz_dropdown.css',
             'quiz_engine_pro/static/src/css/quiz_sequence.css',
-            'quiz_engine_pro/static/src/js/sequence_simple.js',
+            'quiz_engine_pro/static/src/js/sequence_basic.js',
         ],
     },
     'images': ['static/description/icon.png'],

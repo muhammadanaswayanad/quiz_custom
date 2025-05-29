@@ -21,8 +21,9 @@
     background-color: white;
     border: 1px solid #ced4da;
     border-radius: 4px;
-    margin-bottom: 10px;
-    padding: 15px 70px 15px 15px;
+    margin-bottom: 8px;
+    padding: 12px;
+    padding-right: 80px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -89,15 +90,14 @@
 
 .sequence-item .step-number {
     display: inline-block;
-    width: 28px;
-    height: 28px;
-    line-height: 28px;
-    text-align: center;
+    width: 24px;
+    height: 24px;
     background-color: #6c757d;
     color: white;
     border-radius: 50%;
+    text-align: center;
+    line-height: 24px;
     margin-right: 10px;
-    font-weight: bold;
 }
 
 .sequence-item .step-label {
@@ -121,8 +121,7 @@
 }
 
 .sequence-buttons .btn {
-    margin-left: 5px;
-    min-width: 40px;
+    margin-left: 4px;
 }
 
 .reset-sequence {
@@ -151,4 +150,5 @@
         margin-left: 0;
         margin-top: 10px;
     }
+}
 }
