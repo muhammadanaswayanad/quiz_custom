@@ -45,10 +45,6 @@ class Question(models.Model):
     blank_ids = fields.One2many('quiz.blank', 'question_id', string='Dropdown Blanks')
     sequence_item_ids = fields.One2many('quiz.sequence.item', 'question_id', string='Sequence Items')
     
-    # Computed fields
-    total_questions = fields.Integer(string='Total Questions', compute='_compute_total_questions', store=True)
-    total_points = fields.Float(string='Total Points', compute='_compute_total_points', store=True)
-    
     @api.depends('question_html', 'text_template', 'type')
     def _compute_name(self):
         for question in self:
@@ -96,6 +92,22 @@ class Question(models.Model):
         if self.type == 'dropdown_blank' and self.text_template:
             # Copy text template to question_html to satisfy requirements in other parts of code
             self.question_html = self.text_template
+            
+    def auto_set_positions(self):
+        """
+        Automatically set the correct positions for sequence steps
+        based on their current order in the UI
+        """
+        self.ensure_one()
+        if self.type == 'step_sequence' and self.sequence_item_ids:
+            # Get sorted items based on sequence field
+            sorted_items = self.sequence_item_ids.sorted(lambda r: r.sequence)
+            
+            # Set correct positions from 0 to N
+            for i, item in enumerate(sorted_items):
+                item.correct_position = i
+                
+        return True
 
 
 class Choice(models.Model):
@@ -223,19 +235,6 @@ class SequenceItem(models.Model):
         if self.correct_position < 0:
             self.correct_position = 0
             return 0.0
-        
-        # Exact value with tolerance
-        if self.numerical_exact_value is not False:
-            if abs(user_value - self.numerical_exact_value) <= self.numerical_tolerance:
-                return self.points
-        
-        # Range check
-        if self.numerical_min_value is not False and self.numerical_max_value is not False:
-            if self.numerical_min_value <= user_value <= self.numerical_max_value:
-                return self.points
-        
-        return 0.0
-
     def _evaluate_matrix(self, answer_data):
         """Evaluate matrix questions"""
         if not answer_data:
@@ -261,7 +260,7 @@ class SequenceItem(models.Model):
                     correct_count += 1
         
         return (correct_count / total_cells) * self.points
-    
+    @api.model
     def _get_matrix_correct_value(self, row, col):
         """Get the correct value for a matrix cell"""
         # Find the correct cell value from the matrix_cell_values model
@@ -271,8 +270,6 @@ class SequenceItem(models.Model):
         ], limit=1)
         
         return cell.is_correct if cell else False
-
-    @api.model
     def create(self, vals):
         """Create a new question and add blank rows/columns for matrix questions"""
         res = super(Question, self).create(vals)
@@ -297,24 +294,6 @@ class SequenceItem(models.Model):
             'context': {'default_question_id': self.id},
         }
         return action
-
-    @api.depends('question_html', 'text_template', 'type')
-    def _compute_name(self):
-        for question in self:
-            if question.type == 'dropdown_blank' and question.text_template:
-                text = question.text_template or ''
-                # Strip tags to get plain text
-                text = re.sub(r'<.*?>', '', text)
-            else:
-                text = question.question_html or ''
-                # Strip tags to get plain text
-                text = re.sub(r'<.*?>', '', text)
-                
-            # Limit length for display
-            if len(text) > 50:
-                text = text[:50] + '...'
-            question.name = text or _('New Question')
-
     @api.constrains('type', 'question_html', 'text_template', 'sequence_item_ids')
     def _check_required_question_content(self):
         for question in self:
@@ -335,139 +314,24 @@ class SequenceItem(models.Model):
             # Copy text template to question_html to satisfy requirements in other parts of code
             self.question_html = self.text_template
 
-    @api.constrains('type')
-    def _check_required_fields(self):
-        for question in self:
-            if question.type == 'mcq_single' or question.type == 'mcq_multiple':
-                if not question.choice_ids:
-                    raise ValidationError(_('Multiple choice questions must have choices defined.'))
-            elif question.type == 'fill_blank':
-                if not question.fill_blank_answer_ids:
-                    raise ValidationError(_('Fill in the blanks questions must have blank answers defined.'))
-            elif question.type == 'match':
-                if not question.match_pair_ids:
-                    raise ValidationError(_('Match questions must have match pairs defined.'))
-            elif question.type == 'drag_text' or question.type == 'drag_zone':
-                if not question.drag_token_ids:
-                    raise ValidationError(_('Drag and drop questions must have tokens defined.'))
-            elif question.type == 'dropdown_blank':
-                if not question.text_template:
-                    raise ValidationError(_('Dropdown in Text questions must have a text template defined.'))
-                if not question.blank_ids:
-                    raise ValidationError(_('Dropdown in Text questions must have blanks with options defined.'))
-            elif question.type == 'step_sequence':
-                if not question.sequence_item_ids:
-                    raise ValidationError(_('Step Sequencing questions must have sequence steps defined.'))
-
-class FillBlankAnswer(models.Model):
-    _name = 'quiz.fill.blank.answer'
-    _description = 'Fill in the Blank Answer'
-    _order = 'sequence, id'
-    sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
-    blank_number = fields.Integer(string='Blank Number', required=True,
-                                  help="The number in the {{n}} placeholder")
-    correct_answer = fields.Char(string='Answer', required=True)
-    _sql_constraints = [
-        ('unique_blank_num_per_question', 'UNIQUE(question_id, blank_number)',
-         'Each blank number must be unique within a question')
-    ]
-class DragToken(models.Model):
-    _name = 'quiz.drag.token'
-    _description = 'Drag and Drop Token'
-    _order = 'sequence, id'
-    sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
-    text = fields.Char(string='Token Text', required=True)
-    blank_number = fields.Integer(string='Blank Number', required=True, 
-                                  help="The number in the {{n}} placeholder")
-    _sql_constraints = [
-        ('unique_blank_num_per_question', 'UNIQUE(question_id, blank_number)',
-         'Each blank number must be unique within a question')
-    ]
-class QuizBlank(models.Model):
-    _name = 'quiz.blank'
-    _description = 'Question Blank'
-    _order = 'blank_number, id'
-    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
-    blank_number = fields.Integer(string='Blank Number', required=True, 
-                                  help="The number in the {{n}} placeholder")
-    input_type = fields.Selection([
-        ('dropdown', 'Dropdown'),
-    ], string='Input Type', default='dropdown', required=True)
-    option_ids = fields.One2many(comodel_name='quiz.option', inverse_name='blank_id', string='Options')
-    _sql_constraints = [
-        ('unique_blank_number_per_question', 'UNIQUE(question_id, blank_number)',
-         'Each blank number must be unique within a question')
-    ]
-    
-    @api.constrains('input_type', 'option_ids')
-    def _check_dropdown_options(self):
-        for blank in self:
-            if blank.input_type == 'dropdown' and not blank.option_ids:
-                raise ValidationError(_("Dropdown blanks must have at least one option defined"))
-
-class QuizOption(models.Model):
-    _name = 'quiz.option'
-    _description = 'Dropdown Option'
-    _order = 'sequence, id'
-    sequence = fields.Integer(string='Sequence', default=10)
-    blank_id = fields.Many2one('quiz.blank', string='Blank', ondelete='cascade', required=True)
-    label = fields.Char(string='Option Text', required=True)
-    is_correct = fields.Boolean(string='Is Correct Answer', default=False)
-    correct_position = fields.Integer(string='Correct Position', default=0)
-
-    @api.constrains('blank_id', 'is_correct')
-    def _check_one_correct_answer(self):
-        for option in self:
-            if option.is_correct:
-                correct_count = self.search_count([
-                    ('blank_id', '=', option.blank_id.id),
-                    ('is_correct', '=', True),
-                    ('id', '!=', option.id)
-                ])
-                if correct_count > 0:
-                    raise ValidationError(_("Each dropdown blank can have only one correct answer"))
-class Choice(models.Model):
-    _name = 'quiz.choice'
-    _description = 'Multiple Choice Option'
-    _order = 'sequence, id'
-    sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
-    text = fields.Char(string='Choice Text', required=True)
-    is_correct = fields.Boolean(string='Is Correct', default=False)
-class MatchPair(models.Model):
-    _name = 'quiz.match.pair'
-    _description = 'Match Pair'
-    _order = 'sequence, id'
-    sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
-    left_text = fields.Char(string='Left Item', required=True)
-class MatchPair(models.Model):
-    _name = 'quiz.match.pair'
-    _description = 'Match Pair'
-    _order = 'sequence, id'
-    sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
-    left_text = fields.Char(string='Left Item', required=True)
-    right_text = fields.Char(string='Right Item', required=True)
-    _sql_constraints = [
-        ('unique_left_text_per_question', 'UNIQUE(question_id, left_text)', 
-         'Left text must be unique for a question')
-    ]
-
-class SequenceItem(models.Model):
-    _name = 'quiz.sequence.item'
-    _description = 'Sequence Item for Ordering Questions'
-    _order = 'correct_position, id'
-    sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
-    label = fields.Char('Step Label', required=True)
-    content = fields.Text('Content')
-    correct_position = fields.Integer('Correct Position', required=True)
-    _sql_constraints = [
-        ('unique_position_per_question', 'UNIQUE(question_id, correct_position)',
-         'Each position must be unique within a question')]
-
-class SequenceStep(models.Model):
-    correct_position = fields.Integer('Correct Position', required=True)
+@api.constrains('type')
+def _check_required_fields(self):
+    for question in self:
+        if question.type == 'mcq_single' or question.type == 'mcq_multiple':
+            if not question.choice_ids:
+                raise ValidationError(_('Multiple choice questions must have choices defined.'))
+                
+@api.constrains('type', 'question_html', 'text_template', 'sequence_item_ids')
+def _check_required_question_content(self):
+    for question in self:
+        if question.type == 'dropdown_blank':
+            if not question.text_template:
+                raise ValidationError(_("Text template is required for Dropdown in Text questions"))
+            if not question.blank_ids:
+                raise ValidationError(_("Dropdown in Text questions must have blanks defined"))
+        elif question.type == 'step_sequence':
+            if not question.sequence_item_ids:
+                raise ValidationError(_("Step Sequencing questions must have sequence steps defined."))
+        else:
+            if not question.question_html:
+                raise ValidationError(_("Question Text is required"))
