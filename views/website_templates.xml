@@ -626,7 +626,7 @@
                                                     
                                                     <!-- Instructions -->
                                                     <div class="alert alert-info">
-                                                        <strong>Instructions:</strong> Arrange the steps in the correct order using the arrows.
+                                                        <strong>Instructions:</strong> Arrange the steps in the correct order using the buttons.
                                                     </div>
                                                     
                                                     <!-- Sequence list -->
@@ -635,7 +635,9 @@
                                                             <div class="sequence-item" t-att-data-step-id="step.id">
                                                                 <span class="step-number" t-esc="step_index + 1"/>
                                                                 <span class="step-label" t-esc="step.label"/>
-                                                                <div t-if="step.content" class="step-description" t-esc="step.content"/>
+                                                                <t t-if="step.content">
+                                                                    <div class="step-description" t-esc="step.content"/>
+                                                                </t>
                                                                 <div class="sequence-buttons">
                                                                     <button type="button" class="btn btn-primary btn-sm move-up">↑</button>
                                                                     <button type="button" class="btn btn-primary btn-sm move-down">↓</button>
@@ -644,7 +646,6 @@
                                                         </t>
                                                     </div>
                                                     
-                                                    <!-- Hidden input for data -->
                                                     <input type="hidden" name="sequence_data" value="[]"/>
                                                     
                                                     <!-- Randomize button -->

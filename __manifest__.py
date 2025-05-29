@@ -30,14 +30,14 @@
             'quiz_engine_pro/static/src/css/quiz_drag_drop.css',
             'quiz_engine_pro/static/src/css/quiz_dropdown.css',
             'quiz_engine_pro/static/src/css/quiz_sequence.css',
-            'quiz_engine_pro/static/src/js/sequence_basic.js',
-            'quiz_engine_pro/static/src/js/sequence_direct.js',
             'quiz_engine_pro/static/src/js/sequence_buttons.js',
-            'quiz_engine_pro/static/src/js/sequence_fix.js',
         ],
     },
     'images': ['static/description/icon.png'],
     'installable': True,
+    'auto_install': False,
+    'application': True,
+}
     'auto_install': False,
     'application': True,
 }

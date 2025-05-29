@@ -21,13 +21,9 @@
     background-color: white;
     border: 1px solid #ced4da;
     border-radius: 4px;
-    margin-bottom: 8px;
-    padding: 12px;
-    padding-right: 80px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: transform 0.3s, background-color 0.3s;
+    margin-bottom: 10px;
+    padding: 15px 70px 15px 15px;
+    transition: background-color 0.2s;
 }
 
 .sequence-item:last-child {
@@ -35,8 +31,7 @@
 }
 
 .sequence-item:hover {
-    background-color: #f0f0f0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    background-color: #f5f5f5;
 }
 
 .sequence-item.sortable-ghost {
@@ -90,27 +85,24 @@
 
 .sequence-item .step-number {
     display: inline-block;
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    text-align: center;
     background-color: #6c757d;
     color: white;
     border-radius: 50%;
-    text-align: center;
-    line-height: 24px;
     margin-right: 10px;
 }
 
 .sequence-item .step-label {
     font-weight: 500;
-    vertical-align: middle;
 }
 
 .sequence-item .step-description {
     margin-top: 8px;
     margin-left: 38px;
     color: #666;
-    font-size: 0.95em;
-    width: 100%;
 }
 
 .sequence-buttons {
@@ -118,14 +110,14 @@
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
+    display: flex;
+    gap: 5px;
 }
 
-.sequence-buttons .btn {
-    margin-left: 4px;
-}
-
-.reset-sequence {
-    min-width: 120px;
+.sequence-buttons button {
+    min-width: 36px;
+    height: 36px;
+    padding: 0;
 }
 
 /* Desktop styles */
@@ -142,7 +134,15 @@
 /* Mobile optimization */
 @media (max-width: 767px) {
     .sequence-item {
-        padding: 12px;
+        padding: 12px 70px 12px 12px;
+        flex-wrap: wrap;
+    }
+    
+    .sequence-item .step-description {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+}
         flex-wrap: wrap;
     }
     
