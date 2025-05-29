@@ -469,9 +469,10 @@ class SequenceItem(models.Model):
     _description = 'Sequence Item for Ordering Questions'
     _order = 'correct_position, id'
     
+    sequence = fields.Integer(string='Sequence', default=10)
     question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
     label = fields.Char('Step Label', required=True)
-    content = fields.Text('Content')  # Changed from 'description' to 'content'
+    content = fields.Text('Content')
     correct_position = fields.Integer('Correct Position', required=True)
     
     _sql_constraints = [
