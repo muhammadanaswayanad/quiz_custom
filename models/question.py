@@ -467,33 +467,33 @@ class MatchPair(models.Model):
 class SequenceItem(models.Model):
     _name = 'quiz.sequence.item'
     _description = 'Sequence Item for Ordering Questions'
-    _order = 'sequence, id'
+    _order = 'sequence, id'ion, id'
     
-    sequence = fields.Integer(string='Sequence', default=10,
+    sequence = fields.Integer(string='Sequence', default=10,uestion', required=True, ondelete='cascade')
                               help="Used for display order in the admin form")
     question_id = fields.Many2one('quiz.question', string='Question', 
-                                 ondelete='cascade', required=True)
+                                 ondelete='cascade', required=True)True)
     label = fields.Char(string='Step Label', required=True,
                        help="The text shown for this step")
     correct_position = fields.Integer(string='Correct Position', required=True,
                                      help="The correct position in the sequence (1, 2, 3, etc.)")
-    
+         'Each position must be unique within a question')
     _sql_constraints = [
         ('unique_position_per_question', 
          'UNIQUE(question_id, correct_position)',
          'Each position in the sequence must be unique within a question.')
-    ]
-
-class SequenceStep(models.Model):
-    _name = 'quiz.sequence.step'
-    _description = 'Sequence Step'
+    ]description = 'Sequence Step'
     _order = 'correct_position, id'
-    
+class SequenceStep(models.Model):
+    _name = 'quiz.sequence.step'e('quiz.question', string='Question', required=True, ondelete='cascade')
+    _description = 'Sequence Step'l', required=True)
+    _order = 'correct_position, id'ription')
+    correct_position = fields.Integer('Correct Position', required=True)
     question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
     label = fields.Char('Step Label', required=True)
     description = fields.Text('Description')
     correct_position = fields.Integer('Correct Position', required=True)
-    
+         'Each position must be unique within a question')
     _sql_constraints = [
         ('unique_position_per_question', 
          'UNIQUE(question_id, correct_position)',

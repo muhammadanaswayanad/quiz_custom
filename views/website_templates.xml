@@ -624,7 +624,7 @@
                                                     </div>
                                                     
                                                     <div class="sequence-list">
-                                                        <t t-foreach="question.sequence_step_ids" t-as="step">
+                                                        <t t-foreach="question.sequence_item_ids" t-as="step">
                                                             <div class="sequence-item" t-att-data-step-id="step.id">
                                                                 <div class="sequence-handle">
                                                                     <i class="fa fa-bars"></i>

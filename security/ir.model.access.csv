@@ -25,6 +25,7 @@ access_quiz_response_admin,quiz.response admin,model_quiz_response,base.group_us
 access_quiz_blank_admin,quiz.blank admin,model_quiz_blank,base.group_user,1,1,1,1
 access_quiz_option_admin,quiz.option admin,model_quiz_option,base.group_user,1,1,1,1
 access_quiz_sequence_step_admin,quiz.sequence.step admin,model_quiz_sequence_step,base.group_user,1,1,1,1
+access_quiz_sequence_item_admin,quiz.sequence.item admin,model_quiz_sequence_item,base.group_user,1,1,1,1
 
 access_quiz_quiz_public,quiz.quiz public,model_quiz_quiz,base.group_public,1,0,0,0
 access_quiz_question_public,quiz.question public,model_quiz_question,base.group_public,1,0,0,0
@@ -58,3 +59,4 @@ access_quiz_session_public,quiz.session public,model_quiz_session,base.group_pub
 access_quiz_response_public,quiz.response public,model_quiz_response,base.group_public,1,1,1,0
 access_quiz_blank_public,quiz.blank public,model_quiz_blank,base.group_public,1,0,0,0
 access_quiz_option_public,quiz.option public,model_quiz_option,base.group_public,1,0,0,0
+access_quiz_sequence_item_public,quiz.sequence.item public,model_quiz_sequence_item,base.group_public,1,0,0,0
