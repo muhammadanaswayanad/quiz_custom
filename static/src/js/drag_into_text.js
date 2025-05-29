@@ -1,12 +1,17 @@
-odoo.define('quiz_engine_pro.drag_into_text', function (require) {
+odoo.define('quiz_engine_pro.drag_functionality', function (require) {
     'use strict';
 
     var publicWidget = require('web.public.widget');
     var ajax = require('web.ajax');
 
-    publicWidget.registry.QuizDragIntoText = publicWidget.Widget.extend({
-        selector: '.quiz-container',
+    publicWidget.registry.QuizDragDrop = publicWidget.Widget.extend({
+        selector: '.question-form',
         events: {
+            'dragstart .drag-token': '_onDragStart',
+            'dragover .drop-zone, .text-with-blanks .blank-drop': '_onDragOver',
+            'drop .drop-zone, .text-with-blanks .blank-drop': '_onDrop',
+            'dragover .match-drop-zone': '_onDragOver',
+            'drop .match-drop-zone': '_onMatchDrop',
             'click #next-btn': '_onNextQuestion',
             'click #prev-btn': '_onPrevQuestion',
             'click #submit-btn': '_onSubmitQuiz',
@@ -18,16 +23,16 @@ odoo.define('quiz_engine_pro.drag_into_text', function (require) {
             this.totalQuestions = parseInt(window.totalQuestions || 0);
             this.sessionToken = window.sessionToken;
             this.answers = {};
-            this._initializeDragAndDrop();
+            this._initializeDragIntoText();
             this._updateNavigation();
             return Promise.resolve();
         },
 
-        _initializeDragAndDrop: function () {
+        _initializeDragIntoText: function () {
             var self = this;
             
             // Process drag-into-text questions
-            this.$('.drag-into-text').each(function () {
+            this.$('.text-with-blanks').each(function () {
                 var $container = $(this);
                 self._setupDragIntoText($container);
             });
@@ -40,18 +45,23 @@ odoo.define('quiz_engine_pro.drag_into_text', function (require) {
             var $questionText = $container.find('.question-with-blanks');
             var html = $questionText.html();
             html = html.replace(/\{\{(\d+)\}\}/g, function(match, blankNumber) {
-                return '<span class="dropzone" data-blank="' + blankNumber + '" data-id="' + blankNumber + '">Drop here</span>';
+                return '<span class="blank-drop" data-blank="' + blankNumber + '" style="display: inline-block; min-width: 100px; min-height: 30px; border: 2px dashed #007bff; margin: 0 5px; padding: 5px; background-color: #f8f9fa; text-align: center;">[Drop Here]</span>';
             });
             $questionText.html(html);
 
             // Make tokens draggable
-            $container.find('.token').each(function () {
+            $container.find('.drag-token').each(function () {
                 var $token = $(this);
                 $token.attr('draggable', true);
                 
                 $token.on('dragstart', function (e) {
-                    e.originalEvent.dataTransfer.setData('text/plain', $token.data('value'));
-                    $token.addClass('dragging');
+                    e.originalEvent.dataTransfer.setData('text/plain', JSON.stringify({
+                        text: $token.data('token'),
+                        correctZone: $token.data('correct-zone'),
+                        correctBlank: $token.data('correct-blank'),
+                        pairId: $token.data('pair-id'),
+                        leftText: $token.data('left-text')
+                    }));
                 });
                 
                 $token.on('dragend', function (e) {
@@ -60,7 +70,7 @@ odoo.define('quiz_engine_pro.drag_into_text', function (require) {
             });
 
             // Setup drop zones
-            $container.find('.dropzone').each(function () {
+            $container.find('.drop-zone, .blank-drop').each(function () {
                 var $dropzone = $(this);
                 
                 $dropzone.on('dragover', function (e) {
@@ -76,47 +86,82 @@ odoo.define('quiz_engine_pro.drag_into_text', function (require) {
                     e.preventDefault();
                     $dropzone.removeClass('drag-over');
                     
-                    var tokenValue = e.originalEvent.dataTransfer.getData('text/plain');
-                    var blankId = $dropzone.data('blank');
-                    
-                    // Update dropzone content
-                    $dropzone.text(tokenValue);
-                    $dropzone.addClass('filled');
-                    
-                    // Hide the used token
-                    $container.find('.token[data-value="' + tokenValue + '"]').hide();
-                    
-                    // Store answer
-                    var questionId = $container.closest('.question-container').data('question-id');
-                    if (!self.answers[questionId]) {
-                        self.answers[questionId] = { type: 'drag_into_text', placements: {} };
+                    try {
+                        var data = JSON.parse(e.originalEvent.dataTransfer.getData('text/plain'));
+                        
+                        if ($dropzone.hasClass('drop-zone')) {
+                            // Drag into zones
+                            self._handleZoneDrop($dropzone, data);
+                        } else if ($dropzone.hasClass('blank-drop')) {
+                            // Drag into text
+                            self._handleTextDrop($dropzone, data);
+                        }
+                    } catch (ex) {
+                        console.error('Error processing drop:', ex);
                     }
-                    self.answers[questionId].placements[blankId] = tokenValue;
-                    
-                    // Allow clearing by clicking
-                    $dropzone.off('click').on('click', function () {
-                        self._clearDropzone($dropzone, $container);
-                    });
                 });
             });
         },
 
-        _clearDropzone: function ($dropzone, $container) {
-            var tokenValue = $dropzone.text();
-            var blankId = $dropzone.data('blank');
-            
-            // Clear dropzone
-            $dropzone.text('Drop here');
-            $dropzone.removeClass('filled');
-            
-            // Show token again
-            $container.find('.token[data-value="' + tokenValue + '"]').show();
-            
-            // Remove from answers
-            var questionId = $container.closest('.question-container').data('question-id');
-            if (this.answers[questionId] && this.answers[questionId].placements) {
-                delete this.answers[questionId].placements[blankId];
-            }
+        _handleZoneDrop: function ($dropZone, data) {
+            var $droppedItems = $dropZone.find('.dropped-items');
+            $droppedItems.append('<div class="dropped-token badge badge-primary m-1" data-token="' + data.text + '">' + data.text + '</div>');
+            this._updateZoneAnswer();
+        },
+
+        _handleTextDrop: function ($dropZone, data) {
+            $dropZone.text(data.text);
+            $dropZone.addClass('filled');
+            $dropZone.css('background-color', '#d4edda');
+            this._updateTextAnswer();
+        },
+
+        _handleMatchDrop: function ($dropZone, data) {
+            var $droppedMatch = $dropZone.find('.dropped-match');
+            $droppedMatch.html('<div class="matched-item badge badge-success">' + data.leftText + '</div>');
+            this._updateMatchAnswer();
+        },
+
+        _updateZoneAnswer: function () {
+            var answer = {};
+            this.$('.drop-zone').each(function () {
+                var zone = $(this).data('zone');
+                var tokens = [];
+                $(this).find('.dropped-token').each(function () {
+                    tokens.push($(this).data('token'));
+                });
+                answer[zone] = tokens;
+            });
+            this.$('#drag_zone_answer').val(JSON.stringify(answer));
+        },
+
+        _updateTextAnswer: function () {
+            var answer = {};
+            this.$('.blank-drop').each(function () {
+                var blank = $(this).data('blank');
+                var text = $(this).text();
+                if (text !== '[Drop Here]') {
+                    answer[blank] = text;
+                }
+            });
+            this.$('#drag_text_answer').val(JSON.stringify(answer));
+        },
+
+        _updateMatchAnswer: function () {
+            var answer = {};
+            this.$('.match-drop-zone').each(function () {
+                var pairId = $(this).data('pair-id');
+                var rightText = $(this).data('right-text');
+                var $matchedItem = $(this).find('.matched-item');
+                if ($matchedItem.length) {
+                    var leftText = $matchedItem.text();
+                    answer['pair_' + pairId] = {
+                        left: leftText,
+                        right: rightText
+                    };
+                }
+            });
+            this.$('#matching_answer').val(JSON.stringify(answer));
         },
 
         _onNextQuestion: function (e) {
@@ -219,6 +264,5 @@ odoo.define('quiz_engine_pro.drag_into_text', function (require) {
         },
     });
 
-    return publicWidget.registry.QuizDragIntoText;
-});
+    return publicWidget.registry.QuizDragDrop;
 });
