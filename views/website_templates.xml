@@ -737,18 +737,14 @@
             </div>
         </t>
     </template>
-</odoo>
-                                                            <t t-if="question_index + 1 == len(quiz.question_ids)">
-                                                                Complete Quiz
-                                                            </t>
-                                                            <t t-else="">
-                                                                Next Question
-                                                            </t>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </form>
+    <template id="quiz_question_navigation" name="Quiz Question Navigation">
+        <t t-if="question_index + 1 == len(quiz.question_ids)">
+            Complete Quiz
+        </t>
+        <t t-else="">
+            Next Question
+        </t>
+    </template>
                                     </div>
                                 </div>
                             </div>
@@ -806,5 +802,4 @@
             </div>
         </t>
     </template>
-</odoo>
 </odoo>
