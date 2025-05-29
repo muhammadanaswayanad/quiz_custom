@@ -1,109 +1,121 @@
 (function() {
     "use strict";
 
-    // Run when DOM is fully loaded
-    document.addEventListener('DOMContentLoaded', initAndBindEvents);
-    
-    /**
-     * Initialize handlers and bind events
-     */
-    function initAndBindEvents() {
-        // Direct event binding to buttons
-        var upButtons = document.querySelectorAll('.move-up');
-        for (var i = 0; i < upButtons.length; i++) {
-            upButtons[i].onclick = function() {
-                var item = this.closest('.sequence-item');
-                var prev = item.previousElementSibling;
-                if (prev) {
-                    item.parentNode.insertBefore(item, prev);
-                    updatePositions(item.closest('.sequence-container'));
-                }
-                return false; // Prevent default and stop propagation
-            };
-        }
+    // Wait for DOM to be fully loaded before initializing
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeSequences();
+    });
 
-        var downButtons = document.querySelectorAll('.move-down');
-        for (var i = 0; i < downButtons.length; i++) {
-            downButtons[i].onclick = function() {
+    function initializeSequences() {
+        // Fix for down buttons
+        var moveDownButtons = document.querySelectorAll('.move-down');
+        for (var i = 0; i < moveDownButtons.length; i++) {
+            moveDownButtons[i].addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Get the sequence item containing this button
                 var item = this.closest('.sequence-item');
                 var next = item.nextElementSibling;
-                if (next) {
-                    next.parentNode.insertBefore(next, item);
-                    updatePositions(item.closest('.sequence-container'));
+                
+                if (next && next.classList.contains('sequence-item')) {
+                    // Instead of using insertBefore with next.nextElementSibling
+                    // We just swap the nodes directly
+                    swapElements(item, next);
+                    updateSequence(item.closest('.sequence-container'));
                 }
-                return false; // Prevent default and stop propagation
-            };
+            });
         }
 
-        var resetButtons = document.querySelectorAll('.reset-sequence');
-        for (var i = 0; i < resetButtons.length; i++) {
-            resetButtons[i].onclick = function() {
-                randomizeOrder(this.closest('.sequence-container'));
-                return false; // Prevent default and stop propagation
-            };
+        // Handle up buttons
+        var moveUpButtons = document.querySelectorAll('.move-up');
+        for (var i = 0; i < moveUpButtons.length; i++) {
+            moveUpButtons[i].addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                var item = this.closest('.sequence-item');
+                var prev = item.previousElementSibling;
+                
+                if (prev && prev.classList.contains('sequence-item')) {
+                    swapElements(prev, item);
+                    updateSequence(item.closest('.sequence-container'));
+                }
+            });
         }
 
-        // Apply initial randomization to all sequence containers
+        // Handle randomize button
+        var randomizeButtons = document.querySelectorAll('.reset-sequence');
+        for (var i = 0; i < randomizeButtons.length; i++) {
+            randomizeButtons[i].addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                var container = this.closest('.sequence-container');
+                randomizeItems(container);
+                updateSequence(container);
+            });
+        }
+
+        // Initialize sequence containers
         var containers = document.querySelectorAll('.sequence-container');
         for (var i = 0; i < containers.length; i++) {
-            randomizeOrder(containers[i]);
+            randomizeItems(containers[i]);
+            updateSequence(containers[i]);
         }
     }
-    
-    /**
-     * Update sequence numbers and data after position changes
-     */
-    function updatePositions(container) {
-        if (!container) return;
+
+    // Helper function to swap two DOM elements
+    function swapElements(el1, el2) {
+        var parent = el1.parentNode;
+        var nextSibling = el1.nextSibling === el2 ? el1 : el1.nextSibling;
         
-        // Update visible numbers
-        var items = container.querySelectorAll('.sequence-item');
-        for (var i = 0; i < items.length; i++) {
-            var numEl = items[i].querySelector('.step-number');
-            if (numEl) numEl.textContent = (i + 1);
-        }
+        // Move el2 before el1
+        el2.parentNode.insertBefore(el1, el2.nextSibling);
         
-        // Update data input
-        var data = [];
-        for (var i = 0; i < items.length; i++) {
-            var id = items[i].getAttribute('data-step-id');
-            if (id) data.push({step_id: parseInt(id), position: i + 1});
-        }
-        
-        var input = container.querySelector('input[name="sequence_data"]');
-        if (input) input.value = JSON.stringify(data);
+        // Move el1 to where el2 was
+        parent.insertBefore(el2, nextSibling);
     }
-    
-    /**
-     * Randomize order of sequence items
-     */
-    function randomizeOrder(container) {
+
+    // Randomize the order of sequence items
+    function randomizeItems(container) {
         if (!container) return;
         
         var list = container.querySelector('.sequence-list');
-        var items = Array.from(list.querySelectorAll('.sequence-item'));
+        if (!list) return;
         
-        // Shuffle the items
+        var items = Array.from(list.querySelectorAll('.sequence-item'));
+        if (items.length < 2) return;
+
+        // Fisher-Yates shuffle
         for (var i = items.length - 1; i > 0; i--) {
             var j = Math.floor(Math.random() * (i + 1));
-            list.appendChild(items[j]);
+            if (j !== i) {
+                list.insertBefore(items[j], items[i]);
+            }
+        }
+    }
+
+    // Update sequence numbers and data
+    function updateSequence(container) {
+        if (!container) return;
+        
+        // Update step numbers
+        var items = container.querySelectorAll('.sequence-item');
+        for (var i = 0; i < items.length; i++) {
+            var numEl = items[i].querySelector('.step-number');
+            if (numEl) {
+                numEl.textContent = (i + 1);
+            }
         }
         
-        updatePositions(container);
-    }
-})();
-    }
-    
-    function updateSequenceData(container) {
-        var items = container.querySelectorAll('.sequence-item');
+        // Update hidden input with JSON data
         var data = [];
-        
         for (var i = 0; i < items.length; i++) {
-            var stepId = items[i].dataset.stepId;
+            var stepId = items[i].getAttribute('data-step-id');
             if (stepId) {
                 data.push({
-                    step_id: parseInt(stepId, 10),
-                    position: i + 1
+                    "step_id": parseInt(stepId, 10),
+                    "position": i + 1
                 });
             }
         }
