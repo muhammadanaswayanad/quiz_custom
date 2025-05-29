@@ -2,81 +2,107 @@
 (function() {
     // Add event handler on page load
     document.addEventListener('DOMContentLoaded', function() {
-        // Find all move-up buttons
-        var upButtons = document.querySelectorAll('.move-up');
-        for (var i = 0; i < upButtons.length; i++) {
-            upButtons[i].addEventListener('click', moveItemUp);
-        }
-
-        // Find all move-down buttons
-        var downButtons = document.querySelectorAll('.move-down');
-        for (var i = 0; i < downButtons.length; i++) {
-            downButtons[i].addEventListener('click', moveItemDown);
-        }
-
-        // Find all reset buttons
-        var resetButtons = document.querySelectorAll('.reset-sequence');
-        for (var i = 0; i < resetButtons.length; i++) {
-            resetButtons[i].addEventListener('click', randomizeItems);
-        }
-
-        // Randomize on first load
+        setupSequenceButtons();
+        
+        // Add event delegation on document for dynamically added buttons
+        document.addEventListener('click', function(event) {
+            var target = event.target;
+            
+            // Handle up button click
+            if (target.classList.contains('move-up') || target.closest('.move-up')) {
+                event.preventDefault();
+                var button = target.classList.contains('move-up') ? target : target.closest('.move-up');
+                var item = button.closest('.sequence-item');
+                moveItemUp(item);
+            }
+            
+            // Handle down button click
+            if (target.classList.contains('move-down') || target.closest('.move-down')) {
+                event.preventDefault();
+                var button = target.classList.contains('move-down') ? target : target.closest('.move-down');
+                var item = button.closest('.sequence-item');
+                moveItemDown(item);
+            }
+            
+            // Handle randomize button
+            if (target.classList.contains('reset-sequence') || target.closest('.reset-sequence')) {
+                event.preventDefault();
+                var button = target.classList.contains('reset-sequence') ? target : target.closest('.reset-sequence');
+                var container = button.closest('.sequence-container');
+                randomizeItems(container);
+            }
+        });
+        
+        // Initial setup
         var containers = document.querySelectorAll('.sequence-container');
         for (var i = 0; i < containers.length; i++) {
-            randomize(containers[i].querySelector('.sequence-list'));
-            updateNumbers(containers[i].querySelector('.sequence-list'));
-            updateData(containers[i]);
+            randomizeItems(containers[i]);
         }
     });
-
+    
+    function setupSequenceButtons() {
+        console.log("Setting up sequence buttons");
+    }
+    
     // Function to move an item up
-    function moveItemUp(e) {
-        var item = this.closest('.sequence-item');
+    function moveItemUp(item) {
         var prev = item.previousElementSibling;
-        
-        if (prev) {
-            item.parentNode.insertBefore(item, prev);
-            updateNumbers(item.parentNode);
-            updateData(item.closest('.sequence-container'));
+        if (prev && prev.classList.contains('sequence-item')) {
+            var parent = item.parentNode;
+            parent.insertBefore(item, prev);
+            
+            // Update order
+            var container = item.closest('.sequence-container');
+            updateNumbers(container);
+            updateData(container);
+            
+            console.log("Moved item up");
         }
     }
-
+    
     // Function to move an item down
-    function moveItemDown(e) {
-        var item = this.closest('.sequence-item');
+    function moveItemDown(item) {
         var next = item.nextElementSibling;
-        
-        if (next) {
-            item.parentNode.insertBefore(next, item);
-            updateNumbers(item.parentNode);
-            updateData(item.closest('.sequence-container'));
+        if (next && next.classList.contains('sequence-item')) {
+            var parent = item.parentNode;
+            if (next.nextElementSibling) {
+                parent.insertBefore(item, next.nextElementSibling);
+            } else {
+                parent.appendChild(item);
+            }
+            
+            // Update order
+            var container = item.closest('.sequence-container');
+            updateNumbers(container);
+            updateData(container);
+            
+            console.log("Moved item down");
         }
     }
-
+    
     // Function to randomize items
-    function randomizeItems(e) {
-        var container = this.closest('.sequence-container');
+    function randomizeItems(container) {
         var list = container.querySelector('.sequence-list');
+        if (!list) return;
         
-        randomize(list);
-        updateNumbers(list);
-        updateData(container);
-    }
-
-    // Helper function to randomize items in a list
-    function randomize(list) {
-        var items = Array.from(list.children);
-        items.sort(function() { return 0.5 - Math.random(); });
+        var items = Array.from(list.querySelectorAll('.sequence-item'));
+        if (items.length < 2) return;
         
-        for (var i = 0; i < items.length; i++) {
-            list.appendChild(items[i]);
+        // Shuffle
+        for (var i = items.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            list.appendChild(items[j]);
         }
-    }
-
-    // Function to update step numbers
-    function updateNumbers(list) {
-        var items = list.querySelectorAll('.sequence-item');
         
+        updateNumbers(container);
+        updateData(container);
+        
+        console.log("Randomized items");
+    }
+    
+    // Function to update step numbers
+    function updateNumbers(container) {
+        var items = container.querySelectorAll('.sequence-item');
         for (var i = 0; i < items.length; i++) {
             var numElem = items[i].querySelector('.step-number');
             if (numElem) {
@@ -84,7 +110,7 @@
             }
         }
     }
-
+    
     // Function to update hidden input data
     function updateData(container) {
         var items = container.querySelectorAll('.sequence-item');
@@ -92,15 +118,18 @@
         
         for (var i = 0; i < items.length; i++) {
             var stepId = items[i].getAttribute('data-step-id');
-            data.push({
-                step_id: parseInt(stepId, 10),
-                position: i + 1
-            });
+            if (stepId) {
+                data.push({
+                    step_id: parseInt(stepId),
+                    position: i + 1
+                });
+            }
         }
         
         var input = container.querySelector('input[name="sequence_data"]');
         if (input) {
             input.value = JSON.stringify(data);
+            console.log("Updated data:", input.value);
         }
     }
 })();

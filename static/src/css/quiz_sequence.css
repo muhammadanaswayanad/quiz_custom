@@ -27,16 +27,27 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: transform 0.3s, background-color 0.3s;
 }
 
 .sequence-item:hover {
-    background-color: #e9ecef;
+    background-color: #f0f0f0;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .sequence-item.sortable-ghost {
     opacity: 0.4;
     background-color: #c8e6c9;
+}
+
+.sequence-item.moving-up {
+    transform: translateY(-5px);
+    background-color: #e8f4f8;
+}
+
+.sequence-item.moving-down {
+    transform: translateY(5px);
+    background-color: #e8f8f0;
 }
 
 .sequence-content {
@@ -63,7 +74,7 @@
 }
 
 .sequence-controls button:active {
-    transform: translateY(1px);
+    transform: scale(1.2);
 }
 
 .sequence-handle {
