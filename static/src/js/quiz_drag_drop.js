@@ -10,43 +10,20 @@ odoo.define('quiz_engine_pro.drag_drop', function (require) {
             'dragover .drop-zone': '_onDragOver',
             'dragleave .drop-zone': '_onDragLeave',
             'drop .drop-zone': '_onDrop',
-            'touchstart .draggable-token': '_onTouchStart',
-            'touchmove': '_onTouchMove',
-            'touchend': '_onTouchEnd'
+            'click .reset-tokens': '_resetTokens'
         },
 
         /**
          * @override
          */
         start: function () {
-            var self = this;
-            this.touchDragging = false;
-            this.currentDraggedElement = null;
-            
-            // Make all tokens draggable
+            // Make tokens draggable
             this.$('.draggable-token').attr('draggable', 'true');
             
-            // Store original positions for reset functionality
+            // Store original positions
             this.$('.draggable-token').each(function() {
                 $(this).data('originalParent', $(this).parent());
             });
-            
-            // Add reset button functionality
-            this.$('.reset-tokens').on('click', function(ev) {
-                ev.preventDefault();
-                self._resetTokens();
-            });
-            
-            // Initialize answer data from hidden field if it exists
-            var answerData = this.$('input[name="drag_drop_data"]').val();
-            if (answerData) {
-                try {
-                    var data = JSON.parse(answerData);
-                    self._restoreTokens(data);
-                } catch (error) {
-                    console.error("Error parsing drag-drop data:", error);
-                }
-            }
             
             return this._super.apply(this, arguments);
         },
@@ -56,13 +33,11 @@ odoo.define('quiz_engine_pro.drag_drop', function (require) {
         //----------------------------------------------------------------------
         
         /**
-         * Update the hidden form field with the current drag and drop state
-         * 
-         * @private
+         * Update hidden form field with current drag-drop state
          */
         _updateFormData: function() {
             var data = [];
-            this.$('.drop-zone').each(function(index) {
+            this.$('.drop-zone').each(function() {
                 var zoneId = $(this).data('zone-id');
                 $(this).find('.draggable-token').each(function() {
                     data.push({
@@ -76,11 +51,11 @@ odoo.define('quiz_engine_pro.drag_drop', function (require) {
         },
         
         /**
-         * Reset all tokens to their original positions
-         * 
-         * @private
+         * Reset all tokens to original positions
          */
-        _resetTokens: function() {
+        _resetTokens: function(ev) {
+            if (ev) ev.preventDefault();
+            
             var self = this;
             this.$('.draggable-token').each(function() {
                 var originalParent = $(this).data('originalParent');
@@ -89,36 +64,61 @@ odoo.define('quiz_engine_pro.drag_drop', function (require) {
             this._updateFormData();
         },
         
-        /**
-         * Restore tokens to their previously saved positions
-         * 
-         * @private
-         * @param {Array} data Token position data
-         */
-        _restoreTokens: function(data) {
-            var self = this;
-            data.forEach(function(item) {
-                var token = self.$('.draggable-token[data-token-id="' + item.token_id + '"]');
-                var zone = self.$('.drop-zone[data-zone-id="' + item.zone_id + '"]');
-                if (token.length && zone.length) {
-                    token.detach().appendTo(zone);
-                }
-            });
-        },
-        
         //----------------------------------------------------------------------
         // Handlers
         //----------------------------------------------------------------------
         
         /**
-         * Handle drag start event
-         * 
-         * @private
-         * @param {Event} ev Event
+         * Handle drag start
          */
         _onDragStart: function(ev) {
             this.currentDraggedElement = $(ev.currentTarget);
             ev.originalEvent.dataTransfer.setData('text/plain', $(ev.currentTarget).data('token-id'));
+            ev.originalEvent.dataTransfer.effectAllowed = 'move';
+            
+            $(ev.currentTarget).addClass('dragging');
+        },
+        
+        /**
+         * Handle drag over - needed to allow dropping
+         */
+        _onDragOver: function(ev) {
+            ev.preventDefault();
+            $(ev.currentTarget).addClass('drag-over');
+        },
+        
+        /**
+         * Handle drag leave
+         */
+        _onDragLeave: function(ev) {
+            $(ev.currentTarget).removeClass('drag-over');
+        },
+        
+        /**
+         * Handle drop
+         */
+        _onDrop: function(ev) {
+            ev.preventDefault();
+            var $zone = $(ev.currentTarget);
+            $zone.removeClass('drag-over');
+            
+            // Get dragged element
+            var tokenId = ev.originalEvent.dataTransfer.getData('text/plain');
+            var $token = this.$('.draggable-token[data-token-id="' + tokenId + '"]');
+            
+            if ($token.length) {
+                // Move token to drop zone
+                $token.detach().appendTo($zone);
+                $token.removeClass('dragging');
+                
+                // Update form data
+                this._updateFormData();
+            }
+        }
+    });
+
+    return publicWidget.registry.QuizDragDrop;
+});
             ev.originalEvent.dataTransfer.effectAllowed = 'move';
             
             // Add dragging class

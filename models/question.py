@@ -157,11 +157,14 @@ class MatchPair(models.Model):
 
 class DragToken(models.Model):
     _name = 'quiz.drag.token'
-    _description = 'Drag Token'
-    
-    question_id = fields.Many2one('quiz.question', required=True, ondelete='cascade')
+    _description = 'Drag and Drop Token'
+    _order = 'sequence, id'
+
+    sequence = fields.Integer(string='Sequence', default=10)
+    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
     text = fields.Char(string='Token Text', required=True)
-    correct_for_blank = fields.Integer(string='Correct for Blank Number')
+    is_correct = fields.Boolean(string='Is Correct Answer', default=False)
+    correct_position = fields.Integer(string='Correct Position', default=0)
 
 
 class FillBlankAnswer(models.Model):

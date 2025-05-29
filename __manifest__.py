@@ -28,7 +28,6 @@
         'web.assets_frontend': [
             'quiz_engine_pro/static/src/css/quiz_styles.css',
             'quiz_engine_pro/static/src/css/quiz_drag_drop.css',
-            'quiz_engine_pro/static/src/js/drag_into_text.js',
             'quiz_engine_pro/static/src/js/quiz_drag_drop.js',
         ],
     },
@@ -36,4 +35,5 @@
     'installable': True,
     'auto_install': False,
     'application': True,
+}
 }
