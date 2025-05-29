@@ -129,19 +129,24 @@
                         <page string="Sequence Steps" invisible="type != 'step_sequence'">
                             <p class="text-muted mb-2">
                                 Add items that users will need to drag into the correct order.
-                                Set the correct position for each item in the sequence.
+                                Set the correct position (0, 1, 2, etc.) for each step in the sequence.in the sequence.
                             </p>
+                            <div class="oe_button_box" style="margin-bottom: 8px;">
+                                <button name="auto_set_positions" string="Auto-set Positions" type="object" 
+                                        class="oe_highlight btn btn-secondary" 
+                                        help="Automatically set correct positions from 0 to N based on the current row order"/>elp="The correct position in the sequence (0, 1, 2, etc.)"/>
+                            </div>
                             <field name="sequence_item_ids">
                                 <tree editable="bottom">
                                     <field name="sequence" widget="handle"/>
-                                    <field name="correct_position"/>
-                                    <field name="label"/>
-                                    <field name="content"/>
+                                    <field name="correct_position" help="The correct position in the sequence (0, 1, 2, etc.)"/>
+                                    <field name="label"/>is view. 
+                                    <field name="content"/>rect order of steps that users need to arrange.
                                 </tree>
                             </field>
                             <div class="alert alert-info mt-3" role="alert">
-                                <strong>Tip:</strong> The steps will be displayed in random order to the user,
-                                who must rearrange them in the correct sequence.
+                                <strong>Note:</strong> The "Sequence" column is just for reordering rows in this view. 
+                                The "Correct Position" determines the actual correct order of steps that users need to arrange.
                             </div>
                         </page>
                     </notebook>
