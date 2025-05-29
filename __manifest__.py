@@ -31,6 +31,7 @@
             'quiz_engine_pro/static/src/css/quiz_dropdown.css',
             'quiz_engine_pro/static/src/css/quiz_sequence.css',
             'quiz_engine_pro/static/src/js/sequence_basic.js',
+            'quiz_engine_pro/static/src/js/sequence_direct.js',
         ],
     },
     'images': ['static/description/icon.png'],
