@@ -501,38 +501,51 @@
                                         <t t-if="question.type == 'dropdown_blank'">
                                             <div class="dropdown-blank-question">
                                                 <div class="question-text-container mb-4">
-                                                    <h4><t t-esc="question.name"/></h4>
+                                                    <h4 class="mb-3"><t t-esc="question.name"/></h4>
                                                     
-                                                    <!-- Instructions -->
-                                                    <p class="text-muted mb-3">
-                                                        Complete the following text by selecting the correct option for each blank.
-                                                    </p>
-                                                    
-                                                    <!-- Build dropdowns directly -->
-                                                    <div class="text-content mt-3">
-                                                        <p t-field="question.text_template" class="mb-3"/>
-                                                    </div>
-                                                    
-                                                    <!-- Display dropdowns separately -->
-                                                    <div class="dropdowns-container mt-4">
-                                                        <t t-foreach="question.blank_ids.sorted(key=lambda b: b.blank_number)" t-as="blank">
-                                                            <div class="form-group mb-3 row">
-                                                                <label class="col-sm-2 col-form-label">
-                                                                    Blank <t t-esc="blank.blank_number"/>:
-                                                                </label>
-                                                                <div class="col-sm-10">
-                                                                    <select class="form-select dropdown-blank-select" 
-                                                                           t-att-name="'dropdown_blank_' + str(blank.blank_number)" 
-                                                                           t-att-data-blank-id="blank.id">
-                                                                        <option value="">-- Select --</option>
-                                                                        <t t-foreach="blank.option_ids" t-as="option">
-                                                                            <option t-att-value="option.id">
-                                                                                <t t-esc="option.label"/>
-                                                                            </option>
+                                                    <!-- Parse text template and insert dropdowns inline -->
+                                                    <div class="inline-dropdowns-text">
+                                                        <t t-set="template_text" t-value="question.text_template or ''"/>
+                                                        <t t-set="template_text" t-value="template_text.replace('&lt;p&gt;', '').replace('&lt;/p&gt;', '')"/>
+                                                        
+                                                        <!-- Split text by placeholders -->
+                                                        <t t-set="parts" t-value="template_text.split('{{')"/>
+                                                        <span><t t-esc="parts[0]"/></span>
+                                                        
+                                                        <!-- Process each part after the first one -->
+                                                        <t t-foreach="parts[1:]" t-as="part">
+                                                            <t t-set="blank_parts" t-value="part.split('}}', 1)"/>
+                                                            <t t-if="len(blank_parts) == 2">
+                                                                <t t-set="blank_number" t-value="int(blank_parts[0])"/>
+                                                                <t t-set="remaining_text" t-value="blank_parts[1]"/>
+                                                                
+                                                                <!-- Find the corresponding blank -->
+                                                                <t t-set="found_blank" t-value="False"/>
+                                                                <t t-foreach="question.blank_ids" t-as="blank">
+                                                                    <t t-if="blank.blank_number == blank_number">
+                                                                        <t t-set="found_blank" t-value="blank"/>
+                                                                    </t>
+                                                                </t>
+                                                                
+                                                                <!-- Render dropdown -->
+                                                                <t t-if="found_blank">
+                                                                    <select class="form-select dropdown-blank-select d-inline mx-1" 
+                                                                           style="width:auto; min-width:120px; display:inline-block !important;"
+                                                                           t-att-name="'dropdown_blank_' + str(blank_number)" 
+                                                                           t-att-data-blank-id="found_blank.id">
+                                                                        <option value="">Select...</option>
+                                                                        <t t-foreach="found_blank.option_ids" t-as="option">
+                                                                            <option t-att-value="option.id"><t t-esc="option.label"/></option>
                                                                         </t>
                                                                     </select>
-                                                                </div>
-                                                            </div>
+                                                                </t>
+                                                                <t t-else="">
+                                                                    <span class="badge bg-warning">Blank {{<t t-esc="blank_number"/>}}</span>
+                                                                </t>
+                                                                
+                                                                <!-- Add remaining text -->
+                                                                <span><t t-esc="remaining_text"/></span>
+                                                            </t>
                                                         </t>
                                                     </div>
                                                     
@@ -542,7 +555,6 @@
                                             
                                             <script type="text/javascript">
                                                 $(function() {
-                                                    // Update hidden field when dropdown selection changes
                                                     $('.dropdown-blank-select').on('change', function() {
                                                         var data = [];
                                                         $('.dropdown-blank-select').each(function() {
