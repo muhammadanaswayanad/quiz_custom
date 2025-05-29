@@ -624,12 +624,18 @@
                                                     </div>
                                                     
                                                     <div class="sequence-instructions mb-3">
-                                                        <strong>Instructions:</strong> Arrange the steps in the correct order using the up/down arrows or by dragging items.
+                                                        <strong>Instructions:</strong> Arrange the steps in the correct order using the up/down buttons.
                                                     </div>
                                                     
                                                     <div class="sequence-list" id="sequenceList">
                                                         <t t-foreach="question.sequence_item_ids" t-as="step">
                                                             <div class="sequence-item" t-att-data-step-id="step.id">
+                                                                <div class="sequence-content">
+                                                                    <span class="step-number"><t t-esc="step_index + 1"/></span>
+                                                                    <span class="step-label" t-esc="step.label"/>
+                                                                    <div t-if="step.content" class="step-description" t-esc="step.content"/>
+                                                                </div>
+                                                                
                                                                 <div class="sequence-controls">
                                                                     <button type="button" class="btn btn-sm btn-light move-up" title="Move Up">
                                                                         <i class="fa fa-arrow-up"></i>
@@ -638,12 +644,6 @@
                                                                         <i class="fa fa-arrow-down"></i>
                                                                     </button>
                                                                 </div>
-                                                                <div class="sequence-handle">
-                                                                    <i class="fa fa-arrows"></i>
-                                                                </div>
-                                                                <span class="step-number"><t t-esc="step_index + 1"/></span>
-                                                                <span class="step-label" t-esc="step.label"/>
-                                                                <div t-if="step.content" class="step-description" t-esc="step.content"/>
                                                             </div>
                                                         </t>
                                                     </div>

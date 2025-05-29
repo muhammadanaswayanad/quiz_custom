@@ -21,12 +21,11 @@
     background-color: white;
     border: 1px solid #ced4da;
     border-radius: 4px;
-    margin-bottom: 8px;
-    padding: 12px;
-    cursor: move;
-    transition: all 0.2s ease;
+    margin-bottom: 10px;
+    padding: 12px 15px;
     position: relative;
     display: flex;
+    justify-content: space-between;
     align-items: center;
 }
 
@@ -40,17 +39,23 @@
     background-color: #c8e6c9;
 }
 
+.sequence-content {
+    flex-grow: 1;
+    margin-right: 15px;
+}
+
 .sequence-controls {
-    position: absolute;
-    right: 10px;
-    top: 8px;
+    flex-shrink: 0;
     display: flex;
-    gap: 4px;
+    gap: 5px;
 }
 
 .sequence-controls button {
-    padding: 2px 5px;
-    font-size: 12px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    line-height: 30px;
+    text-align: center;
 }
 
 .sequence-handle {
@@ -70,13 +75,10 @@
     text-align: center;
     line-height: 24px;
     margin-right: 10px;
-    flex-shrink: 0;
 }
 
 .sequence-item .step-label {
     font-weight: 500;
-    flex-grow: 1;
-    margin-right: 70px; /* Make room for controls */
 }
 
 .sequence-item .step-description {
