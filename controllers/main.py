@@ -10,9 +10,11 @@ class QuizController(http.Controller):
     def quiz_list(self, **kwargs):
         """List all published quizzes"""
         quizzes = request.env['quiz.quiz'].sudo().search([('published', '=', True)])
-        return request.render('quiz_engine_pro.quiz_list', {
-            'quizzes': quizzes
-        })
+        
+        values = {
+            'quizzes': quizzes,
+        }
+        return request.render('quiz_engine_pro.quiz_list', values)
 
     @http.route(['/quiz/<string:slug>'], type='http', auth='public', website=True)
     def quiz_detail(self, slug, **kwargs):
@@ -21,9 +23,10 @@ class QuizController(http.Controller):
         if not quiz:
             return request.not_found()
         
-        return request.render('quiz_engine_pro.quiz_detail', {
-            'quiz': quiz
-        })
+        values = {
+            'quiz': quiz,
+        }
+        return request.render('quiz_engine_pro.quiz_detail', values)
 
     @http.route(['/quiz/<string:slug>/start'], type='http', auth='public', methods=['POST'], csrf=False, website=True)
     def quiz_start(self, slug, **kwargs):
@@ -50,7 +53,7 @@ class QuizController(http.Controller):
         
         return request.redirect(f'/quiz/{slug}/question/1?session={session.session_token}')
 
-    @http.route(['/quiz/<string:slug>/question/<int:question_num>'], type='http', auth='public', methods=['GET', 'POST'], csrf=False)
+    @http.route(['/quiz/<string:slug>/question/<int:question_num>'], type='http', auth='public', methods=['GET', 'POST'], csrf=False, website=True)
     def quiz_question(self, slug, question_num, **kwargs):
         """Display or process a quiz question"""
         session_token = request.params.get('session')
@@ -62,70 +65,67 @@ class QuizController(http.Controller):
         quiz = session.quiz_id
         question = quiz.question_ids[question_num - 1] if quiz.question_ids and len(quiz.question_ids) >= question_num else None
         
-        if request.httprequest.method == 'POST' and question:
+        if not question:
+            return request.redirect('/quiz')
+        
+        if request.httprequest.method == 'POST':
             # Handle answer submission
             answer_data = request.params.get('answer_data')
-            request.env['quiz.answer'].sudo().create({
+            request.env['quiz.response'].sudo().create({
                 'session_id': session.id,
                 'question_id': question.id,
-                'answer_data': json.dumps(answer_data),
+                'answer_data': json.dumps(answer_data) if answer_data else '{}',
             })
             
             if len(quiz.question_ids) == question_num:
                 # Last question, complete the quiz
                 session.write({'state': 'completed', 'end_time': fields.Datetime.now()})
-                return request.redirect(f'/quiz/{slug}/results?session={session.session_token}')
+                return request.redirect(f'/quiz/session/{session.session_token}/results')
             else:
                 # Next question
                 return request.redirect(f'/quiz/{slug}/question/{question_num + 1}?session={session.session_token}')
         
-        return request.render('quiz_engine_pro.quiz_question', {
+        values = {
             'quiz': quiz,
             'session': session,
             'question': question,
             'question_index': question_num - 1,
-        })
-
-    @http.route(['/quiz/session/<string:token>/complete'], type='http', auth='public', website=True)
-    def quiz_complete(self, token, **kwargs):
-        """Complete quiz and redirect to results"""
-        return request.redirect('/quiz')
+        }
+        return request.render('quiz_engine_pro.quiz_question', values)
 
     @http.route('/quiz/session/<string:token>/results', type='http', auth='public', website=True)
     def quiz_results(self, token, **kwargs):
         """View quiz results"""
         session = request.env['quiz.session'].sudo().search([('session_token', '=', token)], limit=1)
-        if not session or session.state != 'completed':
+        if not session:
             return request.redirect('/quiz')
         
-        return request.render('quiz_engine_pro.quiz_results', {
+        # Calculate results if not already calculated
+        if session.state == 'completed' and not session.total_score:
+            responses = request.env['quiz.response'].sudo().search([('session_id', '=', session.id)])
+            total_score = 0
+            max_score = sum(session.quiz_id.question_ids.mapped('points'))
+            
+            # Calculate score based on responses
+            for response in responses:
+                # Basic scoring - this would be enhanced based on question type
+                if response.answer_data:
+                    total_score += response.question_id.points
+            
+            percentage = (total_score / max_score * 100) if max_score > 0 else 0
+            
+            session.write({
+                'total_score': total_score,
+                'percentage': percentage,
+                'passed': percentage >= session.quiz_id.passing_score,
+            })
+        
+        values = {
             'session': session,
             'quiz': session.quiz_id,
-        })
-        """Display quiz results"""
-        session = request.env['quiz.session'].sudo().search([('token', '=', token)], limit=1)
-        if not session:
-            return request.not_found()
-        
-        # Calculate total score
-        responses = request.env['quiz.response'].sudo().search([('session_id', '=', session.id)])
-        total_score = sum(responses.mapped('score'))
-        max_score = sum(session.quiz_id.question_ids.mapped('points'))
-        percentage = (total_score / max_score * 100) if max_score > 0 else 0
-        
-        # Update session
-        session.write({
-            'state': 'completed',
-            'end_time': fields.Datetime.now(),
-            'total_score': total_score,
-            'percentage': percentage,
-            'passed': percentage >= session.quiz_id.passing_score,
-        })
-        
-        return request.render('quiz_engine_pro.quiz_results', {
-            'session': session,
-            'responses': responses,
-            'total_score': total_score,
+            'max_score': sum(session.quiz_id.question_ids.mapped('points')),
+        }
+        return request.render('quiz_engine_pro.quiz_results', values)
             'max_score': max_score,
             'percentage': percentage,
         })

@@ -1,6 +1,6 @@
 {
     'name': 'Quiz Engine Pro',
-    'version': '17.0.1.0.1',
+    'version': '17.0.1.0.2',
     'category': 'Education',
     'summary': 'Advanced Quiz Engine with Multiple Question Types',
     'description': """
@@ -30,7 +30,7 @@
             'quiz_engine_pro/static/src/js/drag_into_text.js',
         ],
     },
-    'images': ['static/description/icon.png'],  # Added icon reference
+    'images': ['static/description/icon.png'],
     'installable': True,
     'auto_install': False,
     'application': True,
