@@ -177,124 +177,117 @@
                                             </div>
                                         </t>
                                         
-                                        <!-- Drag into Zones -->
+                                        <!-- Drag and Drop into Zones -->
                                         <t t-if="question.type == 'drag_zone'">
-                                            <div class="drag-zones-container">
-                                                <p><strong>Instructions:</strong> Drag the tokens below into the correct zones.</p>
-                                                
-                                                <!-- Drop Zones -->
-                                                <div class="drop-zones mb-4">
-                                                    <div class="row">
-                                                        <t t-set="unique_zones" t-value="list(set(question.drag_token_ids.mapped('correct_for_blank')))"/>
-                                                        <t t-foreach="unique_zones" t-as="zone_num">
-                                                            <div class="col-md-4 mb-3">
-                                                                <div class="drop-zone border rounded p-3 text-center" 
-                                                                     t-att-data-zone="zone_num"
-                                                                     style="min-height: 80px; background-color: #f8f9fa; border: 2px dashed #dee2e6;">
-                                                                    <h6>Zone <t t-esc="zone_num"/></h6>
-                                                                    <div class="dropped-items"></div>
-                                                                </div>
-                                                            </div>
-                                                        </t>
-                                                    </div>
+                                            <div class="quiz-drag-drop">
+                                                <input type="hidden" name="drag_drop_data" value="[]"/>
+                                                <div class="tokens-container">
+                                                    <div class="tokens-label">Available Tokens:</div>
+                                                    <t t-foreach="question.drag_token_ids" t-as="token">
+                                                        <div class="draggable-token" 
+                                                             t-att-data-token-id="token.id">
+                                                            <t t-esc="token.text"/>
+                                                        </div>
+                                                    </t>
                                                 </div>
                                                 
-                                                <!-- Draggable Tokens -->
-                                                <div class="drag-tokens">
-                                                    <p><strong>Available Tokens:</strong></p>
-                                                    <div class="tokens-container d-flex flex-wrap">
-                                                        <t t-foreach="question.drag_token_ids" t-as="token">
-                                                            <div class="drag-token btn btn-outline-primary m-1" 
-                                                                 draggable="true"
-                                                                 t-att-data-token="token.text"
-                                                                 t-att-data-correct-zone="token.correct_for_blank">
-                                                                <t t-esc="token.text"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
+                                                <div class="instructions mb-3">
+                                                    <strong>Instructions:</strong> Drag the tokens above into the correct zones below.
                                                 </div>
                                                 
-                                                <!-- Hidden input to store answer -->
-                                                <input type="hidden" name="answer_data" id="drag_zone_answer"/>
+                                                <div class="drop-zones-container">
+                                                    <t t-foreach="question.drag_zone_ids" t-as="zone">
+                                                        <div class="drop-zone" t-att-data-zone-id="zone.id">
+                                                            <span class="zone-label"><t t-esc="zone.name"/></span>
+                                                        </div>
+                                                    </t>
+                                                </div>
+                                                
+                                                <div class="reset-button-container">
+                                                    <button type="button" class="btn btn-sm btn-secondary reset-tokens">
+                                                        <i class="fa fa-refresh"></i> Reset Tokens
+                                                    </button>
+                                                </div>
                                             </div>
                                         </t>
                                         
-                                        <!-- Drag into Text -->
-                                        <t t-if="question.type == 'drag_into_text'">
-                                            <div class="drag-into-text-container">
-                                                <p><strong>Instructions:</strong> Drag the tokens below into the correct positions in the text.</p>
-                                                
-                                                <!-- Text with drop zones (placeholders will be replaced with drop zones) -->
-                                                <div class="text-with-blanks mb-4 p-3 border rounded" 
-                                                     t-att-data-question-html="question.question_html">
-                                                    <!-- JavaScript will process this -->
+                                        <!-- Drag and Drop into Text -->
+                                        <t t-if="question.type == 'drag_text'">
+                                            <div class="quiz-drag-drop">
+                                                <input type="hidden" name="drag_drop_data" value="[]"/>
+                                                <div class="tokens-container">
+                                                    <div class="tokens-label">Available Tokens:</div>
+                                                    <t t-foreach="question.drag_token_ids" t-as="token">
+                                                        <div class="draggable-token" 
+                                                             t-att-data-token-id="token.id">
+                                                            <t t-esc="token.text"/>
+                                                        </div>
+                                                    </t>
                                                 </div>
                                                 
-                                                <!-- Draggable Tokens -->
-                                                <div class="drag-tokens">
-                                                    <p><strong>Available Tokens:</strong></p>
-                                                    <div class="tokens-container d-flex flex-wrap">
-                                                        <t t-foreach="question.drag_token_ids" t-as="token">
-                                                            <div class="drag-token btn btn-outline-success m-1" 
-                                                                 draggable="true"
-                                                                 t-att-data-token="token.text"
-                                                                 t-att-data-correct-blank="token.correct_for_blank">
-                                                                <t t-esc="token.text"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
+                                                <div class="instructions mb-3">
+                                                    <strong>Instructions:</strong> Drag the tokens above into the blanks in the text below.
                                                 </div>
                                                 
-                                                <!-- Hidden input to store answer -->
-                                                <input type="hidden" name="answer_data" id="drag_text_answer"/>
+                                                <div class="drag-text-container">
+                                                    <div t-field="question.question_html" 
+                                                         t-att-data-question-id="question.id"
+                                                         class="drag-text-content"/>
+                                                </div>
+                                                
+                                                <div class="reset-button-container">
+                                                    <button type="button" class="btn btn-sm btn-secondary reset-tokens">
+                                                        <i class="fa fa-refresh"></i> Reset Tokens
+                                                    </button>
+                                                </div>
                                             </div>
                                         </t>
                                         
-                                        <!-- Matching Questions -->
+                                        <!-- Match Pairs -->
                                         <t t-if="question.type == 'match'">
-                                            <div class="matching-container">
-                                                <p><strong>Instructions:</strong> Match the items on the left with the correct items on the right.</p>
-                                                
+                                            <div class="quiz-drag-drop match-pairs">
+                                                <input type="hidden" name="drag_drop_data" value="[]"/>
                                                 <div class="row">
-                                                    <!-- Left side items -->
-                                                    <div class="col-md-6">
-                                                        <h6>Match these:</h6>
-                                                        <div class="left-items">
+                                                    <div class="col-md-5">
+                                                        <div class="match-column left-items">
+                                                            <h5>Items</h5>
                                                             <t t-foreach="question.match_pair_ids" t-as="pair">
-                                                                <div class="match-item-left btn btn-outline-info d-block mb-2 text-left" 
-                                                                     draggable="true"
-                                                                     t-att-data-pair-id="pair.id"
-                                                                     t-att-data-left-text="pair.left_text">
+                                                                <div class="match-item" t-att-data-pair-id="pair.id">
                                                                     <t t-esc="pair.left_text"/>
                                                                 </div>
                                                             </t>
                                                         </div>
                                                     </div>
-                                                    
-                                                    <!-- Right side drop zones -->
-                                                    <div class="col-md-6">
-                                                        <h6>With these:</h6>
-                                                        <div class="right-items">
+                                                    <div class="col-md-2 text-center match-arrows">
+                                                        <div class="match-instruction">
+                                                            <i class="fa fa-arrows-h fa-2x"></i>
+                                                            <p>Match items</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-5">
+                                                        <div class="match-column right-items">
+                                                            <h5>Matches</h5>
                                                             <t t-foreach="question.match_pair_ids" t-as="pair">
-                                                                <div class="match-drop-zone border rounded p-2 mb-2 text-center" 
-                                                                     t-att-data-pair-id="pair.id"
-                                                                     t-att-data-right-text="pair.right_text"
-                                                                     style="min-height: 50px; background-color: #f8f9fa;">
-                                                                    <div class="fixed-text"><t t-esc="pair.right_text"/></div>
-                                                                    <div class="dropped-match"></div>
+                                                                <div class="drop-zone match-drop" t-att-data-zone-id="pair.id">
+                                                                    <div class="match-target">
+                                                                        <t t-esc="pair.right_text"/>
+                                                                    </div>
                                                                 </div>
                                                             </t>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 
-                                                <!-- Hidden input to store answer -->
-                                                <input type="hidden" name="answer_data" id="matching_answer"/>
+                                                <div class="reset-button-container">
+                                                    <button type="button" class="btn btn-sm btn-secondary reset-matches">
+                                                        <i class="fa fa-refresh"></i> Reset Matches
+                                                    </button>
+                                                </div>
                                             </div>
                                         </t>
                                         
                                         <!-- Default fallback for other question types -->
-                                        <t t-if="question.type not in ['mcq_single', 'mcq_multiple', 'fill_blanks', 'drag_zone', 'drag_into_text', 'match']">
+                                        <t t-if="question.type not in ['mcq_single', 'mcq_multiple', 'fill_blanks', 'drag_zone', 'drag_text', 'match']">
                                             <div class="alert alert-info">
                                                 <p>This question type (<t t-esc="question.type"/>) is not yet implemented in the frontend.</p>
                                                 <textarea name="answer_data" class="form-control" placeholder="Enter your answer here..."></textarea>
@@ -372,6 +365,13 @@
                                     <a href="/quiz" class="btn btn-primary">Take Another Quiz</a>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
                         </div>
                     </div>
                 </div>

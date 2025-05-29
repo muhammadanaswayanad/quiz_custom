@@ -1,6 +1,6 @@
 {
     'name': 'Quiz Engine Pro',
-    'version': '17.0.1.0.2',
+    'version': '17.0.1.0.3',
     'category': 'Education',
     'summary': 'Advanced Quiz Engine with Multiple Question Types',
     'description': """
@@ -27,7 +27,9 @@
     'assets': {
         'web.assets_frontend': [
             'quiz_engine_pro/static/src/css/quiz_styles.css',
+            'quiz_engine_pro/static/src/css/quiz_drag_drop.css',
             'quiz_engine_pro/static/src/js/drag_into_text.js',
+            'quiz_engine_pro/static/src/js/quiz_drag_drop.js',
         ],
     },
     'images': ['static/description/icon.png'],

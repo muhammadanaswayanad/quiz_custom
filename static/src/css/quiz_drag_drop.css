@@ -1,0 +1,90 @@
+/* Drag and Drop Styling */
+.quiz-drag-drop {
+    margin: 20px 0;
+}
+
+.tokens-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border: 1px dashed #ced4da;
+}
+
+.draggable-token {
+    display: inline-block;
+    padding: 8px 15px;
+    margin: 5px;
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    cursor: move;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.draggable-token:hover {
+    background-color: #dee2e6;
+}
+
+.draggable-token.dragging {
+    opacity: 0.5;
+}
+
+.draggable-token.being-dragged {
+    visibility: hidden;
+}
+
+.drop-zones-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.drop-zone {
+    min-height: 80px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border: 2px dashed #ced4da;
+    border-radius: 5px;
+    flex: 1;
+    min-width: 150px;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.drag-over {
+    background-color: #e2f0ff;
+    border-color: #86b7fe;
+}
+
+.zone-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+    color: #6c757d;
+}
+
+.reset-button-container {
+    margin: 15px 0;
+    text-align: right;
+}
+
+.dragging-touch {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Mobile optimizations */
+@media (max-width: 767px) {
+    .drop-zones-container {
+        flex-direction: column;
+    }
+    
+    .drop-zone {
+        margin-bottom: 10px;
+    }
+}
