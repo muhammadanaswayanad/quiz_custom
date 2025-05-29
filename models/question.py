@@ -12,13 +12,12 @@ class Question(models.Model):
     sequence = fields.Integer(string='Sequence', default=10)
     name = fields.Char(string='Title', compute='_compute_name', store=True)
     quiz_id = fields.Many2one('quiz.quiz', string='Quiz', required=True, ondelete='cascade')
-    question_html = fields.Html(string='Question Text', sanitize=True, 
-                               required=False)  # Changed to not required
+    question_html = fields.Html(string='Question Text', sanitize=True, required=False)
     explanation = fields.Html(string='Explanation', sanitize=True,
                               help="Shown after answering the question")
     points = fields.Float(string='Points', default=1.0)
     
-    # Question type selection - updated with dropdown_blank
+    # Question type selection
     type = fields.Selection([
         ('mcq_single', 'Multiple Choice (Single)'),
         ('mcq_multiple', 'Multiple Choice (Multiple)'),
@@ -33,12 +32,12 @@ class Question(models.Model):
     text_template = fields.Html(string='Text with Blanks', 
                              help="Use {{1}}, {{2}}, etc. to mark where dropdowns should appear")
     
-    # Relationships - make sure inverse names match field names in related models
-    choice_ids = fields.One2many('quiz.choice', 'question_id', string='Choices')
-    match_pair_ids = fields.One2many('quiz.match.pair', 'question_id', string='Match Pairs')
-    drag_token_ids = fields.One2many('quiz.drag.token', 'question_id', string='Drag Tokens')
-    fill_blank_answer_ids = fields.One2many('quiz.fill.blank.answer', 'question_id', string='Fill Blank Answers')
-    blank_ids = fields.One2many('quiz_blank', 'question_id', string='Dropdown Blanks')
+    # Define relationships correctly with comodel_name
+    choice_ids = fields.One2many(comodel_name='quiz.choice', inverse_name='question_id', string='Choices')
+    match_pair_ids = fields.One2many(comodel_name='quiz.match.pair', inverse_name='question_id', string='Match Pairs')
+    drag_token_ids = fields.One2many(comodel_name='quiz.drag.token', inverse_name='question_id', string='Drag Tokens')
+    fill_blank_answer_ids = fields.One2many(comodel_name='quiz.fill.blank.answer', inverse_name='question_id', string='Fill Blank Answers')
+    blank_ids = fields.One2many(comodel_name='quiz.blank', inverse_name='question_id', string='Dropdown Blanks')
     
     # Fields for numerical questions
     numerical_exact_value = fields.Float(string='Exact Value', digits=(16, 6))
@@ -355,7 +354,7 @@ class FillBlankAnswer(models.Model):
     _order = 'sequence, id'
     
     sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
+    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
     blank_number = fields.Integer(string='Blank Number', required=True,
                                help="The number in the {{n}} placeholder")
     answer_text = fields.Char(string='Answer', required=True)
@@ -373,7 +372,7 @@ class DragToken(models.Model):
     _order = 'sequence, id'
 
     sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
+    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
     text = fields.Char(string='Token Text', required=True)
     is_correct = fields.Boolean(string='Is Correct Answer', default=False)
     correct_position = fields.Integer(string='Correct Position', default=0)
@@ -384,14 +383,14 @@ class QuizBlank(models.Model):
     _description = 'Question Blank'
     _order = 'blank_number, id'
     
-    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
+    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
     blank_number = fields.Integer(string='Blank Number', required=True, 
                                  help="The number in the {{n}} placeholder")
     input_type = fields.Selection([
         ('text', 'Text Input'),
         ('dropdown', 'Dropdown Menu')
     ], string='Input Type', default='dropdown', required=True)
-    option_ids = fields.One2many('quiz.option', 'blank_id', string='Options')
+    option_ids = fields.One2many(comodel_name='quiz.option', inverse_name='blank_id', string='Options')
     
     _sql_constraints = [
         ('unique_blank_number_per_question', 
@@ -412,7 +411,7 @@ class QuizOption(models.Model):
     _order = 'sequence, id'
     
     sequence = fields.Integer(string='Sequence', default=10)
-    blank_id = fields.Many2one('quiz.blank', string='Blank', ondelete='cascade', required=True)
+    blank_id = fields.Many2one(comodel_name='quiz.blank', string='Blank', ondelete='cascade', required=True)
     label = fields.Char(string='Option Text', required=True)
     is_correct = fields.Boolean(string='Is Correct Answer', default=False)
     
@@ -435,7 +434,7 @@ class Choice(models.Model):
     _order = 'sequence, id'
     
     sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
+    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
     text = fields.Char(string='Choice Text', required=True)
     is_correct = fields.Boolean(string='Is Correct', default=False)
 
@@ -446,6 +445,7 @@ class MatchPair(models.Model):
     _order = 'sequence, id'
     
     sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
+    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
     left_text = fields.Char(string='Left Item', required=True)
+    right_text = fields.Char(string='Right Item', required=True)
     right_text = fields.Char(string='Right Item', required=True)
