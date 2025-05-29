@@ -33,7 +33,6 @@
             'quiz_engine_pro/static/lib/sortable/sortable.min.js',
             'quiz_engine_pro/static/src/js/quiz_drag_drop.js',
             'quiz_engine_pro/static/src/js/quiz_sortable.js',
-            'quiz_engine_pro/static/src/js/quiz_sequence.js',
         ],
     },
     'images': ['static/description/icon.png'],
