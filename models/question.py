@@ -463,14 +463,7 @@ class MatrixCell(models.Model):
     ]
 
 
-# Placeholder models for cached database references
-class QuizBlank(models.Model):
-    _name = 'quiz.blank'
-    _description = 'Quiz Blank (Placeholder)'
-    
-    name = fields.Char(string='Name')
-
-
+# Placeholder model for cached database references (NOT duplicate of QuizBlank)
 class QuizDragZone(models.Model):
     _name = 'quiz.drag.zone'
     _description = 'Quiz Drag Zone (Placeholder)'

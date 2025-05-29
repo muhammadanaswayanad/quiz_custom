@@ -1,33 +1,33 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-quiz_engine_quiz_user,Quiz Engine quiz user,model_quiz_quiz,base.group_user,1,1,1,1
-quiz_engine_question_user,Quiz Engine question user,model_quiz_question,base.group_user,1,1,1,1
-quiz_engine_session_user,Quiz Engine session user,model_quiz_session,base.group_user,1,1,1,1
-quiz_engine_choice_user,Quiz Engine choice user,model_quiz_choice,base.group_user,1,1,1,1
-quiz_engine_match_pair_user,Quiz Engine match pair user,model_quiz_match_pair,base.group_user,1,1,1,1
-quiz_engine_drag_token_user,Quiz Engine drag token user,model_quiz_drag_token,base.group_user,1,1,1,1
-quiz_engine_fill_blank_answer_user,Quiz Engine fill blank answer user,model_quiz_fill_blank_answer,base.group_user,1,1,1,1
-quiz_engine_response_user,Quiz Engine response user,model_quiz_response,base.group_user,1,1,1,1
-quiz_engine_blank_user,Quiz Engine blank user,model_quiz_blank,base.group_user,1,1,1,1
-quiz_engine_drag_zone_user,Quiz Engine drag zone user,model_quiz_drag_zone,base.group_user,1,1,1,1
-quiz_engine_quiz_public,Quiz Engine quiz public,model_quiz_quiz,base.group_public,1,0,0,0
-quiz_engine_question_public,Quiz Engine question public,model_quiz_question,base.group_public,1,0,0,0
-quiz_engine_session_public,Quiz Engine session public,model_quiz_session,base.group_public,1,1,1,0
-quiz_quiz_public,quiz.quiz public,model_quiz_quiz,base.group_public,1,0,0,0
-quiz_question_public,quiz.question public,model_quiz_question,base.group_public,1,0,0,0
-quiz_choice_public,quiz.choice public,model_quiz_choice,base.group_public,1,0,0,0
-quiz_session_public,quiz.session public,model_quiz_session,base.group_public,1,1,1,0
-quiz_response_public,quiz.response public,model_quiz_response,base.group_public,1,1,1,0
-access_quiz_drag_token,quiz.drag.token,model_quiz_drag_token,base.group_user,1,1,1,1
-access_quiz_fill_blank_answer,quiz.fill.blank.answer,model_quiz_fill_blank_answer,base.group_user,1,1,1,1
-access_quiz_session,quiz.session,model_quiz_session,base.group_user,1,1,1,1
-access_quiz_response,quiz.response,model_quiz_response,base.group_user,1,1,1,1
-access_quiz_quiz_public,quiz.quiz.public,model_quiz_quiz,base.group_public,1,0,0,0
-access_quiz_question_public,quiz.question.public,model_quiz_question,base.group_public,1,0,0,0
-access_quiz_choice_public,quiz.choice.public,model_quiz_choice,base.group_public,1,0,0,0
-access_quiz_blank_public,quiz.blank.public,model_quiz_blank,base.group_public,1,0,0,0
-access_quiz_match_pair_public,quiz.match.pair.public,model_quiz_match_pair,base.group_public,1,0,0,0
-access_quiz_drag_zone_public,quiz.drag.zone.public,model_quiz_drag_zone,base.group_public,1,0,0,0
-access_quiz_drag_token_public,quiz.drag.token.public,model_quiz_drag_token,base.group_public,1,0,0,0
+access_quiz_quiz_user,quiz.quiz user,model_quiz_quiz,base.group_user,1,1,1,1
+access_quiz_question_user,quiz.question user,model_quiz_question,base.group_user,1,1,1,1
+access_quiz_choice_user,quiz.choice user,model_quiz_choice,base.group_user,1,1,1,1
+access_quiz_match_pair_user,quiz.match.pair user,model_quiz_match_pair,base.group_user,1,1,1,1
+access_quiz_drag_token_user,quiz.drag.token user,model_quiz_drag_token,base.group_user,1,1,1,1
+access_quiz_fill_blank_answer_user,quiz.fill.blank.answer user,model_quiz_fill_blank_answer,base.group_user,1,1,1,1
+access_quiz_blank_user,quiz.blank user,model_quiz_blank,base.group_user,1,1,1,1
+access_quiz_option_user,quiz.option user,model_quiz_option,base.group_user,1,1,1,1
+access_quiz_matrix_row_user,quiz.matrix.row user,model_quiz_matrix_row,base.group_user,1,1,1,1
+access_quiz_matrix_column_user,quiz.matrix.column user,model_quiz_matrix_column,base.group_user,1,1,1,1
+access_quiz_matrix_cell_user,quiz.matrix.cell user,model_quiz_matrix_cell,base.group_user,1,1,1,1
+access_quiz_drag_zone_user,quiz.drag.zone user,model_quiz_drag_zone,base.group_user,1,1,1,1
+access_quiz_session_user,quiz.session user,model_quiz_session,base.group_user,1,1,1,1
+access_quiz_response_user,quiz.response user,model_quiz_response,base.group_user,1,1,1,1
+
+access_quiz_quiz_public,quiz.quiz public,model_quiz_quiz,base.group_public,1,0,0,0
+access_quiz_question_public,quiz.question public,model_quiz_question,base.group_public,1,0,0,0
+access_quiz_choice_public,quiz.choice public,model_quiz_choice,base.group_public,1,0,0,0
+access_quiz_match_pair_public,quiz.match.pair public,model_quiz_match_pair,base.group_public,1,0,0,0
+access_quiz_drag_token_public,quiz.drag.token public,model_quiz_drag_token,base.group_public,1,0,0,0
+access_quiz_fill_blank_answer_public,quiz.fill.blank.answer public,model_quiz_fill_blank_answer,base.group_public,1,0,0,0
+access_quiz_blank_public,quiz.blank public,model_quiz_blank,base.group_public,1,0,0,0
+access_quiz_option_public,quiz.option public,model_quiz_option,base.group_public,1,0,0,0
+access_quiz_matrix_row_public,quiz.matrix.row public,model_quiz_matrix_row,base.group_public,1,0,0,0
+access_quiz_matrix_column_public,quiz.matrix.column public,model_quiz_matrix_column,base.group_public,1,0,0,0
+access_quiz_matrix_cell_public,quiz.matrix.cell public,model_quiz_matrix_cell,base.group_public,1,0,0,0
+access_quiz_drag_zone_public,quiz.drag.zone public,model_quiz_drag_zone,base.group_public,1,0,0,0
+access_quiz_session_public,quiz.session public,model_quiz_session,base.group_public,1,1,1,0
+access_quiz_response_public,quiz.response public,model_quiz_response,base.group_public,1,1,1,0
 access_quiz_session_public,quiz.session.public,model_quiz_session,base.group_public,1,1,1,0
 access_quiz_answer_public,quiz.answer.public,model_quiz_answer,base.group_public,1,1,1,0
 access_quiz_response_public,quiz.response.public,model_quiz_response,base.group_public,1,1,1,0
