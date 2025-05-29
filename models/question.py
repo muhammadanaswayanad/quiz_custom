@@ -1,4 +1,5 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
 import json
 import re
 
@@ -18,19 +19,21 @@ class Question(models.Model):
         ('text_box', 'Single Line Text Box'),
         ('numerical', 'Numerical Value'),
         ('matrix', 'Matrix Question'),
+        ('dropdown_blank', 'Dropdown in Text')
     ], string='Question Type', required=True, default='mcq_single')
     
     question_html = fields.Html(string='Question', required=True)
     points = fields.Float(string='Points', default=1.0)
     sequence = fields.Integer(string='Sequence', default=10)
     
-    # Relations
+    # Relationships
     choice_ids = fields.One2many('quiz.choice', 'question_id', string='Choices')
     match_pair_ids = fields.One2many('quiz.match.pair', 'question_id', string='Match Pairs')
     drag_token_ids = fields.One2many('quiz.drag.token', 'question_id', string='Drag Tokens')
     fill_blank_answer_ids = fields.One2many('quiz.fill.blank.answer', 'question_id', string='Fill Blank Answers')
     matrix_row_ids = fields.One2many('quiz.matrix.row', 'question_id', string='Matrix Rows')
     matrix_column_ids = fields.One2many('quiz.matrix.column', 'question_id', string='Matrix Columns')
+    blank_ids = fields.One2many('quiz.blank', 'question_id', string='Dropdown Blanks')
     
     # Fields for numerical questions
     numerical_exact_value = fields.Float(string='Exact Value', digits=(16, 6))
@@ -63,6 +66,8 @@ class Question(models.Model):
             return self._evaluate_numerical(answer_data)
         elif self.type == 'matrix':
             return self._evaluate_matrix(answer_data)
+        elif self.type == 'dropdown_blank':
+            return self._evaluate_dropdown_blank(answer_data)
         return 0.0
 
     def _evaluate_mcq_single(self, answer_data):
@@ -282,12 +287,46 @@ class Question(models.Model):
         }
         return action
 
+    @api.depends('question_html')
+    def _compute_name(self):
+        for question in self:
+            text = question.question_html or ''
+            # Strip tags to get plain text
+            text = re.sub(r'<.*?>', '', text)
+            # Limit length for display
+            if len(text) > 50:
+                text = text[:50] + '...'
+            question.name = text or _('New Question')
+
+    @api.constrains('type')
+    def _check_required_fields(self):
+        for question in self:
+            if question.type == 'mcq_single' or question.type == 'mcq_multiple':
+                if not question.choice_ids:
+                    raise ValidationError(_('Multiple choice questions must have choices defined.'))
+            elif question.type == 'fill_blank':
+                if not question.fill_blank_answer_ids:
+                    raise ValidationError(_('Fill in the blanks questions must have blank answers defined.'))
+            elif question.type == 'match':
+                if not question.match_pair_ids:
+                    raise ValidationError(_('Match questions must have match pairs defined.'))
+            elif question.type == 'drag_text' or question.type == 'drag_zone':
+                if not question.drag_token_ids:
+                    raise ValidationError(_('Drag and drop questions must have tokens defined.'))
+            elif question.type == 'dropdown_blank':
+                if not question.text_template:
+                    raise ValidationError(_('Dropdown in Text questions must have a text template defined.'))
+                if not question.blank_ids:
+                    raise ValidationError(_('Dropdown in Text questions must have blanks with options defined.'))
+
 
 class Choice(models.Model):
     _name = 'quiz.choice'
-    _description = 'Quiz Choice'
+    _description = 'Multiple Choice Option'
+    _order = 'sequence, id'
     
-    question_id = fields.Many2one('quiz.question', required=True, ondelete='cascade')
+    sequence = fields.Integer(string='Sequence', default=10)
+    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
     text = fields.Char(string='Choice Text', required=True)
     is_correct = fields.Boolean(string='Is Correct', default=False)
 
@@ -295,10 +334,12 @@ class Choice(models.Model):
 class MatchPair(models.Model):
     _name = 'quiz.match.pair'
     _description = 'Match Pair'
+    _order = 'sequence, id'
     
-    question_id = fields.Many2one('quiz.question', required=True, ondelete='cascade')
-    left_text = fields.Char(string='Left Text', required=True)
-    right_text = fields.Char(string='Right Text', required=True)
+    sequence = fields.Integer(string='Sequence', default=10)
+    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
+    left_text = fields.Char(string='Left Item', required=True)
+    right_text = fields.Char(string='Right Item', required=True)
 
 
 class DragToken(models.Model):
@@ -311,17 +352,74 @@ class DragToken(models.Model):
     text = fields.Char(string='Token Text', required=True)
     is_correct = fields.Boolean(string='Is Correct Answer', default=False)
     correct_position = fields.Integer(string='Correct Position', default=0)
-    correct_for_blank = fields.Integer(string='Correct for Blank #', default=0, 
-                                     help='Specify which blank number this token corresponds to')
 
 
 class FillBlankAnswer(models.Model):
     _name = 'quiz.fill.blank.answer'
-    _description = 'Fill Blank Answer'
+    _description = 'Fill in the Blank Answer'
+    _order = 'sequence, id'
     
-    question_id = fields.Many2one('quiz.question', required=True, ondelete='cascade')
-    blank_number = fields.Integer(string='Blank Number', required=True)
-    correct_answer = fields.Char(string='Correct Answer', required=True)
+    sequence = fields.Integer(string='Sequence', default=10)
+    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
+    blank_number = fields.Integer(string='Blank Number', required=True,
+                               help="The number in the {{n}} placeholder")
+    answer_text = fields.Char(string='Answer', required=True)
+    
+    _sql_constraints = [
+        ('unique_blank_num_per_question', 
+         'UNIQUE(question_id, blank_number)',
+         'Each blank number must be unique within a question')
+    ]
+
+
+class QuizBlank(models.Model):
+    _name = 'quiz.blank'
+    _description = 'Question Blank'
+    _order = 'blank_number, id'
+    
+    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
+    blank_number = fields.Integer(string='Blank Number', required=True, 
+                                 help="The number in the {{n}} placeholder")
+    input_type = fields.Selection([
+        ('text', 'Text Input'),
+        ('dropdown', 'Dropdown Menu')
+    ], string='Input Type', default='dropdown', required=True)
+    option_ids = fields.One2many('quiz.option', 'blank_id', string='Options')
+    
+    _sql_constraints = [
+        ('unique_blank_number_per_question', 
+         'UNIQUE(question_id, blank_number)',
+         'Each blank number must be unique within a question')
+    ]
+    
+    @api.constrains('input_type', 'option_ids')
+    def _check_dropdown_options(self):
+        for blank in self:
+            if blank.input_type == 'dropdown' and not blank.option_ids:
+                raise ValidationError(_("Dropdown blanks must have at least one option defined"))
+
+
+class QuizOption(models.Model):
+    _name = 'quiz.option'
+    _description = 'Dropdown Option'
+    _order = 'sequence, id'
+    
+    sequence = fields.Integer(string='Sequence', default=10)
+    blank_id = fields.Many2one('quiz.blank', string='Blank', ondelete='cascade', required=True)
+    label = fields.Char(string='Option Text', required=True)
+    is_correct = fields.Boolean(string='Is Correct Answer', default=False)
+    
+    @api.constrains('blank_id', 'is_correct')
+    def _check_one_correct_answer(self):
+        for option in self:
+            if option.is_correct:
+                correct_count = self.search_count([
+                    ('blank_id', '=', option.blank_id.id),
+                    ('is_correct', '=', True),
+                    ('id', '!=', option.id)
+                ])
+                if correct_count > 0:
+                    raise ValidationError(_("Each dropdown blank can have only one correct answer"))
 
 
 class MatrixRow(models.Model):
