@@ -25,7 +25,8 @@ class Question(models.Model):
         ('match', 'Match the Following'),
         ('drag_text', 'Drag into Text'),
         ('drag_zone', 'Drag into Zones'),
-        ('dropdown_blank', 'Dropdown in Text')
+        ('dropdown_blank', 'Dropdown in Text'),
+        ('drag_order', 'Drag and Drop - Step Sequencing')
     ], string='Type', default='mcq_single', required=True)
     
     # Text template for dropdown_blank type
@@ -38,6 +39,7 @@ class Question(models.Model):
     drag_token_ids = fields.One2many(comodel_name='quiz.drag.token', inverse_name='question_id', string='Drag Tokens')
     fill_blank_answer_ids = fields.One2many(comodel_name='quiz.fill.blank.answer', inverse_name='question_id', string='Fill Blank Answers')
     blank_ids = fields.One2many(comodel_name='quiz.blank', inverse_name='question_id', string='Dropdown Blanks')
+    sequence_item_ids = fields.One2many('quiz.sequence.item', 'question_id', string='Sequence Items')
     
     # Fields for numerical questions
     numerical_exact_value = fields.Float(string='Exact Value', digits=(16, 6))
@@ -72,6 +74,8 @@ class Question(models.Model):
             return self._evaluate_matrix(answer_data)
         elif self.type == 'dropdown_blank':
             return self._evaluate_dropdown_blank(answer_data)
+        elif self.type == 'drag_order':
+            return self._evaluate_drag_order(answer_data)
         return 0.0
 
     def _evaluate_mcq_single(self, answer_data):
@@ -346,6 +350,9 @@ class Question(models.Model):
                     raise ValidationError(_('Dropdown in Text questions must have a text template defined.'))
                 if not question.blank_ids:
                     raise ValidationError(_('Dropdown in Text questions must have blanks with options defined.'))
+            elif question.type == 'drag_order':
+                if not question.sequence_item_ids:
+                    raise ValidationError(_('Drag and Drop Ordering questions must have sequence items defined.'))
 
 
 class FillBlankAnswer(models.Model):
@@ -449,3 +456,24 @@ class MatchPair(models.Model):
     left_text = fields.Char(string='Left Item', required=True)
     right_text = fields.Char(string='Right Item', required=True)
     right_text = fields.Char(string='Right Item', required=True)
+
+
+class SequenceItem(models.Model):
+    _name = 'quiz.sequence.item'
+    _description = 'Sequence Item for Ordering Questions'
+    _order = 'sequence, id'
+    
+    sequence = fields.Integer(string='Sequence', default=10,
+                              help="Used for display order in the admin form")
+    question_id = fields.Many2one('quiz.question', string='Question', 
+                                 ondelete='cascade', required=True)
+    label = fields.Char(string='Step Label', required=True,
+                       help="The text shown for this step")
+    correct_position = fields.Integer(string='Correct Position', required=True,
+                                     help="The correct position in the sequence (1, 2, 3, etc.)")
+    
+    _sql_constraints = [
+        ('unique_position_per_question', 
+         'UNIQUE(question_id, correct_position)',
+         'Each position in the sequence must be unique within a question.')
+    ]

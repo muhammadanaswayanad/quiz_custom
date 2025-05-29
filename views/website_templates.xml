@@ -574,6 +574,48 @@
                                                 </script>
                                             </t>
 
+                                            <!-- Drag and Drop Ordering -->
+                                            <t t-if="question.type == 'drag_order'">
+                                                <div class="drag-order-question">
+                                                    <div class="instructions mb-3">
+                                                        <p class="text-muted">
+                                                            <i class="fa fa-info-circle"></i>
+                                                            Drag and drop the items below to arrange them in the correct order.
+                                                        </p>
+                                                    </div>
+                                                    
+                                                    <div class="sequence-items-container" t-att-data-question-id="question.id">
+                                                        <ul id="sequenceList" class="list-group">
+                                                            <t t-foreach="question.sequence_item_ids.sorted(key=lambda i: i.sequence)" t-as="item">
+                                                                <li class="list-group-item sequence-item" 
+                                                                    t-att-data-item-id="item.id"
+                                                                    draggable="true">
+                                                                    <div class="drag-handle">
+                                                                        <i class="fa fa-bars"></i>
+                                                                    </div>
+                                                                    <div class="sequence-item-label">
+                                                                        <t t-esc="item.label"/>
+                                                                    </div>
+                                                                </li>
+                                                            </t>
+                                                        </ul>
+                                                    </div>
+                                                    
+                                                    <input type="hidden" name="sequence_order_data" value="[]"/>
+                                                </div>
+                                                
+                                                <!-- Initialize the drag and drop functionality -->
+                                                <script type="text/javascript">
+                                                    $(function() {
+                                                        if (typeof initDragOrder === 'function') {
+                                                            initDragOrder();
+                                                        } else {
+                                                            console.error('Drag order JS not loaded!');
+                                                        }
+                                                    });
+                                                </script>
+                                            </t>
+
                                             <!-- Default fallback for other question types -->
                                             <t t-if="question.type not in ['mcq_single', 'mcq_multiple', 'fill_blank', 'dropdown_blank', 'drag_zone', 'drag_text', 'match']">
                                                 <div class="alert alert-info">

@@ -105,6 +105,21 @@
                             </field>
                         </page>
                         
+                        <!-- Sequence Items for Drag Order Questions -->
+                        <page string="Sequence Items" invisible="type != 'drag_order'">
+                            <p class="text-muted mb-2">
+                                Add items that users will need to drag into the correct order.
+                                Set the correct position for each item.
+                            </p>
+                            <field name="sequence_item_ids" widget="one2many">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="label"/>
+                                    <field name="correct_position"/>
+                                </tree>
+                            </field>
+                        </page>
+                        
                         <!-- Explanation -->
                         <page string="Explanation">
                             <field name="explanation" widget="html"/>
