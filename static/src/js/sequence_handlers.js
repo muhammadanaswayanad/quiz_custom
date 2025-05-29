@@ -1,97 +1,97 @@
 (function() {
     "use strict";
+
+    // Run when DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', initAndBindEvents);
     
-    // Initialize when DOM is ready
-    document.addEventListener('DOMContentLoaded', function() {
-        initSequenceHandlers();
-    });
-    
-    function initSequenceHandlers() {
-        // Set up click event delegation
-        document.addEventListener('click', function(e) {
-            // Move up
-            if (e.target.classList.contains('move-up')) {
-                e.preventDefault();
-                var item = e.target.closest('.sequence-item');
+    /**
+     * Initialize handlers and bind events
+     */
+    function initAndBindEvents() {
+        // Direct event binding to buttons
+        var upButtons = document.querySelectorAll('.move-up');
+        for (var i = 0; i < upButtons.length; i++) {
+            upButtons[i].onclick = function() {
+                var item = this.closest('.sequence-item');
                 var prev = item.previousElementSibling;
-                
-                if (prev && prev.classList.contains('sequence-item')) {
-                    var list = item.parentNode;
-                    list.insertBefore(item, prev);
-                    updateSequenceNumbers(list);
-                    updateSequenceData(item.closest('.sequence-container'));
+                if (prev) {
+                    item.parentNode.insertBefore(item, prev);
+                    updatePositions(item.closest('.sequence-container'));
                 }
-            }
-            
-            // Move down
-            if (e.target.classList.contains('move-down')) {
-                e.preventDefault();
-                var item = e.target.closest('.sequence-item');
+                return false; // Prevent default and stop propagation
+            };
+        }
+
+        var downButtons = document.querySelectorAll('.move-down');
+        for (var i = 0; i < downButtons.length; i++) {
+            downButtons[i].onclick = function() {
+                var item = this.closest('.sequence-item');
                 var next = item.nextElementSibling;
-                
-                if (next && next.classList.contains('sequence-item')) {
-                    var list = item.parentNode;
-                    if (next.nextElementSibling) {
-                        list.insertBefore(item, next.nextElementSibling);
-                    } else {
-                        list.appendChild(item);
-                    }
-                    updateSequenceNumbers(list);
-                    updateSequenceData(item.closest('.sequence-container'));
+                if (next) {
+                    next.parentNode.insertBefore(next, item);
+                    updatePositions(item.closest('.sequence-container'));
                 }
-            }
-            
-            // Randomize
-            if (e.target.classList.contains('reset-sequence')) {
-                e.preventDefault();
-                var container = e.target.closest('.sequence-container');
-                var list = container.querySelector('.sequence-list');
-                
-                randomizeItems(list);
-                updateSequenceNumbers(list);
-                updateSequenceData(container);
-            }
-        });
-        
-        // Initialize all sequence containers
+                return false; // Prevent default and stop propagation
+            };
+        }
+
+        var resetButtons = document.querySelectorAll('.reset-sequence');
+        for (var i = 0; i < resetButtons.length; i++) {
+            resetButtons[i].onclick = function() {
+                randomizeOrder(this.closest('.sequence-container'));
+                return false; // Prevent default and stop propagation
+            };
+        }
+
+        // Apply initial randomization to all sequence containers
         var containers = document.querySelectorAll('.sequence-container');
-        containers.forEach(function(container) {
-            var list = container.querySelector('.sequence-list');
-            if (list) {
-                randomizeItems(list);
-                updateSequenceNumbers(list);
-                updateSequenceData(container);
-                
-                // Hide any "not yet implemented" messages
-                var warnings = document.querySelectorAll('.alert-warning');
-                warnings.forEach(function(warning) {
-                    if (warning.textContent.includes('not yet implemented')) {
-                        warning.style.display = 'none';
-                    }
-                });
-            }
-        });
+        for (var i = 0; i < containers.length; i++) {
+            randomizeOrder(containers[i]);
+        }
     }
     
-    function randomizeItems(list) {
-        var items = Array.from(list.querySelectorAll('.sequence-item'));
-        if (items.length <= 1) return;
+    /**
+     * Update sequence numbers and data after position changes
+     */
+    function updatePositions(container) {
+        if (!container) return;
         
-        // Shuffle
+        // Update visible numbers
+        var items = container.querySelectorAll('.sequence-item');
+        for (var i = 0; i < items.length; i++) {
+            var numEl = items[i].querySelector('.step-number');
+            if (numEl) numEl.textContent = (i + 1);
+        }
+        
+        // Update data input
+        var data = [];
+        for (var i = 0; i < items.length; i++) {
+            var id = items[i].getAttribute('data-step-id');
+            if (id) data.push({step_id: parseInt(id), position: i + 1});
+        }
+        
+        var input = container.querySelector('input[name="sequence_data"]');
+        if (input) input.value = JSON.stringify(data);
+    }
+    
+    /**
+     * Randomize order of sequence items
+     */
+    function randomizeOrder(container) {
+        if (!container) return;
+        
+        var list = container.querySelector('.sequence-list');
+        var items = Array.from(list.querySelectorAll('.sequence-item'));
+        
+        // Shuffle the items
         for (var i = items.length - 1; i > 0; i--) {
             var j = Math.floor(Math.random() * (i + 1));
             list.appendChild(items[j]);
         }
+        
+        updatePositions(container);
     }
-    
-    function updateSequenceNumbers(list) {
-        var items = list.querySelectorAll('.sequence-item');
-        for (var i = 0; i < items.length; i++) {
-            var numEl = items[i].querySelector('.step-number');
-            if (numEl) {
-                numEl.textContent = (i + 1);
-            }
-        }
+})();
     }
     
     function updateSequenceData(container) {
