@@ -20,7 +20,7 @@
                     
                     <group>
                         <field name="question_html" widget="html" options="{'style-inline': true}" 
-                               invisible="type == 'dropdown_blank' or type == 'step_sequence'"/>
+                               invisible="type == 'dropdown_blank'"/>
                         <field name="text_template" widget="html" options="{'style-inline': true}"
                                placeholder="Enter text with {{1}}, {{2}} placeholders for dropdowns"
                                invisible="type != 'dropdown_blank'"

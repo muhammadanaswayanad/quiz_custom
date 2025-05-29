@@ -618,6 +618,11 @@
 
                                             <!-- Step Sequencing Question Type -->
                                             <t t-if="question.type == 'step_sequence'">
+                                                <!-- Add question text display at the top -->
+                                                <div class="question-text-container mb-4">
+                                                    <div t-field="question.question_html"/>
+                                                </div>
+
                                                 <div class="sequence-container">
                                                     <div class="sequence-instructions mb-3">
                                                         <strong>Instructions:</strong> Arrange the steps in the correct order by dragging them up or down.
