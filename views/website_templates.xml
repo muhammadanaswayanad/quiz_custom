@@ -745,15 +745,6 @@
             Next Question
         </t>
     </template>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </t>
-    </template>
 
     <!-- Quiz Results Template -->
     <template id="quiz_results" name="Quiz Results">
