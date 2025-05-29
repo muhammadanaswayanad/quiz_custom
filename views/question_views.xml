@@ -175,7 +175,7 @@
                         <page string="Matrix Cells"
                               invisible="type != 'matrix' or not matrix_row_ids or not matrix_column_ids">
                             <field name="id" invisible="1"/>
-                            <div attrs="{'invisible': [('id', '=', False)]}">
+                            <div invisible="id == False">
                                 <field name="matrix_row_ids" invisible="1"/>
                                 <field name="matrix_column_ids" invisible="1"/>
                                 
@@ -185,7 +185,7 @@
                                         type="object" 
                                         class="btn btn-primary"/>
                             </div>
-                            <div attrs="{'invisible': [('id', '!=', False)]}" class="alert alert-info">
+                            <div invisible="id != False" class="alert alert-info">
                                 <p>Please save the question first to edit matrix cells.</p>
                             </div>
                         </page>
