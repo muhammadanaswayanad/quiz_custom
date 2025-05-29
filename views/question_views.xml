@@ -20,16 +20,16 @@
                     
                     <group>
                         <field name="question_html" widget="html" options="{'style-inline': true}" 
-                               attrs="{'invisible': [('type', '=', 'dropdown_blank')]}"/>
+                               invisible="type == 'dropdown_blank'"/>
                         <field name="text_template" widget="html" options="{'style-inline': true}"
                                placeholder="Enter text with {{1}}, {{2}} placeholders for dropdowns"
-                               attrs="{'invisible': [('type', '!=', 'dropdown_blank')], 
-                                      'required': [('type', '=', 'dropdown_blank')]}"/>
+                               invisible="type != 'dropdown_blank'"
+                               required="type == 'dropdown_blank'"/>
                     </group>
                     
                     <notebook>
                         <!-- Choices for Multiple Choice Questions -->
-                        <page string="Choices" attrs="{'invisible': [('type', 'not in', ['mcq_single', 'mcq_multiple'])]}">
+                        <page string="Choices" invisible="type not in ['mcq_single', 'mcq_multiple']">
                             <field name="choice_ids" widget="one2many">
                                 <tree editable="bottom">
                                     <field name="sequence" widget="handle"/>
@@ -40,7 +40,7 @@
                         </page>
                         
                         <!-- Fill in the Blank Answers -->
-                        <page string="Blank Answers" attrs="{'invisible': [('type', '!=', 'fill_blank')]}">
+                        <page string="Blank Answers" invisible="type != 'fill_blank'">
                             <field name="fill_blank_answer_ids" widget="one2many">
                                 <tree editable="bottom">
                                     <field name="sequence" widget="handle"/>
@@ -51,7 +51,7 @@
                         </page>
                         
                         <!-- Match Pairs -->
-                        <page string="Match Pairs" attrs="{'invisible': [('type', '!=', 'match')]}">
+                        <page string="Match Pairs" invisible="type != 'match'">
                             <field name="match_pair_ids" widget="one2many">
                                 <tree editable="bottom">
                                     <field name="sequence" widget="handle"/>
@@ -62,18 +62,18 @@
                         </page>
                         
                         <!-- Drag and Drop Tokens -->
-                        <page string="Drag Tokens" attrs="{'invisible': [('type', 'not in', ['drag_text', 'drag_zone'])]}">
+                        <page string="Drag Tokens" invisible="type not in ['drag_text', 'drag_zone']">
                             <field name="drag_token_ids" widget="one2many">
                                 <tree editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="text"/>
-                                    <field name="correct_position" attrs="{'invisible': [('parent.type', '!=', 'drag_text')]}"/>
+                                    <field name="correct_position" invisible="parent.type != 'drag_text'"/>
                                 </tree>
                             </field>
                         </page>
                         
                         <!-- Dropdown Blanks (NEW) -->
-                        <page string="Dropdown Blanks" attrs="{'invisible': [('type', '!=', 'dropdown_blank')]}">
+                        <page string="Dropdown Blanks" invisible="type != 'dropdown_blank'">
                             <p class="text-muted mb-2">
                                 Define dropdowns for each placeholder in your text template ({{1}}, {{2}}, etc.).
                                 Add options for each dropdown and mark the correct answer.
