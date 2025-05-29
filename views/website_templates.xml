@@ -500,35 +500,40 @@
                                         <!-- Dropdown in Text Question Type -->
                                         <t t-if="question.type == 'dropdown_blank'">
                                             <div class="dropdown-blank-question">
-                                                <div class="question-text-container mb-4" t-att-data-question-id="question.id">
-                                                    <div class="dropdown-text-content">
-                                                        <!-- Process template and replace placeholders with dropdowns -->
-                                                        <t t-set="template_html" t-value="question.text_template"/>
-                                                        
-                                                        <!-- For each blank, create a select dropdown -->
+                                                <div class="question-text-container mb-4">
+                                                    <h4><t t-esc="question.name"/></h4>
+                                                    
+                                                    <!-- Instructions -->
+                                                    <p class="text-muted mb-3">
+                                                        Complete the following text by selecting the correct option for each blank.
+                                                    </p>
+                                                    
+                                                    <!-- Build dropdowns directly -->
+                                                    <div class="text-content mt-3">
+                                                        <p t-field="question.text_template" class="mb-3"/>
+                                                    </div>
+                                                    
+                                                    <!-- Display dropdowns separately -->
+                                                    <div class="dropdowns-container mt-4">
                                                         <t t-foreach="question.blank_ids.sorted(key=lambda b: b.blank_number)" t-as="blank">
-                                                            <t t-set="placeholder" t-value="{{'{{' + str(blank.blank_number) + '}}'}}"/>
-                                                            
-                                                            <!-- Create dropdown HTML as a string, not a set -->
-                                                            <t t-set="select_start" t-value="'&lt;select class=&quot;form-select dropdown-blank-select d-inline-block mx-1&quot; name=&quot;dropdown_blank_' + str(blank.blank_number) + '&quot; data-blank-id=&quot;' + str(blank.id) + '&quot; style=&quot;width:auto; min-width:120px;&quot;&gt;'"/>
-                                                            <t t-set="select_options" t-value="'&lt;option value=&quot;&quot;&gt;-- Select --&lt;/option&gt;'"/>
-                                                            
-                                                            <t t-foreach="blank.option_ids" t-as="option">
-                                                                <t t-set="select_options" t-value="select_options + '&lt;option value=&quot;' + str(option.id) + '&quot;&gt;' + option.label + '&lt;/option&gt;'"/>
-                                                            </t>
-                                                            
-                                                            <t t-set="select_end" t-value="'&lt;/select&gt;'"/>
-                                                            <t t-set="dropdown_str" t-value="select_start + select_options + select_end"/>
-                                                            
-                                                            <!-- String replacement for the template -->
-                                                            <t t-set="parts" t-value="template_html.split(placeholder, 1)"/>
-                                                            <t t-if="len(parts) > 1">
-                                                                <t t-set="template_html" t-value="parts[0] + dropdown_str + parts[1]"/>
-                                                            </t>
+                                                            <div class="form-group mb-3 row">
+                                                                <label class="col-sm-2 col-form-label">
+                                                                    Blank <t t-esc="blank.blank_number"/>:
+                                                                </label>
+                                                                <div class="col-sm-10">
+                                                                    <select class="form-select dropdown-blank-select" 
+                                                                           t-att-name="'dropdown_blank_' + str(blank.blank_number)" 
+                                                                           t-att-data-blank-id="blank.id">
+                                                                        <option value="">-- Select --</option>
+                                                                        <t t-foreach="blank.option_ids" t-as="option">
+                                                                            <option t-att-value="option.id">
+                                                                                <t t-esc="option.label"/>
+                                                                            </option>
+                                                                        </t>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
                                                         </t>
-                                                        
-                                                        <!-- Render the final template with dropdowns -->
-                                                        <t t-raw="template_html"/>
                                                     </div>
                                                     
                                                     <input type="hidden" name="dropdown_blank_data" value="[]"/>
