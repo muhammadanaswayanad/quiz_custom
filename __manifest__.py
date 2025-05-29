@@ -18,8 +18,8 @@
     'depends': ['base', 'web', 'website'],
     'external_dependencies': {'python': []},
     'data': [
+        'data/cleanup.xml',  # Add this at the beginning, before security
         'security/ir.model.access.csv',
-        'data/cleanup.xml',  # Add this line if not already present
         'views/quiz_views.xml',
         'views/question_views.xml', 
         'views/session_views.xml',

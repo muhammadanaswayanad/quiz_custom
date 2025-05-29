@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Delete any residual access records for non-existent models -->
+    <!-- Clean up invalid model access records -->
     <delete model="ir.model.access" search="[('model_id', '=', False)]"/>
-</odoo>
-    <delete model="ir.model.access" search="[('name', 'ilike', 'quiz.drag.zone')]"/>
+    
+    <!-- Delete specific problematic records by name pattern -->
+    <delete model="ir.model.access" search="[('name', 'like', 'quiz.drag.zone')]"/>
+    
+    <!-- Clean up old model references if they exist -->
+    <delete model="ir.model" search="[('model', '=', 'quiz.drag.zone')]"/>
+    <delete model="ir.model" search="[('model', '=', 'quiz.blank'), ('modules', '!=', 'quiz_engine_pro')]"/>
 </odoo>
