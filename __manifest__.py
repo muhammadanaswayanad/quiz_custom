@@ -1,6 +1,6 @@
 {
     'name': 'Quiz Engine Pro',
-    'version': '17.0.1.0.4',
+    'version': '17.0.1.0.3',
     'category': 'Education',
     'summary': 'Advanced Quiz Engine with Multiple Question Types',
     'description': """
