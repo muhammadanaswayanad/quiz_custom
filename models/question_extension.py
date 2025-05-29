@@ -1,55 +1,78 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
 
-class Question(models.Model):
+class QuizQuestion(models.Model):
     _inherit = 'quiz.question'
     
+    # Additional fields for matrix questions
+    matrix_row_ids = fields.One2many('quiz.matrix.row', 'question_id', string="Matrix Rows")
+    matrix_column_ids = fields.One2many('quiz.matrix.column', 'question_id', string="Matrix Columns")
+    
+    # Fields for text box answers
+    correct_text_answer = fields.Char(string="Correct Text Answer")
+    case_sensitive = fields.Boolean(string="Case Sensitive", default=False)
+    allow_partial_match = fields.Boolean(string="Allow Partial Match", default=False)
+    keywords = fields.Text(string="Keywords for Partial Match")
+    
+    # Fields for numerical answers
+    numerical_exact_value = fields.Float(string="Exact Value")
+    numerical_tolerance = fields.Float(string="Tolerance", default=0.0)
+    numerical_min_value = fields.Float(string="Minimum Value")
+    numerical_max_value = fields.Float(string="Maximum Value")
+    
+    @api.model
+    def create(self, vals):
+        """Create a new question and add blank rows/columns for matrix questions"""
+        res = super(QuizQuestion, self).create(vals)
+        if res.type == 'matrix' and not res.matrix_row_ids and not res.matrix_column_ids:
+            # Add default rows and columns for new matrix questions
+            self.env['quiz.matrix.row'].create({'question_id': res.id, 'name': 'Row 1'})
+            self.env['quiz.matrix.row'].create({'question_id': res.id, 'name': 'Row 2'})
+            self.env['quiz.matrix.column'].create({'question_id': res.id, 'name': 'Column 1'})
+            self.env['quiz.matrix.column'].create({'question_id': res.id, 'name': 'Column 2'})
+        return res
+    
     def action_open_matrix_cells(self):
-        """Open a view to edit matrix cell values"""
+        """Open a view to edit matrix cells"""
         self.ensure_one()
-        
-        # Create cells for any missing combinations
-        self._create_missing_matrix_cells()
-        
-        return {
-            'name': 'Matrix Cells',
+        action = {
+            'name': _('Matrix Cells'),
             'type': 'ir.actions.act_window',
             'res_model': 'quiz.matrix.cell',
             'view_mode': 'tree',
-            'view_id': self.env.ref('quiz_engine_pro.matrix_cell_view_tree').id,
+            'views': [(self.env.ref('quiz_engine_pro.matrix_cell_view_tree').id, 'tree')],
             'domain': [('question_id', '=', self.id)],
             'context': {'default_question_id': self.id},
-            'target': 'current',
         }
+        return action
+
+class QuizMatrixRow(models.Model):
+    _name = 'quiz.matrix.row'
+    _description = 'Matrix Question Row'
+    _order = 'sequence, id'
     
-    def _create_missing_matrix_cells(self):
-        """Create matrix cells for any missing row-column combinations"""
-        self.ensure_one()
-        
-        if not self.matrix_row_ids or not self.matrix_column_ids:
-            return
-        
-        # Get existing cells
-        existing_cells = self.env['quiz.matrix.cell'].search([
-            ('question_id', '=', self.id)
-        ])
-        
-        # Track existing combinations
-        existing_combinations = {
-            (cell.row_id.id, cell.column_id.id): cell
-            for cell in existing_cells
-        }
-        
-        # Create missing cells
-        cells_to_create = []
-        for row in self.matrix_row_ids:
-            for col in self.matrix_column_ids:
-                if (row.id, col.id) not in existing_combinations:
-                    cells_to_create.append({
-                        'row_id': row.id,
-                        'column_id': col.id,
-                        'is_correct': False,
-                    })
-        
-        # Create all missing cells at once
-        if cells_to_create:
-            self.env['quiz.matrix.cell'].create(cells_to_create)
+    name = fields.Char(string="Row Label", required=True)
+    sequence = fields.Integer(string="Sequence", default=10)
+    question_id = fields.Many2one('quiz.question', string="Question", required=True, ondelete='cascade')
+    
+class QuizMatrixColumn(models.Model):
+    _name = 'quiz.matrix.column'
+    _description = 'Matrix Question Column'
+    _order = 'sequence, id'
+    
+    name = fields.Char(string="Column Label", required=True)
+    sequence = fields.Integer(string="Sequence", default=10)
+    question_id = fields.Many2one('quiz.question', string="Question", required=True, ondelete='cascade')
+
+class QuizMatrixCell(models.Model):
+    _name = 'quiz.matrix.cell'
+    _description = 'Matrix Question Cell'
+    
+    row_id = fields.Many2one('quiz.matrix.row', string="Row", required=True, ondelete='cascade')
+    column_id = fields.Many2one('quiz.matrix.column', string="Column", required=True, ondelete='cascade')
+    is_correct = fields.Boolean(string="Is Correct", default=False)
+    question_id = fields.Many2one('quiz.question', string="Question", required=True, ondelete='cascade')
+    
+    _sql_constraints = [
+        ('unique_cell', 'unique(row_id, column_id, question_id)', 'Each cell must be unique per question.')
+    ]

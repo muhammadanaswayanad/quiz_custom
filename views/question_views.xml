@@ -175,7 +175,7 @@
                         <page string="Matrix Cells"
                               invisible="type != 'matrix' or not matrix_row_ids or not matrix_column_ids">
                             <field name="id" invisible="1"/>
-                            <div t-if="id">
+                            <div attrs="{'invisible': [('id', '=', False)]}">
                                 <field name="matrix_row_ids" invisible="1"/>
                                 <field name="matrix_column_ids" invisible="1"/>
                                 
@@ -186,13 +186,12 @@
                                         
                                 <!-- Fallback if widget doesn't load -->
                                 <field name="env" invisible="1"/>
-                                <field name="env.ref('quiz_engine_pro.matrix_cell_view_tree')" invisible="1"/>
                                 <button name="action_open_matrix_cells" 
                                         string="Open Matrix Cell Editor" 
                                         type="object" 
                                         class="btn btn-primary"/>
                             </div>
-                            <div t-if="not id" class="alert alert-info">
+                            <div attrs="{'invisible': [('id', '!=', False)]}" class="alert alert-info">
                                 <p>Please save the question first to edit matrix cells.</p>
                             </div>
                         </page>
@@ -230,4 +229,5 @@
             </tree>
         </field>
     </record>
+</odoo>
 </odoo>
