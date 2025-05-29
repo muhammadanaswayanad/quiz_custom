@@ -19,11 +19,11 @@
     'external_dependencies': {'python': []},
     'data': [
         'security/ir.model.access.csv',
+        'views/sequence_templates.xml',  # Add this before other view files
         'views/quiz_views.xml',
         'views/question_views.xml', 
         'views/session_views.xml',
         'views/website_templates.xml',
-        'views/sequence_templates.xml',
     ],
     'assets': {
         'web.assets_frontend': [
