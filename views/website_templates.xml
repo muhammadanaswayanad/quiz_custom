@@ -635,12 +635,8 @@
                                                                     <i class="fa fa-bars"></i>
                                                                 </div>
                                                                 <span class="step-number">1</span>
-                                                                <span class="step-label"><t t-esc="step.label"/></span>
-                                                                <t t-if="step.content">
-                                                                    <div class="step-description">
-                                                                        <t t-esc="step.content"/>
-                                                                    </div>
-                                                                </t>
+                                                                <span class="step-label" t-esc="step.label"></span>
+                                                                <div t-if="step.content" class="step-description" t-esc="step.content"></div>
                                                             </div>
                                                         </t>
                                                     </div>
@@ -653,71 +649,6 @@
                                                         </button>
                                                     </div>
                                                 </div>
-                                                
-                                                <script type="text/javascript">
-                                                    document.addEventListener('DOMContentLoaded', function() {
-                                                        // Initialize Sortable without jQuery
-                                                        var sequenceList = document.getElementById('sequenceList');
-                                                        if (sequenceList && window.Sortable) {
-                                                            var sortable = new Sortable(sequenceList, {
-                                                                animation: 150,
-                                                                ghostClass: 'sortable-ghost',
-                                                                onEnd: function() {
-                                                                    updateSequenceData();
-                                                                }
-                                                            });
-                                                            
-                                                            // Randomize initial order
-                                                            randomizeItems();
-                                                            
-                                                            // Update step numbers and data
-                                                            updateStepNumbers();
-                                                            updateSequenceData();
-                                                            
-                                                            // Handle reset button
-                                                            document.querySelector('.reset-sequence').addEventListener('click', function() {
-                                                                randomizeItems();
-                                                                updateStepNumbers();
-                                                                updateSequenceData();
-                                                            });
-                                                        }
-                                                        
-                                                        // Functions
-                                                        function randomizeItems() {
-                                                            var items = Array.from(sequenceList.querySelectorAll('.sequence-item'));
-                                                            for (var i = items.length - 1; i > 0; i--) {
-                                                                var j = Math.floor(Math.random() * (i + 1));
-                                                                sequenceList.appendChild(items[j]);
-                                                            }
-                                                        }
-                                                        
-                                                        function updateStepNumbers() {
-                                                            var items = sequenceList.querySelectorAll('.sequence-item');
-                                                            for (var i = 0; i < items.length; i++) {
-                                                                var numberElem = items[i].querySelector('.step-number');
-                                                                if (numberElem) {
-                                                                    numberElem.textContent = (i + 1);
-                                                                }
-                                                            }
-                                                        }
-                                                        
-                                                        function updateSequenceData() {
-                                                            var data = [];
-                                                            var items = sequenceList.querySelectorAll('.sequence-item');
-                                                            
-                                                            for (var i = 0; i < items.length; i++) {
-                                                                var stepId = items[i].getAttribute('data-step-id');
-                                                                data.push({
-                                                                    'step_id': parseInt(stepId),
-                                                                    'position': i + 1
-                                                                });
-                                                            }
-                                                            
-                                                            document.querySelector('input[name="sequence_data"]').value = JSON.stringify(data);
-                                                            updateStepNumbers();
-                                                        }
-                                                    });
-                                                </script>
                                             </t>
 
                                             <!-- Default fallback for other question types -->
@@ -738,6 +669,75 @@
                                                     </div>
                                                     <div class="col-6 text-right">
                                                         <button type="submit" class="btn btn-primary">
+                                                            <t t-if="question_index + 1 == len(quiz.question_ids)">
+                                                                Complete Quiz
+                                                            </t>
+                                                            <t t-else="">
+                                                                Next Question
+                                                            </t>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Quiz Results Template -->
+    <template id="quiz_results" name="Quiz Results">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 offset-lg-2">
+                            <div class="text-center mb-4">
+                                <h1>Quiz Complete!</h1>
+                                <h2 t-field="session.quiz_id.name"/>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h3>Your Results</h3>
+                                    <div class="result-score mb-4">
+                                        <div class="score-display">
+                                            <span class="score-number"><t t-esc="session.total_score or 0"/></span>
+                                            <span class="score-total">/ <t t-esc="max_score or 0"/></span>
+                                        </div>
+                                        <div class="score-percentage">
+                                            <t t-esc="'%.1f' % (session.percentage or 0)"/>%
+                                        </div>
+                                        <div t-att-class="'result-status ' + ('passed' if session.passed else 'failed')">
+                                            <t t-if="session.passed">
+                                                <i class="fa fa-check-circle"/> Passed!
+                                            </t>
+                                            <t t-else="">
+                                                <i class="fa fa-times-circle"/> Not Passed
+                                            </t>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="participant-info">
+                                        <p><strong>Participant:</strong> <t t-esc="session.participant_name"/></p>
+                                        <p><strong>Completed:</strong> <t t-esc="session.end_time"/></p>
+                                    </div>
+                                    
+                                    <a href="/quiz" class="btn btn-primary">Take Another Quiz</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
                                                             <t t-if="question_index + 1 == len(quiz.question_ids)">
                                                                 Complete Quiz
                                                             </t>
