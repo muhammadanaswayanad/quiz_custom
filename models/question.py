@@ -12,7 +12,8 @@ class Question(models.Model):
     sequence = fields.Integer(string='Sequence', default=10)
     name = fields.Char(string='Title', compute='_compute_name', store=True)
     quiz_id = fields.Many2one('quiz.quiz', string='Quiz', required=True, ondelete='cascade')
-    question_html = fields.Html(string='Question Text', sanitize=True, required=True)
+    question_html = fields.Html(string='Question Text', sanitize=True, 
+                               required=False)  # Changed to not required
     explanation = fields.Html(string='Explanation', sanitize=True,
                               help="Shown after answering the question")
     points = fields.Float(string='Points', default=1.0)
@@ -37,7 +38,7 @@ class Question(models.Model):
     match_pair_ids = fields.One2many('quiz.match.pair', 'question_id', string='Match Pairs')
     drag_token_ids = fields.One2many('quiz.drag.token', 'question_id', string='Drag Tokens')
     fill_blank_answer_ids = fields.One2many('quiz.fill.blank.answer', 'question_id', string='Fill Blank Answers')
-    blank_ids = fields.One2many('quiz.blank', 'question_id', string='Dropdown Blanks')
+    blank_ids = fields.One2many('quiz_blank', 'question_id', string='Dropdown Blanks')
     
     # Fields for numerical questions
     numerical_exact_value = fields.Float(string='Exact Value', digits=(16, 6))
@@ -291,16 +292,40 @@ class Question(models.Model):
         }
         return action
 
-    @api.depends('question_html')
+    @api.depends('question_html', 'text_template', 'type')
     def _compute_name(self):
         for question in self:
-            text = question.question_html or ''
-            # Strip tags to get plain text
-            text = re.sub(r'<.*?>', '', text)
+            if question.type == 'dropdown_blank' and question.text_template:
+                text = question.text_template or ''
+                # Strip tags to get plain text
+                text = re.sub(r'<.*?>', '', text)
+            else:
+                text = question.question_html or ''
+                # Strip tags to get plain text
+                text = re.sub(r'<.*?>', '', text)
+                
             # Limit length for display
             if len(text) > 50:
                 text = text[:50] + '...'
             question.name = text or _('New Question')
+
+    @api.constrains('type', 'question_html', 'text_template')
+    def _check_required_question_content(self):
+        for question in self:
+            if question.type == 'dropdown_blank':
+                if not question.text_template:
+                    raise ValidationError(_("Text template is required for Dropdown in Text questions"))
+            else:
+                if not question.question_html:
+                    raise ValidationError(_("Question Text is required"))
+
+    # This method will auto-fill question_html from text_template for dropdown_blank questions
+    @api.onchange('text_template', 'type')
+    def _onchange_text_template(self):
+        if self.type == 'dropdown_blank' and self.text_template:
+            # Copy text template to question_html to satisfy requirements in other parts of code
+            self.question_html = self.text_template
+
 
     @api.constrains('type')
     def _check_required_fields(self):
