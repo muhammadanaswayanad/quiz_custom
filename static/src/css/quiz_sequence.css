@@ -45,17 +45,25 @@
 }
 
 .sequence-controls {
-    flex-shrink: 0;
     display: flex;
-    gap: 5px;
+    gap: 6px;
 }
 
 .sequence-controls button {
-    width: 32px;
-    height: 32px;
+    min-width: 36px;
+    height: 36px;
     padding: 0;
-    line-height: 30px;
-    text-align: center;
+    line-height: 34px;
+    border-radius: 4px;
+}
+
+.sequence-controls button:focus {
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+.sequence-controls button:active {
+    transform: translateY(1px);
 }
 
 .sequence-handle {

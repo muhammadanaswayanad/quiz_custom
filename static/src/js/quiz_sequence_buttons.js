@@ -1,99 +1,104 @@
-// Simple vanilla JS implementation for sequence item buttons
-document.addEventListener('DOMContentLoaded', function() {
-    // Find all sequence container elements
-    var containers = document.querySelectorAll('.sequence-container');
-    if (!containers.length) return;
+// Basic sequence buttons functionality
+(function() {
+    "use strict";
     
-    // Process each container
-    containers.forEach(function(container) {
-        // Setup buttons for this container
-        setupMoveButtons(container);
-        setupResetButton(container);
+    // Wait for DOM to be ready
+    document.addEventListener('DOMContentLoaded', function() {
+        initSequenceButtons();
     });
     
-    function setupMoveButtons(container) {
-        // Setup move up buttons
-        var moveUpButtons = container.querySelectorAll('.move-up');
-        moveUpButtons.forEach(function(btn) {
-            btn.onclick = function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                var item = this.closest('.sequence-item');
-                var prev = item.previousElementSibling;
-                
-                if (prev && prev.classList.contains('sequence-item')) {
-                    item.parentNode.insertBefore(item, prev);
-                    updateSequenceOrder(container);
-                }
-            };
-        });
+    function initSequenceButtons() {
+        // Find all up buttons and attach handlers
+        var upButtons = document.querySelectorAll('.move-up');
+        for(var i = 0; i < upButtons.length; i++) {
+            upButtons[i].addEventListener('click', handleMoveUp);
+        }
         
-        // Setup move down buttons
-        var moveDownButtons = container.querySelectorAll('.move-down');
-        moveDownButtons.forEach(function(btn) {
-            btn.onclick = function(e) {
-                e.preventDefault(); 
-                e.stopPropagation();
-                
-                var item = this.closest('.sequence-item');
-                var next = item.nextElementSibling;
-                
-                if (next && next.classList.contains('sequence-item')) {
-                    item.parentNode.insertBefore(next, item);
-                    updateSequenceOrder(container);
-                }
-            };
-        });
-    }
-    
-    function setupResetButton(container) {
-        var resetButton = container.querySelector('.reset-sequence');
-        if (resetButton) {
-            resetButton.onclick = function(e) {
-                e.preventDefault();
-                randomizeItems(container);
-                updateSequenceOrder(container);
-            };
+        // Find all down buttons and attach handlers
+        var downButtons = document.querySelectorAll('.move-down');
+        for(var i = 0; i < downButtons.length; i++) {
+            downButtons[i].addEventListener('click', handleMoveDown);
+        }
+        
+        // Find all reset buttons and attach handlers
+        var resetButtons = document.querySelectorAll('.reset-sequence');
+        for(var i = 0; i < resetButtons.length; i++) {
+            resetButtons[i].addEventListener('click', handleReset);
         }
     }
     
-    function randomizeItems(container) {
+    function handleMoveUp(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        var item = this.closest('.sequence-item');
+        var prev = item.previousElementSibling;
+        
+        if(prev && prev.classList.contains('sequence-item')) {
+            var parent = item.parentNode;
+            parent.insertBefore(item, prev);
+            updateSequence(parent);
+        }
+    }
+    
+    function handleMoveDown(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        var item = this.closest('.sequence-item');
+        var next = item.nextElementSibling;
+        
+        if(next && next.classList.contains('sequence-item')) {
+            var parent = item.parentNode;
+            parent.insertBefore(next, item);
+            updateSequence(parent);
+        }
+    }
+    
+    function handleReset(event) {
+        event.preventDefault();
+        
+        var container = this.closest('.sequence-container');
         var list = container.querySelector('.sequence-list');
         var items = Array.from(list.querySelectorAll('.sequence-item'));
         
-        // Fisher-Yates shuffle
-        for (var i = items.length - 1; i > 0; i--) {
+        // Shuffle items
+        for(var i = items.length - 1; i > 0; i--) {
             var j = Math.floor(Math.random() * (i + 1));
             list.appendChild(items[j]);
         }
+        
+        updateSequence(list);
     }
     
-    function updateSequenceOrder(container) {
+    function updateSequence(container) {
         // Update step numbers
         var items = container.querySelectorAll('.sequence-item');
-        for (var i = 0; i < items.length; i++) {
-            var numEl = items[i].querySelector('.step-number');
-            if (numEl) {
-                numEl.textContent = (i + 1);
+        for(var i = 0; i < items.length; i++) {
+            var numElement = items[i].querySelector('.step-number');
+            if(numElement) {
+                numElement.textContent = (i + 1);
             }
         }
         
-        // Update hidden input with JSON data
+        // Update hidden input
         var data = [];
-        items.forEach(function(item, index) {
-            var stepId = item.getAttribute('data-step-id');
-            if (stepId) {
+        for(var i = 0; i < items.length; i++) {
+            var stepId = items[i].getAttribute('data-step-id');
+            if(stepId) {
                 data.push({
-                    step_id: parseInt(stepId),
-                    position: index + 1
+                    step_id: parseInt(stepId, 10),
+                    position: i + 1
                 });
             }
-        });
+        }
         
-        var inputEl = container.querySelector('input[name="sequence_data"]');
-        if (inputEl) {
-            inputEl.value = JSON.stringify(data);
+        var form = container.closest('form');
+        if(form) {
+            var input = form.querySelector('input[name="sequence_data"]');
+            if(input) {
+                input.value = JSON.stringify(data);
+            }
         }
     }
-});
+})();
