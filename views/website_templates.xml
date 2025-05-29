@@ -618,12 +618,8 @@
 
                                             <!-- Step Sequencing Question Type -->
                                             <t t-if="question.type == 'step_sequence'">
-                                                <!-- Add question text display at the top -->
-                                                <div class="question-text-container mb-4">
-                                                    <div t-field="question.question_html"/>
-                                                </div>
-
                                                 <div class="sequence-container">
+                                                    <!-- Remove the "not implemented" message -->
                                                     <div class="sequence-instructions mb-3">
                                                         <strong>Instructions:</strong> Arrange the steps in the correct order by dragging them up or down.
                                                     </div>
@@ -638,7 +634,7 @@
                                                                 <span class="step-label"><t t-esc="step.label"/></span>
                                                                 <t t-if="step.content">
                                                                     <div class="step-description">
-                                                                        <t t-esc="step.content"/>  <!-- Changed from description to content -->
+                                                                        <t t-esc="step.content"/>
                                                                     </div>
                                                                 </t>
                                                             </div>
@@ -654,69 +650,91 @@
                                                     </div>
                                                 </div>
                                                 
+                                                <!-- Add inline fallback script -->
                                                 <script type="text/javascript">
-                                                    $(function() {
-                                                        // Initialize sequence sorting
-                                                        if (typeof Sortable !== 'undefined') {
+                                                    document.addEventListener('DOMContentLoaded', function() {
+                                                        // Check if Sortable is already initialized by the module
+                                                        var alreadyInitialized = false;
+                                                        try {
+                                                            alreadyInitialized = !!document.querySelector('.sequence-list').sortableInstance;
+                                                        } catch (e) {}
+                                                        
+                                                        // Only initialize if not already done and Sortable.js is available
+                                                        if (!alreadyInitialized && typeof Sortable !== 'undefined') {
                                                             var sequenceList = document.querySelector('.sequence-list');
                                                             if (sequenceList) {
+                                                                // Initialize Sortable
                                                                 var sortable = new Sortable(sequenceList, {
                                                                     animation: 150,
                                                                     ghostClass: 'sortable-ghost',
-                                                                    onEnd: function() {
-                                                                        updateSequenceData();
-                                                                    }
+                                                                    chosenClass: 'sortable-chosen',
+                                                                    dragClass: 'sortable-drag',
+                                                                    handle: '.sequence-handle',
+                                                                    onEnd: updateSequenceData
                                                                 });
                                                                 
-                                                                // Randomize initial order
-                                                                var items = Array.from(sequenceList.querySelectorAll('.sequence-item'));
-                                                                for (let i = items.length - 1; i > 0; i--) {
-                                                                    const j = Math.floor(Math.random() * (i + 1));
-                                                                    sequenceList.appendChild(items[j]);
+                                                                // Store instance reference
+                                                                sequenceList.sortableInstance = sortable;
+                                                                
+                                                                // Randomize on initial load
+                                                                randomizeSequence();
+                                                                
+                                                                // Bind reset button
+                                                                var resetBtn = document.querySelector('.reset-sequence');
+                                                                if (resetBtn) {
+                                                                    resetBtn.addEventListener('click', randomizeSequence);
                                                                 }
                                                                 
-                                                                // Update step numbers and data
+                                                                // Update initial data
+                                                                updateSequenceData();
+                                                            }
+                                                        }
+                                                        
+                                                        function randomizeSequence() {
+                                                            var items = Array.from(document.querySelectorAll('.sequence-item'));
+                                                            var list = document.querySelector('.sequence-list');
+                                                            if (list && items.length > 0) {
+                                                                // Shuffle the items
+                                                                for (let i = items.length - 1; i > 0; i--) {
+                                                                    const j = Math.floor(Math.random() * (i + 1));
+                                                                    list.appendChild(items[j]);
+                                                                }
                                                                 updateStepNumbers();
                                                                 updateSequenceData();
                                                             }
                                                         }
                                                         
-                                                        // Update sequence numbers
                                                         function updateStepNumbers() {
-                                                            $('.sequence-item').each(function(index) {
-                                                                $(this).find('.step-number').text(index + 1);
-                                                            });
+                                                            var items = document.querySelectorAll('.sequence-item');
+                                                            for (var i = 0; i < items.length; i++) {
+                                                                var numberElement = items[i].querySelector('.step-number');
+                                                                if (numberElement) {
+                                                                    numberElement.textContent = (i + 1);
+                                                                }
+                                                            }
                                                         }
                                                         
-                                                        // Update hidden input with sequence data
                                                         function updateSequenceData() {
                                                             var data = [];
-                                                            $('.sequence-item').each(function(index) {
-                                                                var stepId = $(this).data('step-id');
+                                                            var items = document.querySelectorAll('.sequence-item');
+                                                            
+                                                            for (var i = 0; i < items.length; i++) {
+                                                                var stepId = items[i].dataset.stepId;
+                                                                var position = i + 1;
+                                                                
                                                                 data.push({
-                                                                    'step_id': stepId,
-                                                                    'position': index + 1
+                                                                    'step_id': parseInt(stepId),
+                                                                    'position': position
                                                                 });
-                                                            });
-                                                            
-                                                            $('input[name="sequence_data"]').val(JSON.stringify(data));
-                                                            updateStepNumbers();
-                                                        }
-                                                        
-                                                        // Handle reset button
-                                                        $('.reset-sequence').on('click', function() {
-                                                            var items = $('.sequence-item').toArray();
-                                                            var list = $('.sequence-list');
-                                                            
-                                                            // Shuffle items
-                                                            for (let i = items.length - 1; i > 0; i--) {
-                                                                const j = Math.floor(Math.random() * (i + 1));
-                                                                list.append(items[j]);
                                                             }
                                                             
                                                             updateStepNumbers();
-                                                            updateSequenceData();
-                                                        });
+                                                            
+                                                            var inputEl = document.querySelector('input[name="sequence_data"]');
+                                                            if (inputEl) {
+                                                                inputEl.value = JSON.stringify(data);
+                                                            }
+                                                        }
                                                     });
                                                 </script>
                                             </t>

@@ -2,6 +2,7 @@ odoo.define('quiz_engine_pro.sequence', function (require) {
     'use strict';
 
     var publicWidget = require('web.public.widget');
+    var core = require('web.core');
     
     publicWidget.registry.QuizSequence = publicWidget.Widget.extend({
         selector: '.sequence-container',
@@ -13,36 +14,49 @@ odoo.define('quiz_engine_pro.sequence', function (require) {
          * @override
          */
         start: function () {
-            var self = this;
-            
-            // Initialize Sortable
-            this.sequenceSortable = new Sortable(this.el.querySelector('.sequence-list'), {
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                chosenClass: 'sortable-chosen',
-                handle: '.sequence-handle',
-                onEnd: function() {
-                    self._updateSequenceData();
-                }
-            });
-            
-            // Randomize order on initial load
-            this._randomizeSequence();
-            
-            // Update initial data
-            this._updateSequenceData();
-            
+            this._super.apply(this, arguments);
+            this._initSortable();
             return this._super.apply(this, arguments);
         },
         
         /**
+         * Initialize Sortable.js for drag and drop functionality
+         */
+        _initSortable: function() {
+            var self = this;
+            var sequenceList = this.el.querySelector('.sequence-list');
+            
+            if (sequenceList && window.Sortable) {
+                // Initialize sortable
+                this.sortable = new Sortable(sequenceList, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
+                    handle: '.sequence-handle',
+                    onEnd: function() {
+                        self._updateSequenceData();
+                    }
+                });
+                
+                // Randomize on initial load
+                this._randomizeSequence();
+                
+                // Update initial data
+                this._updateSequenceData();
+            } else {
+                console.error('Sortable.js library not loaded or sequence list not found');
+            }
+        },
+        
+        /**
          * Randomize the order of sequence items on first load
-         * 
-         * @private
          */
         _randomizeSequence: function() {
             var items = Array.from(this.el.querySelectorAll('.sequence-item'));
             var list = this.el.querySelector('.sequence-list');
+            
+            if (!list || items.length === 0) return;
             
             // Shuffle the items
             for (let i = items.length - 1; i > 0; i--) {
@@ -50,14 +64,11 @@ odoo.define('quiz_engine_pro.sequence', function (require) {
                 list.appendChild(items[j]);
             }
             
-            // Update the step numbers
             this._updateStepNumbers();
         },
         
         /**
          * Update the step numbers displayed on items
-         * 
-         * @private
          */
         _updateStepNumbers: function() {
             var items = this.el.querySelectorAll('.sequence-item');
@@ -71,8 +82,6 @@ odoo.define('quiz_engine_pro.sequence', function (require) {
         
         /**
          * Update the hidden input with current sequence data
-         * 
-         * @private
          */
         _updateSequenceData: function() {
             var data = [];
@@ -99,8 +108,6 @@ odoo.define('quiz_engine_pro.sequence', function (require) {
         
         /**
          * Reset sequence to original random order
-         * 
-         * @private
          */
         _resetSequence: function(ev) {
             ev.preventDefault();
