@@ -32,6 +32,7 @@
             'quiz_engine_pro/static/src/css/quiz_sequence.css',
             'quiz_engine_pro/static/src/js/sequence_basic.js',
             'quiz_engine_pro/static/src/js/sequence_direct.js',
+            'quiz_engine_pro/static/src/js/sequence_buttons.js',
         ],
     },
     'images': ['static/description/icon.png'],
