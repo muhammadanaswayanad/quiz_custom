@@ -22,15 +22,23 @@ class QuizQuestion(models.Model):
     
     @api.model_create_multi
     def create(self, vals_list):
+        # Process each vals individually if needed
         for vals in vals_list:
             """Create a new question and add blank rows/columns for matrix questions"""
-            res = super().create(vals_list)  # Fix: use super() properly
-            if res.type == 'matrix' and not res.matrix_row_ids and not res.matrix_column_ids:
+            # Process individual vals if needed
+            
+        # Call super with the full vals_list
+        res = super().create(vals_list)
+        
+        # Process each record if needed
+        for record in res:
+            if record.type == 'matrix' and not record.matrix_row_ids and not record.matrix_column_ids:
                 # Add default rows and columns for new matrix questions
-                self.env['quiz.matrix.row'].create({'question_id': res.id, 'name': 'Row 1'})
-                self.env['quiz.matrix.row'].create({'question_id': res.id, 'name': 'Row 2'})
-                self.env['quiz.matrix.column'].create({'question_id': res.id, 'name': 'Column 1'})
-                self.env['quiz.matrix.column'].create({'question_id': res.id, 'name': 'Column 2'})
+                self.env['quiz.matrix.row'].create({'question_id': record.id, 'name': 'Row 1'})
+                self.env['quiz.matrix.row'].create({'question_id': record.id, 'name': 'Row 2'})
+                self.env['quiz.matrix.column'].create({'question_id': record.id, 'name': 'Column 1'})
+                self.env['quiz.matrix.column'].create({'question_id': record.id, 'name': 'Column 2'})
+        
         return res
     
     def action_open_matrix_cells(self):
