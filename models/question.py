@@ -324,40 +324,6 @@ class Question(models.Model):
                     raise ValidationError(_('Dropdown in Text questions must have blanks with options defined.'))
 
 
-class Choice(models.Model):
-    _name = 'quiz.choice'
-    _description = 'Multiple Choice Option'
-    _order = 'sequence, id'
-    
-    sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
-    text = fields.Char(string='Choice Text', required=True)
-    is_correct = fields.Boolean(string='Is Correct', default=False)
-
-
-class MatchPair(models.Model):
-    _name = 'quiz.match.pair'
-    _description = 'Match Pair'
-    _order = 'sequence, id'
-    
-    sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
-    left_text = fields.Char(string='Left Item', required=True)
-    right_text = fields.Char(string='Right Item', required=True)
-
-
-class DragToken(models.Model):
-    _name = 'quiz.drag.token'
-    _description = 'Drag and Drop Token'
-    _order = 'sequence, id'
-
-    sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
-    text = fields.Char(string='Token Text', required=True)
-    is_correct = fields.Boolean(string='Is Correct Answer', default=False)
-    correct_position = fields.Integer(string='Correct Position', default=0)
-
-
 class FillBlankAnswer(models.Model):
     _name = 'quiz.fill.blank.answer'
     _description = 'Fill in the Blank Answer'
@@ -374,6 +340,18 @@ class FillBlankAnswer(models.Model):
          'UNIQUE(question_id, blank_number)',
          'Each blank number must be unique within a question')
     ]
+
+
+class DragToken(models.Model):
+    _name = 'quiz.drag.token'
+    _description = 'Drag and Drop Token'
+    _order = 'sequence, id'
+
+    sequence = fields.Integer(string='Sequence', default=10)
+    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
+    text = fields.Char(string='Token Text', required=True)
+    is_correct = fields.Boolean(string='Is Correct Answer', default=False)
+    correct_position = fields.Integer(string='Correct Position', default=0)
 
 
 class QuizBlank(models.Model):
@@ -426,46 +404,23 @@ class QuizOption(models.Model):
                     raise ValidationError(_("Each dropdown blank can have only one correct answer"))
 
 
-class MatrixRow(models.Model):
-    _name = 'quiz.matrix.row'
-    _description = 'Matrix Row'
+class Choice(models.Model):
+    _name = 'quiz.choice'
+    _description = 'Multiple Choice Option'
     _order = 'sequence, id'
     
-    question_id = fields.Many2one('quiz.question', required=True, ondelete='cascade')
     sequence = fields.Integer(string='Sequence', default=10)
-    name = fields.Char(string='Row Label', required=True)
-    cell_ids = fields.One2many('quiz.matrix.cell', 'row_id', string='Cell Values')
+    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
+    text = fields.Char(string='Choice Text', required=True)
+    is_correct = fields.Boolean(string='Is Correct', default=False)
 
 
-class MatrixColumn(models.Model):
-    _name = 'quiz.matrix.column'
-    _description = 'Matrix Column'
+class MatchPair(models.Model):
+    _name = 'quiz.match.pair'
+    _description = 'Match Pair'
     _order = 'sequence, id'
     
-    question_id = fields.Many2one('quiz.question', required=True, ondelete='cascade')
     sequence = fields.Integer(string='Sequence', default=10)
-    name = fields.Char(string='Column Label', required=True)
-    cell_ids = fields.One2many('quiz.matrix.cell', 'column_id', string='Cell Values')
-
-
-class MatrixCell(models.Model):
-    _name = 'quiz.matrix.cell'
-    _description = 'Matrix Cell Value'
-    
-    row_id = fields.Many2one('quiz.matrix.row', required=True, ondelete='cascade')
-    column_id = fields.Many2one('quiz.matrix.column', required=True, ondelete='cascade')
-    is_correct = fields.Boolean(string='Is Correct Value', default=False)
-    
-    question_id = fields.Many2one(related='row_id.question_id', store=True)
-    
-    _sql_constraints = [
-        ('unique_cell', 'unique(row_id, column_id)', 'Each cell must be unique!')
-    ]
-
-
-# Placeholder model for cached database references (NOT duplicate of QuizBlank)
-class QuizDragZone(models.Model):
-    _name = 'quiz.drag.zone'
-    _description = 'Quiz Drag Zone (Placeholder)'
-    
-    name = fields.Char(string='Name')
+    question_id = fields.Many2one('quiz.question', string='Question', ondelete='cascade', required=True)
+    left_text = fields.Char(string='Left Item', required=True)
+    right_text = fields.Char(string='Right Item', required=True)

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Question Form View -->
-    <record id="view_question_form" model="ir.ui.view">
+    <record id="view_quiz_question_form" model="ir.ui.view">
         <field name="name">quiz.question.form</field>
         <field name="model">quiz.question</field>
         <field name="arch" type="xml">
@@ -9,210 +9,77 @@
                 <sheet>
                     <group>
                         <group>
-                            <field name="quiz_id"/>
                             <field name="type" widget="radio"/>
-                            <field name="points"/>
                             <field name="sequence"/>
+                            <field name="points"/>
+                        </group>
+                        <group>
+                            <field name="quiz_id" options="{'no_create': True}"/>
                         </group>
                     </group>
                     
-                    <separator string="Question Content"/>
-                    <!-- Regular question HTML field (hidden for dropdown_blank type) -->
-                    <field name="question_html" widget="html" 
-                           attrs="{'invisible': [('type', '=', 'dropdown_blank')]}"/>
-                    
-                    <!-- Text template field for dropdown_blank type -->
-                    <field name="text_template" widget="html" options="{'style-inline': true}"
-                           placeholder="Enter text with {{1}}, {{2}} placeholders for dropdowns"
-                           attrs="{'invisible': [('type', '!=', 'dropdown_blank')], 
-                                  'required': [('type', '=', 'dropdown_blank')]}"/>
+                    <group>
+                        <field name="question_html" widget="html" options="{'style-inline': true}" 
+                               attrs="{'invisible': [('type', '=', 'dropdown_blank')]}"/>
+                        <field name="text_template" widget="html" options="{'style-inline': true}"
+                               placeholder="Enter text with {{1}}, {{2}} placeholders for dropdowns"
+                               attrs="{'invisible': [('type', '!=', 'dropdown_blank')], 
+                                      'required': [('type', '=', 'dropdown_blank')]}"/>
+                    </group>
                     
                     <notebook>
-                        <!-- Multiple Choice Options -->
-                        <page string="Answer Options" 
-                              invisible="type not in ['mcq_single', 'mcq_multi']">
-                            <div class="alert alert-info">
-                                <strong>Instructions:</strong> Add answer options below. 
-                                Check "Is Correct" for the right answer(s).
-                            </div>
-                            <field name="choice_ids">
+                        <!-- Choices for Multiple Choice Questions -->
+                        <page string="Choices" attrs="{'invisible': [('type', 'not in', ['mcq_single', 'mcq_multiple'])]}">
+                            <field name="choice_ids" widget="one2many">
                                 <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
                                     <field name="text"/>
                                     <field name="is_correct"/>
                                 </tree>
                             </field>
                         </page>
                         
-                        <!-- Match Questions -->
-                        <page string="Matching Pairs" 
-                              invisible="type != 'match'">
-                            <div class="alert alert-info">
-                                <strong>How to create matching questions:</strong>
-                                <ul>
-                                    <li>Add matching pairs below</li>
-                                    <li>Each pair represents items that should match together</li>
-                                    <li>Left text will appear on the left side, right text on the right side</li>
-                                </ul>
-                            </div>
-                            <field name="match_pair_ids">
+                        <!-- Fill in the Blank Answers -->
+                        <page string="Blank Answers" attrs="{'invisible': [('type', '!=', 'fill_blank')]}">
+                            <field name="fill_blank_answer_ids" widget="one2many">
                                 <tree editable="bottom">
-                                    <field name="left_text" string="Left Item"/>
-                                    <field name="right_text" string="Right Item"/>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="blank_number"/>
+                                    <field name="answer_text"/>
                                 </tree>
                             </field>
                         </page>
                         
-                        <!-- Drag Tokens -->
-                        <page string="Drag Tokens" 
-                              invisible="type not in ['drag_into_text', 'drag_zone']">
-                            <div class="alert alert-info">
-                                <strong>Instructions for Drag into Text:</strong>
-                                <ul>
-                                    <li>Use placeholders {{1}}, {{2}}, {{3}} in your question HTML above</li>
-                                    <li>Add tokens below that can be dragged into these placeholders</li>
-                                    <li>Set "Correct for Blank" to specify which placeholder this token answers</li>
-                                </ul>
-                            </div>
-                            <field name="drag_token_ids">
+                        <!-- Match Pairs -->
+                        <page string="Match Pairs" attrs="{'invisible': [('type', '!=', 'match')]}">
+                            <field name="match_pair_ids" widget="one2many">
                                 <tree editable="bottom">
-                                    <field name="text" string="Draggable Token"/>
-                                    <field name="correct_for_blank" string="Correct for Blank #"/>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="left_text"/>
+                                    <field name="right_text"/>
                                 </tree>
                             </field>
                         </page>
                         
-                        <!-- Fill in Blanks -->
-                        <page string="Blank Answers" 
-                              invisible="type != 'fill_blank'">
-                            <div class="alert alert-info">
-                                <strong>Instructions:</strong> Add the correct answers for fill-in-the-blank questions.
-                                You can add multiple acceptable answers for each blank.
-                            </div>
-                            <field name="fill_blank_answer_ids">
+                        <!-- Drag and Drop Tokens -->
+                        <page string="Drag Tokens" attrs="{'invisible': [('type', 'not in', ['drag_text', 'drag_zone'])]}">
+                            <field name="drag_token_ids" widget="one2many">
                                 <tree editable="bottom">
-                                    <field name="blank_number" string="Blank #"/>
-                                    <field name="correct_answer" string="Correct Answer"/>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="text"/>
+                                    <field name="correct_position" attrs="{'invisible': [('parent.type', '!=', 'drag_text')]}"/>
                                 </tree>
                             </field>
                         </page>
                         
-                        <!-- Single Line Text Box -->
-                        <page string="Text Answer Settings" 
-                              invisible="type != 'text_box'">
-                            <group>
-                                <group>
-                                    <field name="correct_text_answer"/>
-                                    <field name="case_sensitive"/>
-                                    <field name="allow_partial_match"/>
-                                </group>
-                                <group>
-                                    <field name="keywords" placeholder="word1, word2, phrase1"
-                                           invisible="not allow_partial_match"/>
-                                </group>
-                            </group>
-                            <div class="alert alert-info" invisible="not allow_partial_match">
-                                <strong>Partial Matching:</strong>
-                                <p>Enter keywords or phrases that should be present in the answer.</p>
-                                <p>If no keywords are specified, a simple word comparison will be used.</p>
-                            </div>
-                        </page>
-                        
-                        <!-- Numerical Value -->
-                        <page string="Numerical Settings"
-                              invisible="type != 'numerical'">
-                            <group>
-                                <group string="Exact Value">
-                                    <field name="numerical_exact_value"/>
-                                    <field name="numerical_tolerance" 
-                                           invisible="numerical_exact_value == False"/>
-                                    <div class="alert alert-info" invisible="numerical_exact_value == False">
-                                        <strong>Tolerance:</strong>
-                                        <p>Answer will be considered correct if it's within ±<field name="numerical_tolerance"/> of the exact value.</p>
-                                    </div>
-                                </group>
-                                <group string="Value Range">
-                                    <field name="numerical_min_value"/>
-                                    <field name="numerical_max_value"/>
-                                    <div class="alert alert-info" invisible="numerical_min_value == False or numerical_max_value == False">
-                                        <strong>Range Check:</strong>
-                                        <p>Answer will be considered correct if it's between the minimum and maximum values (inclusive).</p>
-                                    </div>
-                                </group>
-                            </group>
-                        </page>
-                        
-                        <!-- Matrix Question -->
-                        <page string="Matrix Configuration"
-                              invisible="type != 'matrix'">
-                            <div class="alert alert-info">
-                                <strong>Matrix Question Setup:</strong>
-                                <p>1. Add rows and columns to create your matrix</p>
-                                <p>2. Check the "Is Correct" box for each cell that represents a correct answer</p>
-                            </div>
-                            
-                            <group string="Matrix Rows">
-                                <field name="matrix_row_ids">
-                                    <tree editable="bottom">
-                                        <field name="sequence" widget="handle"/>
-                                        <field name="name"/>
-                                    </tree>
-                                </field>
-                            </group>
-                            
-                            <group string="Matrix Columns">
-                                <field name="matrix_column_ids">
-                                    <tree editable="bottom">
-                                        <field name="sequence" widget="handle"/>
-                                        <field name="name"/>
-                                    </tree>
-                                </field>
-                            </group>
-                            
-                            <group string="Cell Values" invisible="not matrix_row_ids or not matrix_column_ids">
-                                <field name="matrix_row_ids" invisible="1"/>
-                                <field name="matrix_column_ids" invisible="1"/>
-                                <field name="id" invisible="1"/>
-                                <div class="alert alert-warning" role="alert">
-                                    <strong>Matrix Cells Setup:</strong>
-                                    <p>After adding rows and columns, go to Matrix Cells tab to define correct values.</p>
-                                </div>
-                            </group>
-                        </page>
-                        
-                        <!-- Matrix Cells -->
-                        <page string="Matrix Cells"
-                              invisible="type != 'matrix' or not matrix_row_ids or not matrix_column_ids">
-                            <field name="id" invisible="1"/>
-                            <div invisible="id == False">
-                                <field name="matrix_row_ids" invisible="1"/>
-                                <field name="matrix_column_ids" invisible="1"/>
-                                
-                                <!-- Use a button to open matrix cells instead of widget -->
-                                <button name="action_open_matrix_cells" 
-                                        string="Open Matrix Cell Editor" 
-                                        type="object" 
-                                        class="btn btn-primary"/>
-                            </div>
-                            <div invisible="id != False" class="alert alert-info">
-                                <p>Please save the question first to edit matrix cells.</p>
-                            </div>
-                        </page>
-                        
-                        <!-- Dropdown Blanks -->
+                        <!-- Dropdown Blanks (NEW) -->
                         <page string="Dropdown Blanks" attrs="{'invisible': [('type', '!=', 'dropdown_blank')]}">
-                            <div class="alert alert-info">
-                                <strong>Instructions:</strong>
-                                <ul>
-                                    <li>Use {{1}}, {{2}}, etc. in your text template above to mark dropdown positions</li>
-                                    <li>Add a blank for each placeholder number</li>
-                                    <li>Add dropdown options for each blank</li>
-                                    <li>Mark one option as correct for each blank</li>
-                                </ul>
-                            </div>
-                            <field name="blank_ids" widget="one2many" 
-                                   domain="[('input_type', '=', 'dropdown')]" 
-                                   context="{'default_input_type': 'dropdown'}">
-                                <tree editable="bottom">
+                            <p class="text-muted mb-2">
+                                Define dropdowns for each placeholder in your text template ({{1}}, {{2}}, etc.).
+                                Add options for each dropdown and mark the correct answer.
+                            </p>
+                            <field name="blank_ids" widget="one2many" domain="[('input_type', '=', 'dropdown')]" context="{'default_input_type': 'dropdown'}">
+                                <tree>
                                     <field name="blank_number"/>
                                     <field name="input_type" invisible="1"/>
                                 </tree>

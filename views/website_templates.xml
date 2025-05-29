@@ -501,29 +501,34 @@
                                         <t t-if="question.type == 'dropdown_blank'">
                                             <div class="dropdown-blank-question">
                                                 <div class="question-text-container mb-4" t-att-data-question-id="question.id">
-                                                    <t t-set="template" t-value="question.text_template"/>
-                                                    
-                                                    <!-- Process the template to replace placeholders with dropdowns -->
-                                                    <t t-foreach="question.blank_ids" t-as="blank">
-                                                        <t t-set="placeholder" t-value="{{'{{' + str(blank.blank_number) + '}}'}}"/>
-                                                        <t t-set="dropdown">
-                                                            <select class="form-select dropdown-blank-select" 
-                                                                   t-att-name="'dropdown_blank_' + str(blank.blank_number)" 
-                                                                   t-att-data-blank-id="blank.id">
-                                                                <option value="">-- Select --</option>
-                                                                <t t-foreach="blank.option_ids" t-as="option">
-                                                                    <option t-att-value="option.id">
-                                                                        <t t-esc="option.label"/>
-                                                                    </option>
-                                                                </t>
-                                                            </select>
-                                                        </t>
-                                                        <t t-set="template" t-value="template.replace(placeholder, str(dropdown))"/>
-                                                    </t>
-                                                    
-                                                    <!-- Render the final template with dropdowns -->
                                                     <div class="dropdown-text-content">
-                                                        <t t-raw="template"/>
+                                                        <!-- Manually process template to replace placeholders -->
+                                                        <t t-set="template_html" t-value="question.text_template"/>
+                                                        
+                                                        <!-- For each blank, create a select dropdown -->
+                                                        <t t-foreach="question.blank_ids.sorted(key=lambda b: b.blank_number)" t-as="blank">
+                                                            <t t-set="placeholder" t-value="{{'{{' + str(blank.blank_number) + '}}'}}"/>
+                                                            <t t-set="dropdown_html">
+                                                                <select class="form-select dropdown-blank-select d-inline-block mx-1" 
+                                                                       t-att-name="'dropdown_blank_' + str(blank.blank_number)" 
+                                                                       t-att-data-blank-id="blank.id"
+                                                                       style="width:auto; min-width:120px;">
+                                                                    <option value="">-- Select --</option>
+                                                                    <t t-foreach="blank.option_ids" t-as="option">
+                                                                        <option t-att-value="option.id">
+                                                                            <t t-esc="option.label"/>
+                                                                        </option>
+                                                                    </t>
+                                                                </select>
+                                                            </t>
+                                                            <!-- String replacement might not work correctly in QWeb, so we'll use a different approach -->
+                                                            <t t-set="parts" t-value="template_html.split(placeholder, 1)"/>
+                                                            <t t-if="len(parts) > 1">
+                                                                <t t-set="template_html" t-value="parts[0] + str(dropdown_html) + parts[1]"/>
+                                                            </t>
+                                                        </t>
+                                                        
+                                                        <t t-raw="template_html"/>
                                                     </div>
                                                     
                                                     <input type="hidden" name="dropdown_blank_data" value="[]"/>
