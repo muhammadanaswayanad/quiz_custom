@@ -626,18 +626,17 @@
                                                     
                                                     <!-- Instructions -->
                                                     <div class="alert alert-info">
-                                                        <strong>Instructions:</strong> Arrange the steps in the correct order using the buttons.
+                                                        <strong>Instructions:</strong> Arrange the steps in the correct order using the arrows.
                                                     </div>
                                                     
                                                     <!-- Sequence list -->
                                                     <div class="sequence-list">
                                                         <t t-foreach="question.sequence_item_ids" t-as="step">
+                                                            <!-- Don't access step.type here -->
                                                             <div class="sequence-item" t-att-data-step-id="step.id">
                                                                 <span class="step-number" t-esc="step_index + 1"/>
                                                                 <span class="step-label" t-esc="step.label"/>
-                                                                <t t-if="step.content">
-                                                                    <div class="step-description" t-esc="step.content"/>
-                                                                </t>
+                                                                <div t-if="step.content" class="step-description" t-esc="step.content"/>
                                                                 <div class="sequence-buttons">
                                                                     <button type="button" class="btn btn-primary btn-sm move-up">↑</button>
                                                                     <button type="button" class="btn btn-primary btn-sm move-down">↓</button>
@@ -646,6 +645,7 @@
                                                         </t>
                                                     </div>
                                                     
+                                                    <!-- Hidden input for data -->
                                                     <input type="hidden" name="sequence_data" value="[]"/>
                                                     
                                                     <!-- Randomize button -->

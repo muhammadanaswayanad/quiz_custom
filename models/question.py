@@ -222,6 +222,8 @@ class SequenceItem(models.Model):
     label = fields.Char('Step Label', required=True)
     content = fields.Text('Content')
     correct_position = fields.Integer('Correct Position', required=True, help="The correct position in the sequence (0, 1, 2, etc.)")
+    # Add type field to fix the attribute error
+    type = fields.Char('Type', default='sequence_item', help="Technical field for compatibility")
     
     _sql_constraints = [
         ('unique_position_per_question', 
