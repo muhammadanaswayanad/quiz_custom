@@ -126,26 +126,3 @@ class QuizController(http.Controller):
             'max_score': sum(session.quiz_id.question_ids.mapped('points')),
         }
         return request.render('quiz_engine_pro.quiz_results', values)
-            'max_score': max_score,
-            'percentage': percentage,
-        })
-        return request.redirect('/quiz')
-        
-        session.complete_session()
-        
-        return request.render('quiz_engine_pro.quiz_results', {
-            'session': session,
-            'quiz': session.quiz_id,
-        })
-
-    @http.route('/quiz/session/<string:token>/results', type='http', auth='public', website=True)
-    def quiz_results(self, token, **kwargs):
-        """View quiz results"""
-        session = request.env['quiz.session'].sudo().search([('session_token', '=', token)], limit=1)
-        if not session or session.state != 'completed':
-            return request.redirect('/quiz')
-        
-        return request.render('quiz_engine_pro.quiz_results', {
-            'session': session,
-            'quiz': session.quiz_id,
-        })
