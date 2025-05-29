@@ -13,9 +13,6 @@ odoo.define('quiz_engine_pro.drag_drop', function (require) {
             'click .reset-tokens': '_resetTokens'
         },
 
-        /**
-         * @override
-         */
         start: function () {
             // Make tokens draggable
             this.$('.draggable-token').attr('draggable', 'true');
@@ -28,13 +25,6 @@ odoo.define('quiz_engine_pro.drag_drop', function (require) {
             return this._super.apply(this, arguments);
         },
         
-        //----------------------------------------------------------------------
-        // Private
-        //----------------------------------------------------------------------
-        
-        /**
-         * Update hidden form field with current drag-drop state
-         */
         _updateFormData: function() {
             var data = [];
             this.$('.drop-zone').each(function() {
@@ -50,9 +40,6 @@ odoo.define('quiz_engine_pro.drag_drop', function (require) {
             this.$('input[name="drag_drop_data"]').val(JSON.stringify(data));
         },
         
-        /**
-         * Reset all tokens to original positions
-         */
         _resetTokens: function(ev) {
             if (ev) ev.preventDefault();
             
@@ -64,13 +51,6 @@ odoo.define('quiz_engine_pro.drag_drop', function (require) {
             this._updateFormData();
         },
         
-        //----------------------------------------------------------------------
-        // Handlers
-        //----------------------------------------------------------------------
-        
-        /**
-         * Handle drag start
-         */
         _onDragStart: function(ev) {
             this.currentDraggedElement = $(ev.currentTarget);
             ev.originalEvent.dataTransfer.setData('text/plain', $(ev.currentTarget).data('token-id'));
@@ -79,17 +59,37 @@ odoo.define('quiz_engine_pro.drag_drop', function (require) {
             $(ev.currentTarget).addClass('dragging');
         },
         
-        /**
-         * Handle drag over - needed to allow dropping
-         */
         _onDragOver: function(ev) {
             ev.preventDefault();
             $(ev.currentTarget).addClass('drag-over');
         },
         
-        /**
-         * Handle drag leave
-         */
+        _onDragLeave: function(ev) {
+            $(ev.currentTarget).removeClass('drag-over');
+        },
+        
+        _onDrop: function(ev) {
+            ev.preventDefault();
+            var $zone = $(ev.currentTarget);
+            $zone.removeClass('drag-over');
+            
+            // Get dragged element
+            var tokenId = ev.originalEvent.dataTransfer.getData('text/plain');
+            var $token = this.$('.draggable-token[data-token-id="' + tokenId + '"]');
+            
+            if ($token.length) {
+                // Move token to drop zone
+                $token.detach().appendTo($zone);
+                $token.removeClass('dragging');
+                
+                // Update form data
+                this._updateFormData();
+            }
+        }
+    });
+
+    return publicWidget.registry.QuizDragDrop;
+});
         _onDragLeave: function(ev) {
             $(ev.currentTarget).removeClass('drag-over');
         },

@@ -29,6 +29,7 @@
             'quiz_engine_pro/static/src/css/quiz_styles.css',
             'quiz_engine_pro/static/src/css/quiz_drag_drop.css',
             'quiz_engine_pro/static/src/js/quiz_drag_drop.js',
+            'quiz_engine_pro/static/src/js/quiz_drag_drop_debug.js',
         ],
     },
     'images': ['static/description/icon.png'],

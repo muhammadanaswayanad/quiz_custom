@@ -27,29 +27,31 @@
     background-color: #e9ecef;
     border: 1px solid #ced4da;
     border-radius: 4px;
-    cursor: move;
+    cursor: grab !important;
     user-select: none;
     transition: all 0.2s ease;
 }
 
 .draggable-token:hover {
     background-color: #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .draggable-token.dragging {
     opacity: 0.5;
+    cursor: grabbing !important;
 }
 
 .drop-zones-container {
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .drop-zone {
     min-height: 80px;
-    padding: 10px;
+    padding: 15px;
     background-color: #f8f9fa;
     border: 2px dashed #ced4da;
     border-radius: 5px;
@@ -113,6 +115,10 @@
 @media (max-width: 767px) {
     .drop-zones-container {
         flex-direction: column;
+    }
+    
+    .drop-zone {
+        margin-bottom: 10px;
     }
     
     .match-pairs .row {
