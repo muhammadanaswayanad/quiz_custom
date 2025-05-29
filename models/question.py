@@ -493,8 +493,7 @@ class SequenceStep(models.Model):
     question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
     label = fields.Char('Step Label', required=True)
     description = fields.Text('Description')
-    correct_position = fields.Integer('Correct Position', required=True)
-         'Each position must be unique within a question')
+    
     _sql_constraints = [
         ('unique_position_per_question', 
          'UNIQUE(question_id, correct_position)',
