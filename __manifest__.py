@@ -38,6 +38,3 @@
     'auto_install': False,
     'application': True,
 }
-    'auto_install': False,
-    'application': True,
-}
