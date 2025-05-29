@@ -618,23 +618,30 @@
 
                                             <!-- Step Sequencing Question Type -->
                                             <t t-if="question.type == 'step_sequence'">
-                                                <!-- Add question text display at the top -->
-                                                <div class="question-text-container mb-4">
-                                                    <div t-field="question.question_html"/>
-                                                </div>
-
                                                 <div class="sequence-container">
+                                                    <div class="question-text-container mb-4">
+                                                        <div t-field="question.question_html"/>
+                                                    </div>
+                                                    
                                                     <div class="sequence-instructions mb-3">
-                                                        <strong>Instructions:</strong> Arrange the steps in the correct order by dragging them up or down.
+                                                        <strong>Instructions:</strong> Arrange the steps in the correct order using the up/down arrows or by dragging items.
                                                     </div>
                                                     
                                                     <div class="sequence-list" id="sequenceList">
                                                         <t t-foreach="question.sequence_item_ids" t-as="step">
                                                             <div class="sequence-item" t-att-data-step-id="step.id">
-                                                                <div class="sequence-handle">
-                                                                    <i class="fa fa-bars"></i>
+                                                                <div class="sequence-controls">
+                                                                    <button type="button" class="btn btn-sm btn-light move-up" title="Move Up">
+                                                                        <i class="fa fa-arrow-up"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-sm btn-light move-down" title="Move Down">
+                                                                        <i class="fa fa-arrow-down"></i>
+                                                                    </button>
                                                                 </div>
-                                                                <span class="step-number">1</span>
+                                                                <div class="sequence-handle">
+                                                                    <i class="fa fa-arrows"></i>
+                                                                </div>
+                                                                <span class="step-number"><t t-esc="step_index + 1"/></span>
                                                                 <span class="step-label" t-esc="step.label"/>
                                                                 <div t-if="step.content" class="step-description" t-esc="step.content"/>
                                                             </div>

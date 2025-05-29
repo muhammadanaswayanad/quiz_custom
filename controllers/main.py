@@ -91,6 +91,13 @@ class QuizController(http.Controller):
             'question': question,
             'question_index': question_num - 1,
         }
+        
+        # Add this code to change the message display
+        if question.type == 'step_sequence':
+            sequence_items = question.sequence_item_ids
+            if not sequence_items:
+                values['error_message'] = _("This question doesn't have any sequence steps defined.")
+        
         return request.render('quiz_engine_pro.quiz_question', values)
 
     @http.route('/quiz/session/<string:token>/results', type='http', auth='public', website=True)
