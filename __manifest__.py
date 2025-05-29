@@ -34,6 +34,7 @@
             'quiz_engine_pro/static/src/js/quiz_drag_drop.js',
             'quiz_engine_pro/static/src/js/quiz_sortable.js',
             'quiz_engine_pro/static/src/js/quiz_sequence_buttons.js',
+            'quiz_engine_pro/static/src/js/sequence_buttons.js',
         ],
     },
     'images': ['static/description/icon.png'],
