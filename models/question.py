@@ -325,200 +325,174 @@ class Question(models.Model):
                 if not question.sequence_item_ids:
                     raise ValidationError(_("Step Sequencing questions must have sequence steps defined."))
             else:
-                if not question.question_html: from text_template for dropdown_blank questions
+                if not question.question_html:
                     raise ValidationError(_("Question Text is required"))
+
+    @api.onchange('text_template', 'type')
     def _onchange_text_template(self):
-    # This method will auto-fill question_html from text_template for dropdown_blank questions
-    @api.onchange('text_template', 'type')on_html to satisfy requirements in other parts of code
-    def _onchange_text_template(self):text_template
+        # This method will auto-fill question_html from text_template for dropdown_blank questions
         if self.type == 'dropdown_blank' and self.text_template:
             # Copy text template to question_html to satisfy requirements in other parts of code
             self.question_html = self.text_template
+
+    @api.constrains('type')
     def _check_required_fields(self):
         for question in self:
-    @api.constrains('type')e == 'mcq_single' or question.type == 'mcq_multiple':
-    def _check_required_fields(self):e_ids:
-        for question in self:idationError(_('Multiple choice questions must have choices defined.'))
             if question.type == 'mcq_single' or question.type == 'mcq_multiple':
-                if not question.choice_ids:answer_ids:
-                    raise ValidationError(_('Multiple choice questions must have choices defined.'))fined.'))
+                if not question.choice_ids:
+                    raise ValidationError(_('Multiple choice questions must have choices defined.'))
             elif question.type == 'fill_blank':
                 if not question.fill_blank_answer_ids:
                     raise ValidationError(_('Fill in the blanks questions must have blank answers defined.'))
-            elif question.type == 'match':xt' or question.type == 'drag_zone':
+            elif question.type == 'match':
                 if not question.match_pair_ids:
-                    raise ValidationError(_('Match questions must have match pairs defined.'))'))
+                    raise ValidationError(_('Match questions must have match pairs defined.'))
             elif question.type == 'drag_text' or question.type == 'drag_zone':
                 if not question.drag_token_ids:
-                    raise ValidationError(_('Drag and drop questions must have tokens defined.')) defined.'))
+                    raise ValidationError(_('Drag and drop questions must have tokens defined.'))
             elif question.type == 'dropdown_blank':
-                if not question.text_template:ropdown in Text questions must have blanks with options defined.'))
+                if not question.text_template:
                     raise ValidationError(_('Dropdown in Text questions must have a text template defined.'))
-                if not question.blank_ids:tem_ids:
-                    raise ValidationError(_('Dropdown in Text questions must have blanks with options defined.')))
-            elif question.type == 'drag_order':e':
-                if not question.sequence_item_ids:
-                    raise ValidationError(_('Drag and Drop Ordering questions must have sequence items defined.'))
+                if not question.blank_ids:
+                    raise ValidationError(_('Dropdown in Text questions must have blanks with options defined.'))
             elif question.type == 'step_sequence':
-                if not question.sequence_step_ids:
+                if not question.sequence_item_ids:
                     raise ValidationError(_('Step Sequencing questions must have sequence steps defined.'))
+
+class FillBlankAnswer(models.Model):
     _name = 'quiz.fill.blank.answer'
-    def auto_set_positions(self):    _description = 'Fill in the Blank Answer'
-        """
-        Automatically set the correct positions for sequence steps
-        based on their current order in the UIe', default=10)
-        """ny2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
-        self.ensure_one()blank_number = fields.Integer(string='Blank Number', required=True,
-        if self.type == 'step_sequence' and self.sequence_item_ids: placeholder")
-            # Get sorted items based on sequence field
-            sorted_items = self.sequence_item_ids.sorted(lambda r: r.sequence)
-            
-            # Set correct positions from 0 to N
-            for i, item in enumerate(sorted_items):     'UNIQUE(question_id, blank_number)',
-                item.correct_position = iber must be unique within a question')
-                
-        return True
-    
- DragToken(models.Model):
-class FillBlankAnswer(models.Model):    _name = 'quiz.drag.token'
-    _name = 'quiz.fill.blank.answer'    _description = 'Drag and Drop Token'
     _description = 'Fill in the Blank Answer'
-    _order = 'sequence, id'
-    quence', default=10)
-    sequence = fields.Integer(string='Sequence', default=10)ny2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
-    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)    text = fields.Char(string='Token Text', required=True)
-    blank_number = fields.Integer(string='Blank Number', required=True,default=False)
-                               help="The number in the {{n}} placeholder")
+
+    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
+    blank_number = fields.Integer(string='Blank Number', required=True,
+                                   help="The number in the {{n}} placeholder")
     answer_text = fields.Char(string='Answer', required=True)
-    
+
     _sql_constraints = [
-        ('unique_blank_num_per_question',     _name = 'quiz.blank'
-         'UNIQUE(question_id, blank_number)',    _description = 'Question Blank'
-         'Each blank number must be unique within a question')'
+        ('unique_blank_num_per_question', 'UNIQUE(question_id, blank_number)',
+         'Each blank number must be unique within a question')
     ]
-omodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
-er(string='Blank Number', required=True, 
-class DragToken(models.Model):                             help="The number in the {{n}} placeholder")
+
+class DragToken(models.Model):
     _name = 'quiz.drag.token'
     _description = 'Drag and Drop Token'
     _order = 'sequence, id'
-='dropdown', required=True)
-    sequence = fields.Integer(string='Sequence', default=10)y(comodel_name='quiz.option', inverse_name='blank_id', string='Options')
+
+    sequence = fields.Integer(string='Sequence', default=10)
     question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
     text = fields.Char(string='Token Text', required=True)
-    is_correct = fields.Boolean(string='Is Correct Answer', default=False)
-    correct_position = fields.Integer(string='Correct Position', default=0)     'UNIQUE(question_id, blank_number)',
-ber must be unique within a question')
+    blank_number = fields.Integer(string='Blank Number', required=True, default=False,
+                                   help="The number in the {{n}} placeholder")
+    answer_text = fields.Char(string='Answer', required=True)
+
+    _sql_constraints = [
+        ('unique_blank_num_per_question', 'UNIQUE(question_id, blank_number)',
+         'Each blank number must be unique within a question')
+    ]
 
 class QuizBlank(models.Model):
     _name = 'quiz.blank'
-    _description = 'Question Blank'ef _check_dropdown_options(self):
-    _order = 'blank_number, id'    for blank in self:
-    nd not blank.option_ids:
-    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)_("Dropdown blanks must have at least one option defined"))
+    _description = 'Question Blank'
+    _order = 'blank_number, id'
+
+    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
     blank_number = fields.Integer(string='Blank Number', required=True, 
-                                 help="The number in the {{n}} placeholder")
+                                   help="The number in the {{n}} placeholder")
     input_type = fields.Selection([
-        ('text', 'Text Input'),    _name = 'quiz.option'
-        ('dropdown', 'Dropdown Menu')    _description = 'Dropdown Option'
+        ('text', 'Text Input'),
+        ('dropdown', 'Dropdown Menu')
     ], string='Input Type', default='dropdown', required=True)
     option_ids = fields.One2many(comodel_name='quiz.option', inverse_name='blank_id', string='Options')
-    ='Sequence', default=10)
-    _sql_constraints = [one(comodel_name='quiz.blank', string='Blank', ondelete='cascade', required=True)
-        ('unique_blank_number_per_question', label = fields.Char(string='Option Text', required=True)
-         'UNIQUE(question_id, blank_number)',default=False)
+
+    _sql_constraints = [
+        ('unique_blank_number_per_question', 'UNIQUE(question_id, blank_number)',
          'Each blank number must be unique within a question')
     ]
     
-    @api.constrains('input_type', 'option_ids')    for option in self:
+    @api.constrains('input_type', 'option_ids')
     def _check_dropdown_options(self):
-        for blank in self:rch_count([
-            if blank.input_type == 'dropdown' and not blank.option_ids:_id', '=', option.blank_id.id),
-                raise ValidationError(_("Dropdown blanks must have at least one option defined")), '=', True),
-
+        for blank in self:
+            if blank.input_type == 'dropdown' and not blank.option_ids:
+                raise ValidationError(_("Dropdown blanks must have at least one option defined"))
 
 class QuizOption(models.Model):
-    _name = 'quiz.option'("Each dropdown blank can have only one correct answer"))
+    _name = 'quiz.option'
     _description = 'Dropdown Option'
     _order = 'sequence, id'
     
-    sequence = fields.Integer(string='Sequence', default=10)    _name = 'quiz.choice'
-    blank_id = fields.Many2one(comodel_name='quiz.blank', string='Blank', ondelete='cascade', required=True)    _description = 'Multiple Choice Option'
+    sequence = fields.Integer(string='Sequence', default=10)
+    blank_id = fields.Many2one(comodel_name='quiz.blank', string='Blank', ondelete='cascade', required=True)
     label = fields.Char(string='Option Text', required=True)
     is_correct = fields.Boolean(string='Is Correct Answer', default=False)
-    nce', default=10)
-    @api.constrains('blank_id', 'is_correct')ny2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
-    def _check_one_correct_answer(self):text = fields.Char(string='Choice Text', required=True)
-        for option in self:=False)
+    correct_position = fields.Integer(string='Correct Position', default=0)
+
+    @api.constrains('blank_id', 'is_correct')
+    def _check_one_correct_answer(self):
+        for option in self:
             if option.is_correct:
                 correct_count = self.search_count([
                     ('blank_id', '=', option.blank_id.id),
-                    ('is_correct', '=', True),    _name = 'quiz.match.pair'
-                    ('id', '!=', option.id)    _description = 'Match Pair'
+                    ('is_correct', '=', True),
+                    ('id', '!=', option.id)
                 ])
                 if correct_count > 0:
-                    raise ValidationError(_("Each dropdown blank can have only one correct answer"))tring='Sequence', default=10)
-ny2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
-left_text = fields.Char(string='Left Item', required=True)
-class Choice(models.Model):rue)
+                    raise ValidationError(_("Each dropdown blank can have only one correct answer"))
+
+class Choice(models.Model):
     _name = 'quiz.choice'
     _description = 'Multiple Choice Option'
     _order = 'sequence, id'
     
-    sequence = fields.Integer(string='Sequence', default=10)    _name = 'quiz.sequence.item'
-    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)    _description = 'Sequence Item for Ordering Questions'
-    text = fields.Char(string='Choice Text', required=True)d'
+    sequence = fields.Integer(string='Sequence', default=10)
+    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
+    text = fields.Char(string='Choice Text', required=True)
     is_correct = fields.Boolean(string='Is Correct', default=False)
-10)  # This is for UI display order
-quiz.question', string='Question', required=True, ondelete='cascade')
-class MatchPair(models.Model):label = fields.Char('Step Label', required=True)
+
+class MatchPair(models.Model):
     _name = 'quiz.match.pair'
-    _description = 'Match Pair'he sequence (0, 1, 2, etc.)")quired=True, ondelete='cascade')
+    _description = 'Match Pair'
     _order = 'sequence, id'
     
     sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)     'UNIQUE(question_id, correct_position)',
-    left_text = fields.Char(string='Left Item', required=True)osition must be unique within a question')
+    question_id = fields.Many2one(comodel_name='quiz.question', string='Question', ondelete='cascade', required=True)
+    left_text = fields.Char(string='Left Item', required=True)
     right_text = fields.Char(string='Right Item', required=True)
-    right_text = fields.Char(string='Right Item', required=True)n)',
-on must be unique within a question')
-ef _onchange_correct_position(self):
-class SequenceItem(models.Model):        """Ensure correct_position is a non-negative integer"""
-    _name = 'quiz.sequence.item'        if self.correct_position < 0:
-    _description = 'Sequence Item for Ordering Questions' = 0
+
+    _sql_constraints = [
+        ('unique_left_text_per_question', 'UNIQUE(question_id, left_text)',
+         'Left text must be unique within a question'),
+        ('unique_right_text_per_question', 'UNIQUE(question_id, right_text)',
+         'Right text must be unique within a question')
+    ]
+
+class SequenceItem(models.Model):
+    _name = 'quiz.sequence.item'
+    _description = 'Sequence Item for Ordering Questions'
     _order = 'correct_position, id'
     
     sequence = fields.Integer(string='Sequence', default=10)
-    question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')_name = 'quiz.sequence.step'
+    question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
     label = fields.Char('Step Label', required=True)
-    content = fields.Text('Content')uired=True, ondelete='cascade')
+    content = fields.Text('Content')
     correct_position = fields.Integer('Correct Position', required=True)
-    ct Position', required=True)n')
-    _sql_constraints = [question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
-        ('unique_position_per_question', 'Step Label', required=True)
-         'UNIQUE(question_id, correct_position)',n')   ('unique_position_per_question', 
-         'Each position must be unique within a question')n)',
+
+    _sql_constraints = [
+        ('unique_position_per_question', 'UNIQUE(question_id, correct_position)',
+         'Each position must be unique within a question')
     ]
 
+class SequenceStep(models.Model):
+    _name = 'quiz.sequence.step'
+    _description = 'Sequence Step'
+    _order = 'correct_position, id'
+    
+    sequence = fields.Integer(string='Sequence', default=10)
+    question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')
+    label = fields.Char('Step Label', required=True)
+    content = fields.Text('Content')
+    correct_position = fields.Integer('Correct Position', required=True)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    ]         'Each position must be unique within a question')         'UNIQUE(question_id, correct_position)',        ('unique_position_per_question',     _sql_constraints = [        description = fields.Text('Description')    label = fields.Char('Step Label', required=True)    question_id = fields.Many2one('quiz.question', string='Question', required=True, ondelete='cascade')    correct_position = fields.Integer('Correct Position', required=True)        _order = 'correct_position, id'    _description = 'Sequence Step'    _name = 'quiz.sequence.step'class SequenceStep(models.Model):
-
-
-    ]         'Each position must be unique within a question')         'UNIQUE(question_id, correct_position)',        ('unique_position_per_question',     _sql_constraints = [         'Each position must be unique within a question')
+    _sql_constraints = [
+        ('unique_position_per_question', 'UNIQUE(question_id, correct_position)',
+         'Each position must be unique within a question')
     ]
