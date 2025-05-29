@@ -301,6 +301,10 @@ class SequenceItem(models.Model):
     @api.constrains('type', 'question_html', 'text_template', 'sequence_item_ids')
     def _check_required_question_content(self):
         for question in self:
+            # Make sure we're only validating quiz.question records, not sequence items
+            if question._name != 'quiz.question':
+                continue
+                
             if question.type == 'dropdown_blank':
                 if not question.text_template:
                     raise ValidationError(_("Text template is required for Dropdown in Text questions"))
