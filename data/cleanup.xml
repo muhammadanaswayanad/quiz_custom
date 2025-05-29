@@ -2,6 +2,6 @@
 <odoo>
     <!-- Delete any residual access records for non-existent models -->
     <delete model="ir.model.access" search="[('model_id', '=', False)]"/>
-    <delete model="ir.model.access" search="[('name', 'ilike', 'quiz.blank')]"/>
+</odoo>
     <delete model="ir.model.access" search="[('name', 'ilike', 'quiz.drag.zone')]"/>
 </odoo>
