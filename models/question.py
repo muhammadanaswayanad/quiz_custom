@@ -335,3 +335,11 @@ def _check_required_question_content(self):
         else:
             if not question.question_html:
                 raise ValidationError(_("Question Text is required"))
+
+class SequenceStep(models.Model):
+    _name = 'quiz.sequence.step'
+    _description = 'Legacy Sequence Step'
+    
+    # Minimum required fields 
+    name = fields.Char('Name')
+    active = fields.Boolean('Active', default=False)
