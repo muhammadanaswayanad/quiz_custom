@@ -179,13 +179,7 @@
                                 <field name="matrix_row_ids" invisible="1"/>
                                 <field name="matrix_column_ids" invisible="1"/>
                                 
-                                <!-- Use a widget to show the matrix editor -->
-                                <widget name="matrix_editor"
-                                        question_id="id"
-                                        readonly="0"/>
-                                        
-                                <!-- Fallback if widget doesn't load -->
-                                <field name="env" invisible="1"/>
+                                <!-- Use a button to open matrix cells instead of widget -->
                                 <button name="action_open_matrix_cells" 
                                         string="Open Matrix Cell Editor" 
                                         type="object" 
