@@ -10,24 +10,27 @@
 }
 
 .sequence-list {
-    border: 1px solid #dee2e6;
-    border-radius: 5px;
-    padding: 10px;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 15px;
     background-color: #f8f9fa;
-    min-height: 200px;
 }
 
 .sequence-item {
+    position: relative;
     background-color: white;
     border: 1px solid #ced4da;
     border-radius: 4px;
     margin-bottom: 10px;
-    padding: 12px 15px;
-    position: relative;
+    padding: 15px 70px 15px 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     transition: transform 0.3s, background-color 0.3s;
+}
+
+.sequence-item:last-child {
+    margin-bottom: 0;
 }
 
 .sequence-item:hover {
@@ -86,26 +89,44 @@
 
 .sequence-item .step-number {
     display: inline-block;
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    text-align: center;
     background-color: #6c757d;
     color: white;
     border-radius: 50%;
-    text-align: center;
-    line-height: 24px;
     margin-right: 10px;
+    font-weight: bold;
 }
 
 .sequence-item .step-label {
     font-weight: 500;
+    vertical-align: middle;
 }
 
 .sequence-item .step-description {
-    color: #6c757d;
-    margin-top: 5px;
-    margin-left: 34px;
-    font-size: 0.9em;
+    margin-top: 8px;
+    margin-left: 38px;
+    color: #666;
+    font-size: 0.95em;
     width: 100%;
+}
+
+.sequence-buttons {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.sequence-buttons .btn {
+    margin-left: 5px;
+    min-width: 40px;
+}
+
+.reset-sequence {
+    min-width: 120px;
 }
 
 /* Desktop styles */
