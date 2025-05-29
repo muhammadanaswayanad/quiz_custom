@@ -195,14 +195,14 @@
                                                     <strong>Instructions:</strong> Drag the tokens above into the correct zones below.
                                                 </div>
                                                 
-                                                <!-- Simplified approach with generic zones -->
                                                 <div class="drop-zones-container">
-                                                    <!-- Create generic zones based on the number of tokens -->
-                                                    <t t-set="zones_count" t-value="len(question.drag_token_ids)"/>
-                                                    <t t-foreach="range(1, zones_count + 1)" t-as="zone_num">
-                                                        <div class="drop-zone" t-att-data-zone-id="zone_num">
-                                                            <span class="zone-label">Zone <t t-esc="zone_num"/></span>
-                                                        </div>
+                                                    <!-- Create generic zones based on token blanks -->
+                                                    <t t-foreach="question.drag_token_ids.mapped('correct_for_blank')" t-as="blank_num">
+                                                        <t t-if="blank_num > 0">
+                                                            <div class="drop-zone" t-att-data-zone-id="blank_num">
+                                                                <span class="zone-label">Zone <t t-esc="blank_num"/></span>
+                                                            </div>
+                                                        </t>
                                                     </t>
                                                 </div>
                                                 
@@ -215,7 +215,7 @@
                                         </t>
                                         
                                         <!-- Drag and Drop into Text -->
-                                        <t t-if="question.type == 'drag_text'">
+                                        <t t-if="question.type == 'drag_into_text'">
                                             <div class="quiz-drag-drop">
                                                 <input type="hidden" name="drag_drop_data" value="[]"/>
                                                 <div class="tokens-container">
@@ -233,16 +233,16 @@
                                                 </div>
                                                 
                                                 <div class="drag-text-container">
-                                                    <!-- Convert HTML content to add drop zones -->
                                                     <div class="drag-text-content">
                                                         <t t-raw="question.question_html"/>
-                                                        <!-- Add drop zones based on token count -->
+                                                        
                                                         <div class="drop-zones-container mt-3">
-                                                            <t t-set="zones_count" t-value="len(question.drag_token_ids)"/>
-                                                            <t t-foreach="range(1, zones_count + 1)" t-as="zone_num">
-                                                                <div class="drop-zone" t-att-data-zone-id="zone_num" style="display:inline-block; min-width:100px; margin-right:5px;">
-                                                                    <span class="zone-label">Blank <t t-esc="zone_num"/></span>
-                                                                </div>
+                                                            <t t-foreach="question.drag_token_ids.mapped('correct_for_blank')" t-as="blank_num">
+                                                                <t t-if="blank_num > 0">
+                                                                    <div class="drop-zone" t-att-data-zone-id="blank_num" style="display:inline-block; min-width:100px; margin-right:5px;">
+                                                                        <span class="zone-label">Blank <t t-esc="blank_num"/></span>
+                                                                    </div>
+                                                                </t>
                                                             </t>
                                                         </div>
                                                     </div>
@@ -255,7 +255,7 @@
                                                 </div>
                                             </div>
                                         </t>
-                                        
+
                                         <!-- Match Pairs -->
                                         <t t-if="question.type == 'match'">
                                             <div class="quiz-drag-drop match-pairs">

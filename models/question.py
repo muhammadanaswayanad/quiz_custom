@@ -165,6 +165,8 @@ class DragToken(models.Model):
     text = fields.Char(string='Token Text', required=True)
     is_correct = fields.Boolean(string='Is Correct Answer', default=False)
     correct_position = fields.Integer(string='Correct Position', default=0)
+    correct_for_blank = fields.Integer(string='Correct for Blank #', default=0, 
+                                     help='Specify which blank number this token corresponds to')
 
 
 class FillBlankAnswer(models.Model):

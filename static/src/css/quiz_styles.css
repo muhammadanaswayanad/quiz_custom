@@ -215,3 +215,96 @@
     background: #007bff;
     color: white;
 }
+
+/* Quiz General Styling */
+
+.quiz-header {
+    margin-bottom: 20px;
+}
+
+.question-content {
+    margin-bottom: 30px;
+}
+
+.question-content h4 {
+    margin-bottom: 15px;
+    font-weight: bold;
+    color: #495057;
+}
+
+.question-navigation {
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Results styling */
+.result-score {
+    margin: 20px 0;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.score-display {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+.score-number {
+    font-weight: bold;
+    color: #495057;
+}
+
+.score-total {
+    color: #6c757d;
+}
+
+.score-percentage {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.result-status {
+    font-size: 1.25em;
+    margin-top: 10px;
+    padding: 5px 0;
+}
+
+.result-status.passed {
+    color: #28a745;
+}
+
+.result-status.failed {
+    color: #dc3545;
+}
+
+.participant-info {
+    margin: 20px 0;
+}
+
+/* Form styling enhancements */
+.form-check {
+    margin-bottom: 10px;
+}
+
+.form-check-label {
+    padding-left: 5px;
+}
+
+.fill-blanks .form-group {
+    margin-bottom: 15px;
+}
+
+/* Mobile optimizations */
+@media (max-width: 767px) {
+    .quiz-header .text-right {
+        text-align: left !important;
+        margin-top: 15px;
+    }
+    
+    .question-navigation .text-right {
+        text-align: right !important;
+    }
+}
